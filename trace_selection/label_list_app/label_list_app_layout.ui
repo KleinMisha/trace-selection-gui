@@ -18,7 +18,7 @@
     <rect>
      <x>210</x>
      <y>90</y>
-     <width>1131</width>
+     <width>1101</width>
      <height>1021</height>
     </rect>
    </property>
@@ -38,19 +38,6 @@
      <font>
       <pointsize>18</pointsize>
      </font>
-    </property>
-   </widget>
-   <widget class="QSlider" name="verticalSlider">
-    <property name="geometry">
-     <rect>
-      <x>1100</x>
-      <y>100</y>
-      <width>22</width>
-      <height>701</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="add_button">
