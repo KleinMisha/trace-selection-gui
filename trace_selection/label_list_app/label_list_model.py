@@ -13,7 +13,6 @@ class LabelList:
         self.labels.append(name)
 
     def remove_label(self, name) -> None:
-        #! simplified version here: Assumes all labels have unique names. If not, do a check based on the identifier or something
         self.labels.remove(name)
 
     def get_labels(self) -> list[str]:
