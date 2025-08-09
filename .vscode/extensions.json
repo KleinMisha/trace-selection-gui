@@ -1,0 +1,17 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "bierner.markdown-preview-github-styles",
+        "bierner.markdown-mermaid",
+        "yzhang.markdown-all-in-one",
+        "tamasfe.even-better-toml",
+        "aaron-bond.better-comments",
+        "streetsidesoftware.code-spell-checker"
+    ]
+
+
+
+
+}
