@@ -13,3 +13,15 @@ dev = [
     "pytest>=8.4.1",
     "pytest-coverage>=0.0",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "trace_selection"}
+
+[tool.setuptools.packages.find]
+where = ["trace_selection"]
+
+
+[tool.pytest.ini_options]
+pythonpath = ["trace_selection"]
+testpaths = ["tests"]
+
