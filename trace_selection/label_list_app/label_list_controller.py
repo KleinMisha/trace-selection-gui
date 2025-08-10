@@ -8,20 +8,20 @@ from typing import Callable, Protocol
 
 
 class View(Protocol):
-    """'GUI package agnostic interface for the displayed UI"""
+    """The View listens to user input. The View sends signals to the Controller, and can receive the following commands from the Controller"""
 
     def display_list(self, labels: list[str]) -> None:
         """Updates the displayed list of items"""
 
-    def on_add_label(self, handler: Callable[[str], None]) -> None:
-        """Connect the controller's function to the button or whatever input component"""
+    def connect_add_item(self, callback: Callable[[str], None]) -> None:
+        """Connect emitted signal from the View's ._emit_add_item() method to the controller-side function that now actually updates things"""
 
-    def on_remove_label(self, handler: Callable[[str], None]) -> None:
-        """Connect the controller's function to the button or whatever input component"""
+    def connect_remove_item(self, callback: Callable[[str], None]) -> None:
+        """Connect emitted signal from the View's ._emit_remove_item() method to the controller-side function that now actually updates things"""
 
 
 class Model(Protocol):
-    """TODO: Remove later. This part I do not think needs to be abstract at this level."""
+    """The Model stores the actual data, and can perform actual operations on them. The Controller can instruct the model to perform these operations."""
 
     def add_label(self, name: str) -> None: ...
     def remove_label(self, name: str) -> None: ...
@@ -29,23 +29,34 @@ class Model(Protocol):
 
 
 class LabelListController:
+    """
+    The controller handles signals received from the View and implements all the GUI logic.
+    The Controller actually processes the incoming signal into an action performed on the model and then tells the view to see this change affect it on screen.
+    """
+
     def __init__(self, model: Model, view: View) -> None:
         # dependency injection:
         self.model = model
         self.view = view
 
         # set up connections:
-        self.view.on_add_label(self.handle_add_label)
-        self.view.on_remove_label(self.handle_remove_label)
+        self.view.connect_add_item(self.handle_add_label)
+        self.view.connect_remove_item(self.handle_remove_label)
 
         # initialize the view:
         self.update_view()
 
     def handle_add_label(self, name: str) -> None:
+        """
+        Handles the signal "add item <name>" . When the view emits this signal, this method will tell the model to update, and then the view to refresh
+        """
         self.model.add_label(name)
         self.update_view()
 
     def handle_remove_label(self, name: str) -> None:
+        """
+        Handles the signal "remove item <name>" . When the view emits this signal, this method will tell the model to update, and then the view to refresh
+        """
         self.model.remove_label(name)
         self.update_view()
 

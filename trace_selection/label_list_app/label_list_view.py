@@ -4,21 +4,24 @@ View: All the user-facing parts go here. View is responsible for displaying the 
 
 from typing import Callable
 
-from label_list_app_layout import Ui_LabelListWidget
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
+
+from trace_selection.label_list_app.label_list_app_layout import Ui_LabelListWidget
 
 
 class PyQtView(QWidget, Ui_LabelListWidget):
     """All PyQt specific aspects"""
+
+    # PyQt's way of pub/sub messages from your view to the controller and back. Built-in system to connect emitted signal to a function (below)
+    add_label_signal = pyqtSignal(str)
+    remove_label_signal = pyqtSignal(str)
 
     def __init__(self, title: str | None = None) -> None:
         super().__init__()
         self._title = title
         self.build_ui()
 
-        # These will be set by controller
-        self._add_handler = None
-        self._remove_handler = None
         self.add_button.clicked.connect(self._send_add_signal)
         self.remove_button.clicked.connect(self._send_remove_signal)
 
@@ -33,22 +36,20 @@ class PyQtView(QWidget, Ui_LabelListWidget):
         self.list_box.clear()
         self.list_box.addItems(labels)
 
-    def on_add_label(self, handler: Callable[[str], None]) -> None:
-        """Connect the controller's function to the button or whatever input component"""
-        self._add_handler = handler
+    def connect_add_item(self, callback: Callable[[str], None]) -> None:
+        """Connect the emitted signal  from this View to the be inserted as input for the function of the controller"""
+        self.add_label_signal.connect(callback)
 
-    def on_remove_label(self, handler: Callable[[str], None]) -> None:
+    def connect_remove_item(self, callback: Callable[[str], None]) -> None:
         """Connect the controller's function to the button or whatever input component"""
-        self._remove_handler = handler
+        self.remove_label_signal.connect(callback)
 
     def _send_add_signal(self) -> None:
-        if self._add_handler:
-            user_entry = self.input_label.text()
-            self._add_handler(user_entry)
-            self.input_label.clear()
+        user_entry = self.input_label.text()
+        self.add_label_signal.emit(user_entry)
+        self.input_label.clear()
 
     def _send_remove_signal(self) -> None:
-        if self._remove_handler:
-            user_selection = self.list_box.currentItem()
-            if user_selection:
-                self._remove_handler(user_selection.text())
+        user_selection = self.list_box.currentItem()
+        if user_selection:
+            self.remove_label_signal.emit(user_selection.text())
