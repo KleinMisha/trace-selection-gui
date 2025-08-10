@@ -7,3 +7,22 @@ requires-python = ">=3.12"
 dependencies = [
     "pyqt6>=6.9.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+    "pytest-coverage>=0.0",
+    "pytest-qt>=4.5.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "trace_selection"}
+
+[tool.setuptools.packages.find]
+where = ["trace_selection"]
+
+
+[tool.pytest.ini_options]
+pythonpath = ["trace_selection"]
+testpaths = ["tests"]
+
