@@ -38,6 +38,7 @@ class LabelListController:
         # dependency injection:
         self.model = model
         self.view = view
+        print(type(view))
 
         # set up connections:
         self.view.connect_add_item(self.handle_add_label)
