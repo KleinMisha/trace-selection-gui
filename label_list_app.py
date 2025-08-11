@@ -5,10 +5,11 @@ Standalone app to keep track of a list of items.
 
 import sys
 
-from label_list_controller import LabelListController
-from label_list_model import LabelList
-from label_list_view import PyQtView
 from PyQt6.QtWidgets import QApplication
+
+from trace_selection.label_list_app.label_list_controller import LabelListController
+from trace_selection.label_list_app.label_list_model import LabelList
+from trace_selection.label_list_app.label_list_view import PyQtView
 
 
 def main() -> None:
