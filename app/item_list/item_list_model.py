@@ -6,14 +6,14 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class LabelList:
+class ItemList:
     labels: list[str] = field(default_factory=list)
 
-    def add_label(self, name) -> None:
+    def add_item(self, name) -> None:
         self.labels.append(name)
 
-    def remove_label(self, name) -> None:
+    def remove_item(self, name) -> None:
         self.labels.remove(name)
 
-    def get_labels(self) -> list[str]:
+    def get_items(self) -> list[str]:
         return self.labels

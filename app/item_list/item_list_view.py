@@ -7,15 +7,15 @@ from typing import Callable
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
-from trace_selection.label_list_app.label_list_app_layout import Ui_LabelListWidget
+from app.item_list.item_list_app_layout import Ui_ItemListWidget
 
 
-class PyQtView(QWidget, Ui_LabelListWidget):
+class PyQtView(QWidget, Ui_ItemListWidget):
     """All PyQt specific aspects"""
 
     # PyQt's way of pub/sub messages from your view to the controller and back. Built-in system to connect emitted signal to a function (below)
-    add_label_signal = pyqtSignal(str)
-    remove_label_signal = pyqtSignal(str)
+    add_item_signal = pyqtSignal(str)
+    remove_item_signal = pyqtSignal(str)
 
     def __init__(self, title: str | None = None) -> None:
         super().__init__()
@@ -38,18 +38,18 @@ class PyQtView(QWidget, Ui_LabelListWidget):
 
     def connect_add_item(self, callback: Callable[[str], None]) -> None:
         """Connect the emitted signal  from this View to the be inserted as input for the function of the controller"""
-        self.add_label_signal.connect(callback)
+        self.add_item_signal.connect(callback)
 
     def connect_remove_item(self, callback: Callable[[str], None]) -> None:
         """Connect the controller's function to the button or whatever input component"""
-        self.remove_label_signal.connect(callback)
+        self.remove_item_signal.connect(callback)
 
     def _send_add_signal(self) -> None:
         user_entry = self.input_label.text()
-        self.add_label_signal.emit(user_entry)
+        self.add_item_signal.emit(user_entry)
         self.input_label.clear()
 
     def _send_remove_signal(self) -> None:
         user_selection = self.list_box.currentItem()
         if user_selection:
-            self.remove_label_signal.emit(user_selection.text())
+            self.remove_item_signal.emit(user_selection.text())

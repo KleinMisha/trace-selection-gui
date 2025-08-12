@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_LabelListWidget(object):
+class Ui_ItemListWidget(object):
     def setupUi(self, LabelListWidget):
         LabelListWidget.setObjectName("LabelListWidget")
         LabelListWidget.resize(1706, 1297)
@@ -24,13 +24,15 @@ class Ui_LabelListWidget(object):
         self.list_box.setObjectName("list_box")
         self.add_button = QtWidgets.QPushButton(parent=self.GroupContainer)
         self.add_button.setGeometry(QtCore.QRect(750, 940, 113, 32))
-        self.add_button.setStyleSheet("  background-color: rgb(107, 161, 255);\n"
-"  padding: 10px 20px;\n"
-"  border: none;\n"
-"  border-radius: 8px;\n"
-"  cursor: pointer;\n"
-"  font-size: 16px;\n"
-"")
+        self.add_button.setStyleSheet(
+            "  background-color: rgb(107, 161, 255);\n"
+            "  padding: 10px 20px;\n"
+            "  border: none;\n"
+            "  border-radius: 8px;\n"
+            "  cursor: pointer;\n"
+            "  font-size: 16px;\n"
+            ""
+        )
         self.add_button.setObjectName("add_button")
         self.input_label = QtWidgets.QLineEdit(parent=self.GroupContainer)
         self.input_label.setGeometry(QtCore.QRect(70, 930, 671, 41))
@@ -40,13 +42,15 @@ class Ui_LabelListWidget(object):
         self.input_label.setObjectName("input_label")
         self.remove_button = QtWidgets.QPushButton(parent=self.GroupContainer)
         self.remove_button.setGeometry(QtCore.QRect(880, 940, 113, 32))
-        self.remove_button.setStyleSheet("  background-color: rgb(253, 92, 59);\n"
-"  padding: 10px 20px;\n"
-"  border: none;\n"
-"  border-radius: 8px;\n"
-"  cursor: pointer;\n"
-"  font-size: 16px;\n"
-"")
+        self.remove_button.setStyleSheet(
+            "  background-color: rgb(253, 92, 59);\n"
+            "  padding: 10px 20px;\n"
+            "  border: none;\n"
+            "  border-radius: 8px;\n"
+            "  cursor: pointer;\n"
+            "  font-size: 16px;\n"
+            ""
+        )
         self.remove_button.setObjectName("remove_button")
 
         self.retranslateUi(LabelListWidget)
@@ -57,5 +61,7 @@ class Ui_LabelListWidget(object):
         LabelListWidget.setWindowTitle(_translate("LabelListWidget", "Form"))
         self.GroupContainer.setTitle(_translate("LabelListWidget", "GroupBox"))
         self.add_button.setText(_translate("LabelListWidget", "+"))
-        self.input_label.setPlaceholderText(_translate("LabelListWidget", "Enter label name "))
+        self.input_label.setPlaceholderText(
+            _translate("LabelListWidget", "Enter label name ")
+        )
         self.remove_button.setText(_translate("LabelListWidget", "-"))

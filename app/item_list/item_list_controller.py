@@ -23,9 +23,9 @@ class View(Protocol):
 class Model(Protocol):
     """The Model stores the actual data, and can perform actual operations on them. The Controller can instruct the model to perform these operations."""
 
-    def add_label(self, name: str) -> None: ...
-    def remove_label(self, name: str) -> None: ...
-    def get_labels(self) -> list[str]: ...
+    def add_item(self, name: str) -> None: ...
+    def remove_item(self, name: str) -> None: ...
+    def get_items(self) -> list[str]: ...
 
 
 class LabelListController:
@@ -51,16 +51,16 @@ class LabelListController:
         """
         Handles the signal "add item <name>" . When the view emits this signal, this method will tell the model to update, and then the view to refresh
         """
-        self.model.add_label(name)
+        self.model.add_item(name)
         self.update_view()
 
     def handle_remove_label(self, name: str) -> None:
         """
         Handles the signal "remove item <name>" . When the view emits this signal, this method will tell the model to update, and then the view to refresh
         """
-        self.model.remove_label(name)
+        self.model.remove_item(name)
         self.update_view()
 
     def update_view(self) -> None:
-        current_labels = self.model.get_labels()
+        current_labels = self.model.get_items()
         self.view.display_list(current_labels)
