@@ -28,7 +28,7 @@ class Model(Protocol):
     def get_items(self) -> list[str]: ...
 
 
-class LabelListController:
+class ItemListController:
     """
     The controller handles signals received from the View and implements all the GUI logic.
     The Controller actually processes the incoming signal into an action performed on the model and then tells the view to see this change affect it on screen.
