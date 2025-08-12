@@ -5,7 +5,7 @@ NOTE: Simulates user clicks with pyQt specific functionalities. So that part is 
 
 from pytestqt.qtbot import QtBot
 
-from trace_selection.label_list_app.label_list_view import PyQtView
+from app.item_list.item_list_view import PyQtView
 
 
 def test_callback_add_button_click(qtbot: QtBot) -> None:

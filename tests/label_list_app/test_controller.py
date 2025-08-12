@@ -6,7 +6,7 @@ NOTE: Currently, these tests are quite trivial for the simple widget. Doing this
 
 from typing import Callable
 
-from trace_selection.label_list_app.label_list_controller import LabelListController
+from app.item_list.item_list_controller import ItemListController
 
 
 class MockView:
@@ -36,13 +36,13 @@ class MockModel:
     def __init__(self) -> None:
         self.received_signals = []
 
-    def add_label(self, name: str) -> None:
+    def add_item(self, name: str) -> None:
         self.received_signals.append(f"Add '{name}' to list of labels")
 
-    def remove_label(self, name: str) -> None:
+    def remove_item(self, name: str) -> None:
         self.received_signals.append(f"Remove '{name}' from list of labels")
 
-    def get_labels(self) -> list[str]:
+    def get_items(self) -> list[str]:
         return self.received_signals
 
 
@@ -50,7 +50,7 @@ def test_handle_add_item() -> None:
     """The View detects the add button has been clicked! Does the controller correctly update the Model and the View?"""
     view = MockView()
     model = MockModel()
-    controller = LabelListController(model, view)
+    controller = ItemListController(model, view)
 
     controller.handle_add_label("good")
     assert "Add 'good' to list of labels" in model.received_signals
@@ -61,7 +61,7 @@ def test_handle_remove_item() -> None:
     """The View detects the remove button has been clicked! Does the controller correctly update the Model and the View?"""
     view = MockView()
     model = MockModel()
-    controller = LabelListController(model, view)
+    controller = ItemListController(model, view)
 
     controller.handle_remove_label("bad")
     assert "Remove 'bad' from list of labels" in model.received_signals
@@ -72,7 +72,7 @@ def test_handle_chain_of_operations() -> None:
     """add two labels, remove the second, then replace it with a third label"""
     view = MockView()
     model = MockModel()
-    controller = LabelListController(model, view)
+    controller = ItemListController(model, view)
 
     controller.handle_add_label("1")
     controller.handle_add_label("2")
@@ -95,7 +95,7 @@ def test_controller_sets_up_view_handlers():
     view = MockView()
     print(f"view.connect_add_item: {view.connect_add_item}")
     model = MockModel()
-    _ = LabelListController(model, view)
+    _ = ItemListController(model, view)
 
     expected_signals = [
         "Connect handle_add_label as 'add label' callback",
