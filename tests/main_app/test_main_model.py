@@ -2,7 +2,7 @@
 Test for application-wide variables / data / states / etc. stored and/or modified by the mainModel
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pytest
@@ -13,15 +13,30 @@ from app.main_app.main_model import MainModel
 NUMBER_OF_TRACES: int = 100
 
 
+# @dataclass
+# class MockExperiment:
+#     """Just the part that is important here. Yes, we will use time_trace_tools, but this protocol specifies what the model strictly needs."""
+
+#     traces: list[NDArray[np.floating]]
+
+#     def get_labels(self) -> None: ...
+#     def get_section_labels(self) -> None: ...
+#     def fetch_trace(self, id: str) -> NDArray[np.floating]: ...
+#     def __len__(self) -> int:
+#         return len(self.traces)
+
+
 @dataclass
-class MockExperiment(NDArray[np.floating]):
+class MockExperiment:
     """Just the part that is important here. Yes, we will use time_trace_tools, but this protocol specifies what the model strictly needs."""
 
-    traces: list[NDArray[np.floating]]
+    traces: list[NDArray[np.floating]] = field(default_factory=list)
 
     def get_labels(self) -> None: ...
     def get_section_labels(self) -> None: ...
     def fetch_trace(self, id: str) -> NDArray[np.floating]: ...
+    def __len__(self) -> int:
+        return len(self.traces)
 
 
 @pytest.fixture
@@ -64,10 +79,11 @@ def test_move_to_previous_from_first() -> None:
     [(n, n / (NUMBER_OF_TRACES - 1) * 100.0) for n in range(NUMBER_OF_TRACES)],
 )
 def test_calculating_percentage_progressed(
-    index: int, expected_percentage: float
+    experiment: MockExperiment, index: int, expected_percentage: float
 ) -> None:
     """Even though this is a very simple calculation, writing this test ensures this will be implemented in the model"""
     model = MainModel(current_index=index)
+    model._set_experiment(experiment)
     assert model.progress_percentage == expected_percentage
 
 

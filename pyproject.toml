@@ -21,13 +21,13 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "trace_selection"}
+package-dir = {"" = "app"}
 
 [tool.setuptools.packages.find]
-where = ["trace_selection"]
+where = ["app"]
 
 
 [tool.pytest.ini_options]
-pythonpath = ["trace_selection"]
+pythonpath = ["app"]
 testpaths = ["tests"]
 
