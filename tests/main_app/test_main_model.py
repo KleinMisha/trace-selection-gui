@@ -1,0 +1,102 @@
+"""
+Test for application-wide variables / data / states / etc. stored and/or modified by the mainModel
+"""
+
+from dataclasses import dataclass
+
+import numpy as np
+import pytest
+from numpy.typing import NDArray
+
+from app.main_app.main_model import MainModel
+
+NUMBER_OF_TRACES: int = 100
+
+
+@dataclass
+class MockExperiment(NDArray[np.floating]):
+    """Just the part that is important here. Yes, we will use time_trace_tools, but this protocol specifies what the model strictly needs."""
+
+    traces: list[NDArray[np.floating]]
+
+    def get_labels(self) -> None: ...
+    def get_section_labels(self) -> None: ...
+    def fetch_trace(self, id: str) -> NDArray[np.floating]: ...
+
+
+@pytest.fixture
+def experiment() -> MockExperiment:
+    mock_traces = [np.array([n] * 100) for n in range(NUMBER_OF_TRACES)]
+    return MockExperiment(mock_traces)
+
+
+def test_move_to_next() -> None:
+    """easy case: navigate to the next trace"""
+
+    model = MainModel(current_index=0)
+    model.move_to_next()
+    assert model.current_index == 1
+
+
+def test_move_to_next_start_from_last() -> None:
+    """the model should handle correctly to not attempt moving past the final index"""
+    model = MainModel(current_index=NUMBER_OF_TRACES - 1)
+    model.move_to_next()
+    assert model.current_index == NUMBER_OF_TRACES - 1
+
+
+def test_move_to_previous() -> None:
+    """easy case: navigate to the previous trace"""
+    model = MainModel(current_index=NUMBER_OF_TRACES - 1)
+    model.move_to_previous()
+    assert model.current_index == NUMBER_OF_TRACES - 2
+
+
+def test_move_to_previous_from_first() -> None:
+    """the model should handle correctly to not attempt moving past the first index"""
+    model = MainModel(current_index=0)
+    model.move_to_previous()
+    assert model.current_index == 0
+
+
+@pytest.mark.parametrize(
+    "index,expected_percentage",
+    [(n, n / (NUMBER_OF_TRACES - 1) * 100.0) for n in range(NUMBER_OF_TRACES)],
+)
+def test_calculating_percentage_progressed(
+    index: int, expected_percentage: float
+) -> None:
+    """Even though this is a very simple calculation, writing this test ensures this will be implemented in the model"""
+    model = MainModel(current_index=index)
+    assert model.progress_percentage == expected_percentage
+
+
+@pytest.mark.parametrize(
+    "target",
+    [(n,) for n in range(NUMBER_OF_TRACES)],
+)
+def test_jump_to_index(target: int) -> None:
+    """Manually jump to selected index"""
+    model = MainModel()
+    model.jump_to_index(target)
+    assert model.current_index == target
+
+
+def test_jump_to_index_before_first() -> None:
+    """ensure the model handles this correctly"""
+    model = MainModel()
+    model.jump_to_index(target=-1)
+    assert model.current_index == 0
+
+
+def test_jump_to_index_beyond_last() -> None:
+    """ensure the model handles this correctly"""
+    model = MainModel()
+    model.jump_to_index(target=NUMBER_OF_TRACES)
+    assert model.current_index == NUMBER_OF_TRACES - 1
+
+
+def test_load_data_valid_file() -> None: ...
+def test_load_data_invalid_file() -> None: ...
+def test_save_valid_file() -> None: ...
+def test_save_invalid_file() -> None: ...
