@@ -47,6 +47,12 @@ class Experiment(Protocol):
     def __len__(self) -> int: ...
 
 
+class MissingExperimentError(Exception):
+    """To indicate you cannot perform certain operations before having loaded the experiment"""
+
+    pass
+
+
 @dataclass
 class MainModel:
     """
@@ -59,10 +65,23 @@ class MainModel:
     path_to_experiment_data: Path = Path("")
     path_to_labels: Path = Path("")
     path_to_section_labels: Path = Path("")
+    _experiment: Optional[Experiment] = None
 
     @property
     def _number_of_traces(self) -> int:
-        return len(self._experiment) if self._experiment is not None else 0
+        if self._experiment is not None:
+            return len(self._experiment)
+        return 0
+
+    @property
+    def progress_percentage(self) -> float:
+        """
+        Determine how far the current index is w.r.t the length to the data set.
+        default to 0%, such that things will also work before having loaded the data.
+        """
+        if self._experiment is not None:
+            return self.current_index / (self._number_of_traces - 1) * 100.0
+        return 0.0
 
     def move_to_next(self) -> None:
         if self.current_index < (self._number_of_traces - 1):
@@ -80,16 +99,6 @@ class MainModel:
             next_index = self._number_of_traces - 1
 
         self.current_index = next_index
-
-    @property
-    def progress_percentage(self) -> float:
-        """
-        Determine how far the current index is w.r.t the length to the data set.
-        default to 0%, such that things will also work before having loaded the data.
-        """
-        if hasattr(self, "experiment"):
-            return self.current_index / (self._number_of_traces - 1) * 100.0
-        return 0.0
 
     def set_file_path_to_experiment_data(self, path: Path | str) -> None:
         self.path_to_experiment_data = Path(path)
@@ -119,10 +128,18 @@ class MainModel:
         self._experiment = experiment
 
     def load_labels(self) -> None:
+        if self._experiment is None:
+            raise MissingExperimentError(
+                "Cannot set labels before loading the experiment data"
+            )
         labels_from_file = read_json(self.path_to_labels)
         self._experiment.set_labels(labels_from_file)
 
     def load_section_labels(self) -> None:
+        if self._experiment is None:
+            raise MissingExperimentError(
+                "Cannot set section labels before loading the experiment data"
+            )
         section_labels_from_file = read_json(self.path_to_section_labels)
         self._experiment.set_section_labels(section_labels_from_file)
 
@@ -140,4 +157,8 @@ class MainModel:
         ! Given the specific loader function --> you know the specific Experiment type used, and therefor also the specific Trace type used
         ? Adjust return type hint?
         """
+        if self._experiment is None:
+            raise MissingExperimentError(
+                "Cannot grab a trace without the experiment being loaded"
+            )
         return self._experiment.traces[self.current_index]
