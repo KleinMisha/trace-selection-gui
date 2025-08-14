@@ -13,35 +13,33 @@ from app.main_app.main_model import MainModel
 NUMBER_OF_TRACES: int = 100
 
 
-# @dataclass
-# class MockExperiment:
-#     """Just the part that is important here. Yes, we will use time_trace_tools, but this protocol specifies what the model strictly needs."""
+@dataclass
+class MockTrace:
+    """Just the part that is strictly needed for MainModel to work. This type hint makes that things do not really have to change in case of data other than magnetic tweezers data"""
 
-#     traces: list[NDArray[np.floating]]
-
-#     def get_labels(self) -> None: ...
-#     def get_section_labels(self) -> None: ...
-#     def fetch_trace(self, id: str) -> NDArray[np.floating]: ...
-#     def __len__(self) -> int:
-#         return len(self.traces)
+    t: NDArray[np.floating]
+    labels: list[str] = field(default_factory=list)
+    section_labels: dict[tuple[int, int], list[str]] = field(default_factory=dict)
 
 
 @dataclass
 class MockExperiment:
     """Just the part that is important here. Yes, we will use time_trace_tools, but this protocol specifies what the model strictly needs."""
 
-    traces: list[NDArray[np.floating]] = field(default_factory=list)
+    traces: list[MockTrace]
 
-    def get_labels(self) -> None: ...
-    def get_section_labels(self) -> None: ...
-    def fetch_trace(self, id: str) -> NDArray[np.floating]: ...
-    def __len__(self) -> int:
-        return len(self.traces)
+    def get_labels(self) -> dict[str, list[str]]: ...
+    def set_labels(self, labels: dict[str, list[str]]) -> None: ...
+    def get_section_labels(self) -> dict[str, dict[tuple[int, int], list[str]]]: ...
+    def set_section_labels(
+        self, section_labels: dict[str, dict[tuple[int, int], list[str]]]
+    ) -> None: ...
+    def __len__(self) -> int: ...
 
 
 @pytest.fixture
 def experiment() -> MockExperiment:
-    mock_traces = [np.array([n] * 100) for n in range(NUMBER_OF_TRACES)]
+    mock_traces = [MockTrace(np.array([n] * 100)) for n in range(NUMBER_OF_TRACES)]
     return MockExperiment(mock_traces)
 
 
@@ -117,9 +115,3 @@ def test_jump_to_index_beyond_last(experiment: MockExperiment) -> None:
     model._set_experiment(experiment)  # type: ignore
     model.jump_to_index(target=NUMBER_OF_TRACES)
     assert model.current_index == NUMBER_OF_TRACES - 1
-
-
-def test_load_data_valid_file() -> None: ...
-def test_load_data_invalid_file() -> None: ...
-def test_save_valid_file() -> None: ...
-def test_save_invalid_file() -> None: ...
