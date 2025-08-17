@@ -2,11 +2,13 @@
 View: User-facing part knows of a plot that can be clicked in and some adjustable values for the plot ranges
 """
 
-from typing import Callable, Sequence, TypeAlias, Union
+from typing import Callable, Optional, Sequence, TypeAlias, Union
 
+import matplotlib.pylab as plt
 import numpy as np
 from matplotlib.backend_bases import MouseButton, MouseEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from numpy.typing import NDArray
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
@@ -25,7 +27,7 @@ Color: TypeAlias = Union[
 
 class InterActivePlotView(QWidget, Ui_InteractivePlot):
     left_mouse_button_signal = pyqtSignal(float, float)
-    right_mouse_button_signal = pyqtSignal(float, float)
+    right_mouse_button_signal = pyqtSignal()
     adjusted_z_min_signal = pyqtSignal(float)
     adjusted_z_max_signal = pyqtSignal(float)
     adjusted_t_min_signal = pyqtSignal(float)
@@ -34,18 +36,26 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     def __init__(self) -> None:
         super().__init__()
         self.build_ui()
-        pass
+
+        # properly connect the Matplotlib Figure into the placeholder (QVBoxLayout)
+        self.fig = Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.ax = self.fig.add_subplot(111)
 
     def build_ui(self) -> None:
         """use the (compiled) UI file to build things, such that this code knows about the variable names in VSCode"""
+        self.setupUi(self)
 
     # logic to change the view
     def update_t_vs_z_plot(
         self, t: NDArray[np.floating], z: NDArray[np.floating]
     ) -> None: ...
 
-    def show_line_in_plot(self, time_point: float, color: Color) -> None: ...
-    def clear_lines_from_plot(self) -> None: ...
+    def show_line_in_plot(
+        self, time_point: float, color: Optional[Color] = None
+    ) -> None: ...
+    def clear_last_line_from_plot(self) -> None: ...
+    def clear_all_lines_from_plot(self) -> None: ...
     def clear_figure(self) -> None: ...
 
     def update_z_range(self, min: float, max: float) -> None: ...
@@ -55,9 +65,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     def connect_left_mouse_click(
         self, callback: Callable[[float, float], None]
     ) -> None: ...
-    def connect_right_mouse_click(
-        self, callback: Callable[[float, float], None]
-    ) -> None: ...
+    def connect_right_mouse_click(self, callback: Callable[[], None]) -> None: ...
     def connect_adjusted_z_min(self, callback: Callable[[float], None]) -> None: ...
     def connect_adjusted_z_max(self, callback: Callable[[float], None]) -> None: ...
     def connect_adjusted_t_min(self, callback: Callable[[float], None]) -> None: ...
