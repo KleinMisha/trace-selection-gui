@@ -3,9 +3,12 @@ Test listening to input and emitting signals accordingly.
 NOTE: Simulates user clicks with pyQt specific functionalities. So that part is not framework agnostic.
 """
 
+import matplotlib.pylab as plt
 import numpy as np
 import pytest
+from matplotlib.backend_bases import MouseButton, MouseEvent
 from PyQt6.QtCore import QPoint, Qt
+from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
 from app.interactive_plot.plot_view import InterActivePlotView
@@ -13,46 +16,45 @@ from app.interactive_plot.plot_view import InterActivePlotView
 
 # Test sending the correct signals:
 @pytest.mark.parametrize(
-    "x_coordinate, y_coordinate",
-    ([(n * 0.1, n * 0.1) for n in range(10)]),
+    "fraction",
+    ([n * 0.1 for n in range(1, 10)]),
 )
-def test_left_mouse_click_in_plot(
-    x_coordinate: float, y_coordinate: float, qt_bot: QtBot
-) -> None:
+def test_left_mouse_click_in_plot(qtbot: QtBot, fraction: float) -> None:
     """
     mimic clicking at a specified location within the figure and check that the View sends the signal that a left mouse click button is pressed at the specified location
     """
     received_signals = []
 
-    def mock_click_handler(signal_1: float, signal_2: float) -> None:
+    def mock_click_handler(num_1: float, num_2: float) -> None:
         """For the click events, the signal emitted will be a pair of floating point numbers representing the location of the click"""
-        received_signals.append((signal_1, signal_2))
+        received_signals.append(num_1)
+        received_signals.append(num_2)
 
     view = InterActivePlotView()
     view.connect_left_mouse_click(mock_click_handler)
+    view.show()
+    qtbot.waitExposed(view)
 
     # click location: convert the desired click coordinates into the pixel coordinates that the qt_bot understands
-    x_mpl, y_mpl = view.ax.transData.transform(
-        (x_coordinate, y_coordinate)
-    )  # coordinates according to Matplotlib
 
-    # flip the y-location to adhere to the convention used by qt on where the origin is placed (top left corner vs bottom left corner)
+    # coordinates according to Matplotlib:
+    x_pixel, y_pixel = view.ax.transData.transform((fraction, fraction))
+
+    # Qt and Matplotlib use different origins (bottom left corner vs top left corner)
     _, canvas_height = view.canvas.get_width_height()
-    x_qt = int(x_mpl)
-    y_qt = int(canvas_height - y_mpl)
-    click_location = QPoint(x_qt, y_qt)
+    qt_pixel = QPoint(int(x_pixel), int(canvas_height - y_pixel))
 
-    # perform the click and check the correct signals have been emitted by the view
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=click_location)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=qt_pixel)
 
     # Assert that the signal emitted is the expected location
+    expected_x, expected_y = view.ax.transData.inverted().transform([x_pixel, y_pixel])
     assert isinstance(received_signals[0], float)
     assert isinstance(received_signals[1], float)
-    assert received_signals[0] == x_coordinate
-    assert received_signals[1] == y_coordinate
+    assert pytest.approx(received_signals[0], rel=1e-2) == expected_x
+    assert pytest.approx(received_signals[1], rel=1e-2) == expected_y
 
 
-def test_right_mouse_click_in_plot(qt_bot: QtBot) -> None:
+def test_right_mouse_click_in_plot(qtbot: QtBot) -> None:
     """
     A right-mouse click will be used for undoing an action. Hence, it's location does not actually matter
     """
@@ -63,37 +65,48 @@ def test_right_mouse_click_in_plot(qt_bot: QtBot) -> None:
 
     view = InterActivePlotView()
     view.connect_right_mouse_click(mock_handler)
-    canvas_width, canvas_height = view.canvas.get_width_height()
-    center_of_canvas = (canvas_width // 2, canvas_height // 2)
+    view.show()
+    qtbot.waitExposed(view)
 
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=center_of_canvas)
+    canvas_width, canvas_height = view.canvas.get_width_height()
+    center_of_canvas = QPoint(canvas_width // 2, canvas_height // 2)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=center_of_canvas)
+
     assert received_signals[0] == "right click"
 
 
-def test_left_click_outside_of_the_plot(qt_bot: QtBot) -> None:
+def test_left_click_outside_of_the_plot(qtbot: QtBot) -> None:
     """Make sure no signal gets emitted when the user clicks anywhere outside of the figure itself"""
     received_signals = []
 
     def mock_click_handler(signal_1: float, signal_2: float) -> None:
-        received_signals.append((signal_1, signal_2))
+        received_signals.append(signal_1)
+        received_signals.append(signal_2)
 
     view = InterActivePlotView()
     view.connect_left_mouse_click(mock_click_handler)
+    view.show()
+    qtbot.waitExposed(view)
+
     canvas_width, canvas_height = view.canvas.get_width_height()
-    outside_canvas_1 = (
+
+    # click somewhere beyond the width/height of the canvas
+    outside_canvas_1 = QPoint(
         canvas_width - 10,
         canvas_height - 10,
-    )  # click somewhere beyond the width/height of the canvas
-    outside_canvas_2 = (
+    )
+    # click somewhere beyond the width/height of the canvas
+    outside_canvas_2 = QPoint(
         canvas_width + 10,
         canvas_height + 10,
-    )  # click somewhere beyond the width/height of the canvas
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_1)
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_2)
+    )
+
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_1)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_2)
     assert len(received_signals) == 0
 
 
-def test_right_click_outside_of_the_plot(qt_bot: QtBot) -> None:
+def test_right_click_outside_of_the_plot(qtbot: QtBot) -> None:
     """Make sure no signal gets emitted when the user clicks anywhere outside of the figure itself"""
     received_signals = []
 
@@ -102,21 +115,28 @@ def test_right_click_outside_of_the_plot(qt_bot: QtBot) -> None:
 
     view = InterActivePlotView()
     view.connect_right_mouse_click(mock_handler)
+    view.show()
+    qtbot.waitExposed(view)
+
     canvas_width, canvas_height = view.canvas.get_width_height()
-    outside_canvas_1 = (
+
+    # click somewhere beyond the width/height of the canvas
+    outside_canvas_1 = QPoint(
         canvas_width - 10,
         canvas_height - 10,
-    )  # click somewhere beyond the width/height of the canvas
-    outside_canvas_2 = (
+    )
+    # click somewhere beyond the width/height of the canvas
+    outside_canvas_2 = QPoint(
         canvas_width + 10,
         canvas_height + 10,
-    )  # click somewhere beyond the width/height of the canvas
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=outside_canvas_1)
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=outside_canvas_2)
+    )
+
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_1)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=outside_canvas_2)
     assert len(received_signals) == 0
 
 
-def test_mouse_clicks_do_not_mix(qt_bot: QtBot) -> None:
+def test_mouse_clicks_do_not_mix(qtbot: QtBot) -> None:
     """Make sure the handlers are not reversed somehow. Maybe trivial"""
     received_signals = []
 
@@ -130,15 +150,21 @@ def test_mouse_clicks_do_not_mix(qt_bot: QtBot) -> None:
     view = InterActivePlotView()
     view.connect_left_mouse_click(mock_left_handler)
     view.connect_right_mouse_click(mock_right_handler)
+    view.show()
+    qtbot.waitExposed(view)
     canvas_width, canvas_height = view.canvas.get_width_height()
-    center_of_canvas = (canvas_width // 2, canvas_height // 2)
+    center_of_canvas = QPoint(canvas_width // 2, canvas_height // 2)
 
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=center_of_canvas)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.LeftButton, pos=center_of_canvas)
+    expected_x, expected_y = view.ax.transData.inverted().transform(
+        [canvas_width // 2, canvas_height // 2]
+    )
+
     assert len(received_signals) == 2
-    assert received_signals[0] == center_of_canvas[0]
-    assert received_signals[1] == center_of_canvas[1]
+    assert pytest.approx(received_signals[0], rel=1e-2) == expected_x
+    assert pytest.approx(received_signals[1], rel=1e-2) == expected_y
 
-    qt_bot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=center_of_canvas)
+    qtbot.mouseClick(view.canvas, Qt.MouseButton.RightButton, pos=center_of_canvas)
     assert len(received_signals) == 3
     assert received_signals[-1] == "right click"
 
@@ -146,16 +172,22 @@ def test_mouse_clicks_do_not_mix(qt_bot: QtBot) -> None:
 @pytest.mark.parametrize(
     "entered_value", [n for n in range(10)] + [float(n) for n in range(10)]
 )
-def test_adjust_z_min(entered_value: int | float) -> None:
-    """test entering a valid number"""
+def test_adjust_z_min(qtbot: QtBot, entered_value: int | float) -> None:
+    """
+    test entering a valid number.
+    Adjust the text directly.
+    Use the bot to hit the ENTER button, such that the editingFinished signal should get triggered.
+    """
     received_signals = []
 
-    def mock_handler(value: float) -> None:
-        received_signals.append(value)
+    def mock_handler(value: str) -> None:
+        received_signals.append(float(value))
 
     view = InterActivePlotView()
     view.connect_adjusted_z_min(mock_handler)
     view.zPosMinEdit.setText(str(entered_value))
+    qtbot.keyClick(view.zPosMinEdit, Qt.Key.Key_Return)
+
     assert isinstance(received_signals[0], float)
     assert received_signals[0] == entered_value
 
@@ -163,16 +195,18 @@ def test_adjust_z_min(entered_value: int | float) -> None:
 @pytest.mark.parametrize(
     "entered_value", [n for n in range(10)] + [float(n) for n in range(10)]
 )
-def test_adjust_z_max(entered_value: int | float) -> None:
+def test_adjust_z_max(qtbot: QtBot, entered_value: int | float) -> None:
     """test entering a valid number"""
     received_signals = []
 
-    def mock_handler(value: float) -> None:
-        received_signals.append(value)
+    def mock_handler(value: str) -> None:
+        received_signals.append(float(value))
 
     view = InterActivePlotView()
     view.connect_adjusted_z_max(mock_handler)
-    view.zPosMinEdit.setText(str(entered_value))
+    view.zPosMaxEdit.setText(str(entered_value))
+    qtbot.keyClick(view.zPosMaxEdit, Qt.Key.Key_Return)
+
     assert isinstance(received_signals[0], float)
     assert received_signals[0] == entered_value
 
@@ -180,16 +214,18 @@ def test_adjust_z_max(entered_value: int | float) -> None:
 @pytest.mark.parametrize(
     "entered_value", [n for n in range(10)] + [float(n) for n in range(10)]
 )
-def test_adjust_t_min(entered_value: int | float) -> None:
+def test_adjust_t_min(qtbot: QtBot, entered_value: int | float) -> None:
     """test entering a valid number"""
     received_signals = []
 
-    def mock_handler(value: float) -> None:
-        received_signals.append(value)
+    def mock_handler(value: str) -> None:
+        received_signals.append(float(value))
 
     view = InterActivePlotView()
     view.connect_adjusted_t_min(mock_handler)
-    view.zPosMinEdit.setText(str(entered_value))
+    view.timeMinEdit.setText(str(entered_value))
+    qtbot.keyClick(view.timeMinEdit, Qt.Key.Key_Return)
+
     assert isinstance(received_signals[0], float)
     assert received_signals[0] == entered_value
 
@@ -197,16 +233,18 @@ def test_adjust_t_min(entered_value: int | float) -> None:
 @pytest.mark.parametrize(
     "entered_value", [n for n in range(10)] + [float(n) for n in range(10)]
 )
-def test_adjust_t_max(entered_value: int | float) -> None:
+def test_adjust_t_max(qtbot: QtBot, entered_value: int | float) -> None:
     """test entering a valid number"""
     received_signals = []
 
-    def mock_handler(value: float) -> None:
-        received_signals.append(value)
+    def mock_handler(value: str) -> None:
+        received_signals.append(float(value))
 
     view = InterActivePlotView()
     view.connect_adjusted_t_max(mock_handler)
-    view.zPosMinEdit.setText(str(entered_value))
+    view.timeMaxEdit.setText(str(entered_value))
+    qtbot.keyClick(view.timeMaxEdit, Qt.Key.Key_Return)
+
     assert isinstance(received_signals[0], float)
     assert received_signals[0] == entered_value
 
@@ -214,58 +252,118 @@ def test_adjust_t_max(entered_value: int | float) -> None:
 # Test receiving the correct signals:
 def test_update_t_vs_z_plot() -> None:
     """Confirm the matplotlib figure gets updated as expected. Trivial, but an additional safety net when refactoring code"""
+    app = QApplication.instance() or QApplication([])
 
     view = InterActivePlotView()
-    view.update_t_vs_z_plot(np.array([1.0]), np.array([1.0]))
+    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]))
+    view.update_figure()
 
-    assert len(view.ax.get_lines()) == 1
-    curve = view.ax.get_lines()[0]
+    assert len(view._all_lines) == 1
+    assert len(view._vertical_lines) == 0
+    curve = view._all_lines[0]
     assert curve.get_xdata() == np.array([1.0])
     assert curve.get_ydata() == np.array([1.0])
 
 
+@pytest.mark.parametrize("location", [23, 45, 8, 24, 6])
 def test_adding_line_to_plot(location: float) -> None:
     """Confirm the matplotlib figure gets updated as expected. Trivial, but an additional safety net when refactoring code"""
+    app = QApplication.instance() or QApplication([])
+
     view = InterActivePlotView()
     view.show_line_in_plot(time_point=location)
-    assert len(view.ax.get_lines()) == 1
-    vertical_line = view.ax.get_lines()[0]
+    view.update_figure()
+
+    assert len(view._all_lines) == 1
+    assert len(view._vertical_lines) == 1
+    vertical_line = view._vertical_lines[0]
     line_x = np.array(vertical_line.get_xdata())
     assert all(x == location for x in line_x)
 
 
 def test_removing_last_added_line_from_plot() -> None:
     """First add, then remove. If the previous test passes, this is correctly checking the removing operation"""
+    app = QApplication.instance() or QApplication([])
+
     view = InterActivePlotView()
     view.show_line_in_plot(time_point=1.0)
     view.show_line_in_plot(time_point=2.0)
-    assert len(view.ax.get_lines()) == 2
+    view.update_figure()
+
+    assert len(view._all_lines) == 2
+    assert len(view._vertical_lines) == 2
     view.clear_last_line_from_plot()
-    assert len(view.ax.get_lines()) == 1
-    vertical_line = view.ax.get_lines()[0]
+    view.update_figure()
+    assert len(view._all_lines) == 1
+    assert len(view._vertical_lines) == 1
+    vertical_line = view._vertical_lines[0]
     line_x = np.array(vertical_line.get_xdata())
-    assert all(x == 1.0 for x in line_x)
+    assert np.all(line_x == 1.0)
 
 
 def test_removing_all_lines_from_plot() -> None:
+    app = QApplication.instance() or QApplication([])
+
     view = InterActivePlotView()
+    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]))
     view.show_line_in_plot(1.0)
     view.show_line_in_plot(2.0)
-    assert len(view.ax.get_lines()) == 2
+    view.update_figure()
+
+    assert len(view._all_lines) == 3
+    assert len(view._vertical_lines) == 2
     view.clear_all_lines_from_plot()
-    assert len(view.ax.get_lines()) == 0
+    view.update_figure()
+
+    assert len(view._all_lines) == 1
+    assert len(view._vertical_lines) == 0
 
 
 def test_clear_plot() -> None:
     """should completely clear everything from the figure"""
+    app = QApplication.instance() or QApplication([])
+
     view = InterActivePlotView()
-    view.update_t_vs_z_plot(np.array([23.0]), np.array([45.0]))
+    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]))
     view.show_line_in_plot(23.0)
     view.show_line_in_plot(45.0)
     view.show_line_in_plot(8.0)
     view.show_line_in_plot(24.0)
     view.show_line_in_plot(6.0)
     view.show_line_in_plot(3.0)
-    assert len(view.ax.get_lines()) == 7
+    view.update_figure()
+
+    assert len(view._all_lines) == 7
+    assert len(view._vertical_lines) == 6
     view.clear_figure()
-    assert len(view.ax.get_lines()) == 0
+    view.update_figure()
+    assert len(view._all_lines) == 0
+
+
+def test_do_not_remove_if_no_vertical_line() -> None:
+    """
+    Make sure the plotted curve remains, regardless of the number of calls to the remove last line.
+    This will later be connected to left-mouse button. Hence, this basically checks that the user cannot do weird stuff by "right-clicking once too often"
+
+    The plotted time trace should remain no matter.
+    """
+
+    app = QApplication.instance() or QApplication([])
+    view = InterActivePlotView()
+    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]))
+    view.show_line_in_plot(8.0)
+    view.show_line_in_plot(24.0)
+    view.update_figure()
+    assert len(view._vertical_lines) == 2
+    assert len(view._all_lines) == 3
+
+    # regular: remove all the added lines, one by one
+    view.clear_last_line_from_plot()
+    view.clear_all_lines_from_plot()
+    assert len(view._vertical_lines) == 0
+    assert len(view._all_lines) == 1
+
+    # the actual test: try to remove once more, even though there is nothing to be removed
+    view.clear_last_line_from_plot()
+    assert len(view._vertical_lines) == 0
+    assert len(view._all_lines) == 1
