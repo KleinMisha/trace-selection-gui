@@ -3,10 +3,8 @@ Test listening to input and emitting signals accordingly.
 NOTE: Simulates user clicks with pyQt specific functionalities. So that part is not framework agnostic.
 """
 
-import matplotlib.pylab as plt
 import numpy as np
 import pytest
-from matplotlib.backend_bases import MouseButton, MouseEvent
 from PyQt6.QtCore import QPoint, Qt
 from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot

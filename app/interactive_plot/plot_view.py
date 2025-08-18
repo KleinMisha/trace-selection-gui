@@ -24,16 +24,17 @@ Color: TypeAlias = Union[
     np.ndarray,  # numpy array
 ]
 
+# TODO: Move this into a configuration file
 DEFAULT_COLOR = "skyblue"
 
 
 class InterActivePlotView(QWidget, Ui_InteractivePlot):
-    left_mouse_button_signal = pyqtSignal(float, float)
-    right_mouse_button_signal = pyqtSignal()
-    adjusted_z_min_signal = pyqtSignal(str)
-    adjusted_z_max_signal = pyqtSignal(str)
-    adjusted_t_min_signal = pyqtSignal(str)
-    adjusted_t_max_signal = pyqtSignal(str)
+    _left_mouse_button_signal = pyqtSignal(float, float)
+    _right_mouse_button_signal = pyqtSignal()
+    _adjusted_z_min_signal = pyqtSignal(str)
+    _adjusted_z_max_signal = pyqtSignal(str)
+    _adjusted_t_min_signal = pyqtSignal(str)
+    _adjusted_t_max_signal = pyqtSignal(str)
 
     def __init__(self) -> None:
         super().__init__()
@@ -135,22 +136,22 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     def connect_left_mouse_click(
         self, callback: Callable[[float, float], None]
     ) -> None:
-        self.left_mouse_button_signal.connect(callback)
+        self._left_mouse_button_signal.connect(callback)
 
     def connect_right_mouse_click(self, callback: Callable[[], None]) -> None:
-        self.right_mouse_button_signal.connect(callback)
+        self._right_mouse_button_signal.connect(callback)
 
     def connect_adjusted_z_min(self, callback: Callable[[str], None]) -> None:
-        self.adjusted_z_min_signal.connect(callback)
+        self._adjusted_z_min_signal.connect(callback)
 
     def connect_adjusted_z_max(self, callback: Callable[[str], None]) -> None:
-        self.adjusted_z_max_signal.connect(callback)
+        self._adjusted_z_max_signal.connect(callback)
 
     def connect_adjusted_t_min(self, callback: Callable[[str], None]) -> None:
-        self.adjusted_t_min_signal.connect(callback)
+        self._adjusted_t_min_signal.connect(callback)
 
     def connect_adjusted_t_max(self, callback: Callable[[str], None]) -> None:
-        self.adjusted_t_max_signal.connect(callback)
+        self._adjusted_t_max_signal.connect(callback)
 
     # emit pyqtSignals depending on user input
     def _send_mouse_click_signal(self, event: Event) -> None:
@@ -160,19 +161,19 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         """
         event = cast(MouseEvent, event)
         if event.button == MouseButton.LEFT:
-            self.left_mouse_button_signal.emit(event.xdata, event.ydata)
+            self._left_mouse_button_signal.emit(event.xdata, event.ydata)
 
         if event.button == MouseButton.RIGHT:
-            self.right_mouse_button_signal.emit()
+            self._right_mouse_button_signal.emit()
 
     def _send_z_min_adjusted_signal(self) -> None:
-        self.adjusted_z_min_signal.emit(self.zPosMinEdit.text())
+        self._adjusted_z_min_signal.emit(self.zPosMinEdit.text())
 
     def _send_z_max_adjusted_signal(self) -> None:
-        self.adjusted_z_max_signal.emit(self.zPosMaxEdit.text())
+        self._adjusted_z_max_signal.emit(self.zPosMaxEdit.text())
 
     def _send_t_min_adjusted_signal(self) -> None:
-        self.adjusted_t_min_signal.emit(self.timeMinEdit.text())
+        self._adjusted_t_min_signal.emit(self.timeMinEdit.text())
 
     def _send_t_max_adjusted_signal(self) -> None:
-        self.adjusted_t_max_signal.emit(self.timeMaxEdit.text())
+        self._adjusted_t_max_signal.emit(self.timeMaxEdit.text())
