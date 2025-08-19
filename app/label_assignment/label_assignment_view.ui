@@ -278,7 +278,7 @@ color:  white; </string>
         </property>
         <property name="styleSheet">
          <string notr="true">border-radius:          20px;
-background-color:   rgb(85, 255, 75);
+background-color:   white;
 border:                 2px solid black;</string>
         </property>
         <property name="text">

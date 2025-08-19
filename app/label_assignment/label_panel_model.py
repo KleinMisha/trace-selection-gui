@@ -16,17 +16,17 @@ class LabelPanelModel:
         return self.available_labels[self.current_idx]
 
     @property
-    def _current_is_assigned(self) -> bool:
+    def current_is_assigned(self) -> bool:
         return self.current_label in self.assigned_labels
 
     def assign_current_label(self) -> None:
         """Avoid duplicates: only assign when not already done before"""
-        if not self._current_is_assigned:
+        if not self.current_is_assigned:
             self.assigned_labels.append(self.current_label)
 
     def unassign_current_label(self) -> None:
         """Avoid attempting to remove something that is not there (smooth operation when eventually clicking twice)"""
-        if self._current_is_assigned:
+        if self.current_is_assigned:
             self.assigned_labels.remove(self.current_label)
 
     def move_to_next(self) -> None:

@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import QWidget
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
 
 # TODO: Move into configuration file!!
-COLOR_OFF = "none"
+COLOR_OFF = "white"
 COLOR_ON = "green"
 
 
