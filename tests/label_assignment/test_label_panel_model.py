@@ -49,6 +49,59 @@ def test_do_not_move_beyond_first(available_labels: list[str]) -> None:
     assert model.current_idx == 0
 
 
+def test_assigning_new_label(available_labels: list[str]) -> None:
+    """happy case: new label should get added to list of assigned labels"""
+    model = LabelPanelModel(available_labels=available_labels)
+    model.assign_current_label()
+    assert model.assigned_labels == [model.available_labels[0]]
+
+    model.move_to_next()
+    model.assign_current_label()
+    assert model.assigned_labels == model.available_labels[:2]
+
+
+def test_assigning_duplicate_label(available_labels: list[str]) -> None:
+    """duplicate label should not get added to the list of assigned labels"""
+    model = LabelPanelModel(available_labels=available_labels)
+    model.assign_current_label()
+    model.assign_current_label()
+    assert model.assigned_labels.count(available_labels[0]) == 1
+    assert len(model.assigned_labels) == 1
+    assert model.assigned_labels == [model.available_labels[0]]
+
+
+def test_removing_assigned_label(available_labels: list[str]) -> None:
+    """happy case: unassign a previously assigned label"""
+    model = LabelPanelModel(available_labels=available_labels)
+    model.assign_current_label()
+    model.unassign_current_label()
+    assert len(model.assigned_labels) == 0
+
+
+def test_removing_already_removed_label(available_labels: list[str]) -> None:
+    """removing something not assigned yet (or already removed) should just result in nothing happening"""
+
+    # duplicate removal
+    model = LabelPanelModel(available_labels=available_labels)
+    model.assign_current_label()
+    model.move_to_next()
+    model.assign_current_label()
+    model.unassign_current_label()
+    model.unassign_current_label()
+    assert len(model.assigned_labels) == 1
+    assert model.assigned_labels == [model.available_labels[0]]
+
+    # removal before assigning the first time
+    model = LabelPanelModel(available_labels=available_labels)
+    model.unassign_current_label()
+    assert len(model.assigned_labels) == 0
+    model.assign_current_label()
+    model.move_to_next()
+    model.unassign_current_label()
+    assert len(model.assigned_labels) == 1
+    assert model.assigned_labels == [model.available_labels[0]]
+
+
 def test_resetting_assigned_labels(available_labels: list[str]) -> None:
     """should be simple setting operation in simplest implementation. Technically not needed to test, but serves as safety valve if code gets refactored and implementation changes."""
     # the first trace only has the first label assigned
