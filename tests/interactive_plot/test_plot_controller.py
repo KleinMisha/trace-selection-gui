@@ -7,11 +7,11 @@ Test that the controller correctly handles incoming signals from a mock View, up
 ! This requires a bit of "a dance of types" as the type hints within the unittest library itself are not correct. Hence,
 ! PyLance will never be able to understand your mock has the methods of the protocol as well as those of a Mock.
 ! Hence the moving back-and-forth with casting things.
-? Is there a way to do this simplier? Technically, I could skip this, but then all autocompletions are not available (because PyLance does not understand what instance methods it should have)
+? Is there a way to do this simpler? Technically, I could skip this, but then autocompletion is not available (because PyLance does not understand what instance methods it should have)
 """
 
 from typing import cast
-from unittest.mock import Mock, create_autospec
+from unittest.mock import Mock
 
 import pytest
 
