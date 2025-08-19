@@ -101,7 +101,7 @@ class InteractivePlotController(QObject):
         self.model = model
         self.view = view
 
-        # connect callbacks (allow to receive signals)
+        # connect callbacks :: Listening to the View's signals
         self.view.connect_left_mouse_click(self.handle_left_mouse_click)
         self.view.connect_right_mouse_click(self.handle_right_mouse_click)
         self.view.connect_adjusted_z_min(self.handle_adjusted_z_min)
