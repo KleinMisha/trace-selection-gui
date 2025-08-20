@@ -75,14 +75,15 @@ class LabelPanelController:
         self.view.toggle_indicator(self._determine_light_state())
 
     # API for the MainController:
-    def reset_for_new_trace(self, labels_new_trace: list[str]):
+    def reset_for_new_trace(self, labels_new_trace: list[str]) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
         self.model.reset_assigned_labels(labels_new_trace)
         self.view.toggle_indicator(self._determine_light_state())
 
-    def update_available_labels(self, updated_list: list[str]):
+    def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be triggered from MainController: Adjust the set of available labels after using the ItemList window."""
         self.model.update_available_labels(updated_list)
+        self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
     # Used internally:
