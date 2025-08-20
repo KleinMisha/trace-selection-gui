@@ -71,10 +71,10 @@ class SectionsPanelController:
         # connect callbacks :: Listening to the View's signals
         self.view.connect_assign_label(self.handle_assign_label)
         self.view.connect_unassign_label(self.handle_unassign_label)
-        self.view.connect_next_label(self.handle_next_label)
-        self.view.connect_prev_label(self.handle_prev_label)
-        self.view.connect_next_section(self.handle_next_section)
-        self.view.connect_prev_section(self.handle_prev_section)
+        self.view.connect_next_label(self.handle_move_to_next_label)
+        self.view.connect_prev_label(self.handle_move_to_prev_label)
+        self.view.connect_next_section(self.handle_move_to_next_section)
+        self.view.connect_prev_section(self.handle_move_to_prev_section)
 
     def handle_assign_label(self) -> None:
         """Triggered when `add` button is clicked"""
@@ -86,19 +86,19 @@ class SectionsPanelController:
         self.model.unassign_current_label()
         self.view.toggle_indicator(LightState.OFF)
 
-    def handle_next_label(self) -> None:
+    def handle_move_to_next_label(self) -> None:
         """Triggered when `next label` button is clicked"""
         self.model.move_to_next_label()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
-    def handle_prev_label(self) -> None:
+    def handle_move_to_prev_label(self) -> None:
         """Triggered when `previous label` button is clicked"""
         self.model.move_to_previous_label()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
-    def handle_next_section(self) -> None:
+    def handle_move_to_next_section(self) -> None:
         """Triggered when `next section` button is clicked"""
         self.model.move_to_next_section()
 
@@ -110,7 +110,7 @@ class SectionsPanelController:
 
         self.view.toggle_indicator(self._determine_light_state())
 
-    def handle_prev_section(self) -> None:
+    def handle_move_to_prev_section(self) -> None:
         """Triggered when `previous section` button is clicked"""
         self.model.move_to_previous_section()
 
