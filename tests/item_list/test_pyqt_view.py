@@ -44,3 +44,17 @@ def test_callback_remove_button_click(qtbot: QtBot) -> None:
         view.list_box.setCurrentRow(index)
         view.remove_button.click()
         assert received_signal[index] == f"Remove {labels[index]}"
+
+
+def test_closing_window() -> None:
+    """Check you emit a signal when you close the window"""
+    received_signals = []
+
+    def mock_signal_handler() -> None:
+        """mimic the controller-side function that has to get the signal emitted by the view"""
+        received_signals.append("close")
+
+    view = PyQtView()
+    view.connect_close_window(mock_signal_handler)
+    view.close()
+    assert received_signals == ["close"]

@@ -4,102 +4,65 @@ Test that the controller correctly handles incoming signals from a mock View, an
 NOTE: Currently, these tests are quite trivial for the simple widget. Doing this as a stepping stone for the full app / to learn how this would be done for more complex situations
 """
 
-from typing import Callable
+from typing import cast
+from unittest.mock import Mock
 
-from app.item_list.item_list_controller import ItemListController
-
-
-class MockView:
-    """A Mock view that can just receive messages / instructions from the controller"""
-
-    def __init__(self) -> None:
-        self.received_signals = []
-        self.connections = []
-
-    def display_list(self, labels: list[str]) -> None:
-        self.received_signals = []
-        for label in labels:
-            self.received_signals.append(label)
-
-    def connect_add_item(self, callback: Callable[[str], None]) -> None:
-        self.connections.append(f"Connect {callback.__name__} as 'add label' callback")
-
-    def connect_remove_item(self, callback: Callable[[str], None]) -> None:
-        self.connections.append(
-            f"Connect {callback.__name__} as 'remove label' callback"
-        )
-
-
-class MockModel:
-    """A Mock model that can just receive messages / instructions from the controller"""
-
-    def __init__(self) -> None:
-        self.received_signals = []
-
-    def add_item(self, name: str) -> None:
-        self.received_signals.append(f"Add '{name}' to list of labels")
-
-    def remove_item(self, name: str) -> None:
-        self.received_signals.append(f"Remove '{name}' from list of labels")
-
-    def get_items(self) -> list[str]:
-        return self.received_signals
+from app.item_list.item_list_controller import ItemListController, Model, View
 
 
 def test_handle_add_item() -> None:
     """The View detects the add button has been clicked! Does the controller correctly update the Model and the View?"""
-    view = MockView()
-    model = MockModel()
+    view = cast(View, Mock(spec=View))
+    model = cast(Model, Mock(spec=Model))
+    cast(Mock, model.get_items).return_value = ["good"]
+
     controller = ItemListController(model, view)
 
     controller.handle_add_label("good")
-    assert "Add 'good' to list of labels" in model.received_signals
-    assert "Add 'good' to list of labels" in view.received_signals
+    cast(Mock, model.add_item).assert_called_once_with("good")
+    cast(Mock, view.display_list).assert_called_with(["good"])
 
 
 def test_handle_remove_item() -> None:
     """The View detects the remove button has been clicked! Does the controller correctly update the Model and the View?"""
-    view = MockView()
-    model = MockModel()
+    view = cast(View, Mock(spec=View))
+    model = cast(Model, Mock(spec=Model))
+    cast(Mock, model.get_items).return_value = []
+
     controller = ItemListController(model, view)
 
     controller.handle_remove_label("bad")
-    assert "Remove 'bad' from list of labels" in model.received_signals
-    assert "Remove 'bad' from list of labels" in view.received_signals
+    cast(Mock, model.remove_item).assert_called_once_with("bad")
+    cast(Mock, view.display_list).assert_called_with([])
 
 
 def test_handle_chain_of_operations() -> None:
     """add two labels, remove the second, then replace it with a third label"""
-    view = MockView()
-    model = MockModel()
+    view = cast(View, Mock(spec=View))
+    model = cast(Model, Mock(spec=Model))
+    cast(Mock, model.get_items).return_value = ["1", "2", "3"]
+
     controller = ItemListController(model, view)
 
     controller.handle_add_label("1")
     controller.handle_add_label("2")
     controller.handle_remove_label("2")
     controller.handle_add_label("3")
-
-    expected_commands = [
-        "Add '1' to list of labels",
-        "Add '2' to list of labels",
-        "Remove '2' from list of labels",
-        "Add '3' to list of labels",
-    ]
-    assert model.received_signals == expected_commands
-    assert view.received_signals == expected_commands
+    cast(Mock, view.display_list).assert_called_with(["1", "2", "3"])
 
 
-def test_controller_sets_up_view_handlers():
-    """Misha: To be honest, the AI suggested to add this unit test. If you ask me, if you pass the previous, you know the connections are established"""
-    print(f"MockView connect_add_item: {MockView.connect_add_item}")
-    view = MockView()
-    print(f"view.connect_add_item: {view.connect_add_item}")
-    model = MockModel()
-    _ = ItemListController(model, view)
+def test_closing_window_event() -> None:
+    """Test that the correct data gets emitted as a signal"""
+    received_signals = []
 
-    expected_signals = [
-        "Connect handle_add_label as 'add label' callback",
-        "Connect handle_remove_label as 'remove label' callback",
-    ]
+    def mock_handler(items: list[str]):
+        received_signals.append(items)
 
-    assert view.connections == expected_signals
+    view = cast(View, Mock(spec=View))
+    model = cast(Model, Mock(spec=Model))
+    cast(Mock, model.get_items).return_value = ["mock", "mocky", "mockerony-and-cheese"]
+
+    controller = ItemListController(model, view)
+    controller.connect_window_closed_signal(mock_handler)
+    controller._send_window_closed_signal()
+    assert received_signals[0] == ["mock", "mocky", "mockerony-and-cheese"]
