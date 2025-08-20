@@ -3,14 +3,15 @@ Model: Knows of the set of available labels, the current section and the current
 """
 
 from dataclasses import dataclass, field
+from typing import Optional
 
 
 @dataclass
 class Section:
     """Simple representation of data with labels assigned to a particular time-range"""
 
-    start_frame: int
-    end_frame: int
+    start_frame: Optional[int] = None
+    end_frame: Optional[int] = None
     assigned_labels: list[str] = field(default_factory=list)
 
     # expose some methods to make the syntax slightly more readable below (not strictly needed, could assign directly)
@@ -48,19 +49,43 @@ class SectionsPanelModel:
 
     def create_new_section(self) -> None:
         """make a new section available for values to be set"""
+        self.sections.append(Section())
 
-    def remove_last_section(self) -> None: ...
+    def remove_last_section(self) -> None:
+        """Remove section if possible. Avoid index error by doing nothing when no more section is available"""
+        if len(self.sections) > 0:
+            self.sections.pop()
+
     def set_start_section(self, value: int) -> None:
         """sets the starting frame for the current section"""
+        self.current_section.set_start_frame(value)
 
     def set_end_section(self, value: int) -> None:
         """sets the final frame for the current section"""
+        self.current_section.set_end_frame(value)
 
     def reset_sections(self, section_labels: dict[tuple[int, int], list[str]]) -> None:
         """
         Will be called by MainController when moving to the next trace.
         Parse a dictionary that maps (start_frame, end_frame) -> ["labels"] into Section objects (see definition above)
         """
+        # remove all the current sections
+        number_original_sections = len(self.sections)
+        for _ in range(number_original_sections):
+            self.remove_last_section()
+
+        # create the new sections
+        for idx, ((start_frame, end_frame), labels) in enumerate(
+            section_labels.items()
+        ):
+            self.create_new_section()
+            self.sections[idx].set_start_frame(start_frame)
+            self.sections[idx].set_end_frame(end_frame)
+            for label in labels:
+                self.sections[idx].assign_label(label)
+
+            # NOTE: To ensure that you will point to an index that is available --> move back to the first
+            self.current_section_index = 0
 
     def assign_current_label(self) -> None:
         """
