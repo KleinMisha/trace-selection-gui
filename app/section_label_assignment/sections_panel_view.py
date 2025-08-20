@@ -14,7 +14,6 @@ from app.section_label_assignment.sections_panel_view_ui import Ui_SectionsPanel
 # TODO: Move into configuration file!!
 COLOR_OFF = "white"
 COLOR_ON = "green"
-DECIMAL_DIGITS = 2
 
 
 class LightState(Enum):
@@ -71,11 +70,11 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
         )
         self.IndicatorAdded.setStyleSheet(new_styling)
 
-    def display_section_start(self, time_point: float) -> None:
-        self.StartOfSection.setText(str(round(time_point, DECIMAL_DIGITS)))
+    def display_section_start(self, frame: int) -> None:
+        self.StartOfSection.setText(str(frame))
 
-    def display_section_end(self, time_point: float) -> None:
-        self.EndOfSection.setText(str(round(time_point, DECIMAL_DIGITS)))
+    def display_section_end(self, frame: int) -> None:
+        self.EndOfSection.setText(str(frame))
 
     # Connect callbacks of controller to emitted signals
     def connect_assign_label(self, callback: Callable[[], None]) -> None:
