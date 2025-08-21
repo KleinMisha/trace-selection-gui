@@ -118,7 +118,6 @@ class InteractivePlotController(QObject):
         ? Should this be removed?
         """
         t_data_point, _ = self.model.find_nearest_data_point(x_click)
-        print("Hello")
 
         # TODO: use the main controller to pass the appropriate color
         self.view.show_line_in_plot(t_data_point)
