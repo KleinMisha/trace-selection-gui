@@ -138,7 +138,12 @@ class MainView(QMainWindow, Ui_MainWindow):
         ---
         NOTE: The MainController will deal with routing this single file selection into those of the raw data, labels file, etc.
         """
-        selected_file_path, _ = QFileDialog.getOpenFileName(self, caption=window_title)
+        selected_file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            caption=window_title,
+            directory="",
+            filter="All Files (*)",
+        )
         if selected_file_path:
             self._send_file_path_selected(Path(selected_file_path))
 
@@ -148,7 +153,12 @@ class MainView(QMainWindow, Ui_MainWindow):
         ----
         This dialog allows the user to enter a new file name
         """
-        selected_file_path, _ = QFileDialog.getSaveFileName(self, caption=window_title)
+        selected_file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            caption=window_title,
+            directory="",
+            filter="All Files (*)",
+        )
         if selected_file_path:
             self._send_file_path_selected(Path(selected_file_path))
 
