@@ -177,3 +177,15 @@ def test_calling_section_labels_update() -> None:
     cast(
         Mock, model.current_trace.add_labelled_sections_from_dictionary
     ).assert_called_once_with(nicknames)
+
+
+@pytest.mark.parametrize(
+    "trace_id, expected_index", [(f"trace_{n + 1}", n) for n in range(NUMBER_OF_TRACES)]
+)
+def test_fetching_index_by_trace_id(
+    experiment: Experiment, trace_id: str, expected_index: int
+) -> None:
+    """test method that serves as the bridge between the view, controller, and model"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    assert model.find_index_from_id(trace_id) == expected_index

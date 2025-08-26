@@ -108,6 +108,15 @@ class MainModel:
 
         self._current_trace_index = next_index
 
+    def find_index_from_id(self, trace_id: str) -> int:
+        """determine the index you want to jump to"""
+        if self._experiment is None:
+            raise MissingExperimentError(
+                "Error in `find_index_from_id`: Please load your data first (Menu --> File --> Open)."
+            )
+        target_trace = self._experiment.fetch_trace(trace_id)
+        return self._experiment.traces.index(target_trace)
+
     def set_file_path_to_experiment_data(self, path: Path | str) -> None:
         self.path_to_experiment_data = Path(path)
 
