@@ -16,7 +16,7 @@ class Trace(Protocol):
     t: Iterable[float]
     z: Iterable[float]
     labels: list[str]
-    sections: dict[tuple[int, int], list[str]]
+    section_labels: dict[tuple[int, int], list[str]]
 
 
 @runtime_checkable
@@ -42,6 +42,10 @@ class LabelPanelController(Protocol):
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Adjust the set of available labels after using the ItemList window."""
 
+    def get_assigned_labels(self) -> list[str]:
+        """Fetch the labels assigned to the current trace"""
+        ...
+
 
 @runtime_checkable
 class SectionsPanelController(Protocol):
@@ -52,3 +56,5 @@ class SectionsPanelController(Protocol):
 
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be triggered from MainController: Adjust the set of available labels after using the ItemList window."""
+
+    def get_section_labels(self) -> dict[tuple[int, int], list[str]]: ...
