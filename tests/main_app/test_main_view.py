@@ -9,13 +9,20 @@ NOTE: Because of the code encapsulating different responsibilities, there are ac
 
 import re
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from pytestqt.qtbot import QtBot
 
-from app.main_app.main_view import COLOR_OFF, COLOR_ON, LightState, MainView, MessageBox
+from app.main_app.main_view import (
+    COLOR_OFF,
+    COLOR_ON,
+    LightState,
+    MainView,
+    MessageBox,
+)
 from app.main_app.main_view import QFileDialog as ViewFileDialog
 from app.main_app.main_view import QMessageBox as ViewMessageBox
 
@@ -100,7 +107,7 @@ def test_opening_the_correct_file() -> None:
             return_value=("/mock/mocker/mockeronyNcheese/most_mockest.txt", ""),
         ),
         patch.object(
-            target=view, attribute="_send_file_path_selected"
+            target=view, attribute="_send_file_path_selected_signal"
         ) as mock_signal_caller,
     ):
         view.ask_open_file("")
@@ -118,7 +125,7 @@ def test_saving_to_the_correct_file() -> None:
             return_value=("/mock/mocker/mockeronyNcheese/most_mockest.txt", ""),
         ),
         patch.object(
-            target=view, attribute="_send_file_path_selected"
+            target=view, attribute="_send_file_path_selected_signal"
         ) as mock_signal_caller,
     ):
         view.ask_save_file("")

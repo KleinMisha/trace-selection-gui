@@ -11,9 +11,9 @@ from app.main_app.main_view_ui import Ui_MainWindow
 
 # TODO: Move this into a configuration file
 KEYBOARD_SHORTCUTS = {
-    "file_open": ("Open...", "Ctrl + O"),
-    "file_save": ("Save...", "Ctrl + S"),
-    "file_save_as": ("Save as...", "Ctrl + Shift + S"),
+    "menu_file_open": ("Open...", "Ctrl + O"),
+    "menu_file_save": ("Save...", "Ctrl + S"),
+    "menu_file_save_as": ("Save as...", "Ctrl + Shift + S"),
 }
 COLOR_ON = "coral"
 COLOR_OFF = "white"
@@ -37,6 +37,8 @@ class MainView(QMainWindow, Ui_MainWindow):
     _menu_file_open_signal = pyqtSignal()
     _menu_file_save_signal = pyqtSignal()
     _menu_file_save_as_signal = pyqtSignal()
+    _menu_file_import_labels_signal = pyqtSignal()
+    _menu_file_import_sections_signal = pyqtSignal()
     _go_to_help_docs_signal = pyqtSignal()  # TODO: Implemented later in Controller
     _ref_bead_adjusted_signal = pyqtSignal(str)  # TODO: Implement later
     _toggle_subtract_ref_bead_signal = pyqtSignal(bool)  # TODO: Implement later
@@ -55,11 +57,17 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self._send_menu_file_open_signal)
         self.actionSave.triggered.connect(self._send_menu_file_save_signal)
         self.actionSaveAs.triggered.connect(self._send_menu_file_save_as_signal)
+        self.actionImportLabels.triggered.connect(
+            self._send_menu_file_import_labels_signal
+        )
+        self.actionImportSectionLabels.triggered.connect(
+            self._send_menu_file_import_sections_signal
+        )
         self.REFBeadIDsEntry.textChanged.connect(self._send_ref_bead_adjusted_signal)
         self.refBeadRadioButton.toggled.connect(
             self._send_toggle_subtract_ref_bead_signal
         )
-        self.helpDocsButton.clicked.connect(self._send_go_to_help_docs)
+        self.helpDocsButton.clicked.connect(self._send_go_to_help_docs_signal)
 
     def build_ui(self) -> None:
         """Only build the parts specific to the mainView. Placing the components will be done in the mainController"""
@@ -68,18 +76,18 @@ class MainView(QMainWindow, Ui_MainWindow):
         # setting operating-system agnostic keyboard shortcuts / appropriate label in the MenuBar
         self._assign_keyboard_shortcut(
             self.actionOpen,
-            action_in_words=KEYBOARD_SHORTCUTS["file_open"][0],
-            shortcut=KEYBOARD_SHORTCUTS["file_open"][0],
+            action_in_words=KEYBOARD_SHORTCUTS["menu_file_open"][0],
+            shortcut=KEYBOARD_SHORTCUTS["menu_file_open"][0],
         )
         self._assign_keyboard_shortcut(
             self.actionSave,
-            action_in_words=KEYBOARD_SHORTCUTS["file_save"][0],
-            shortcut=KEYBOARD_SHORTCUTS["file_save"][1],
+            action_in_words=KEYBOARD_SHORTCUTS["menu_file_save"][0],
+            shortcut=KEYBOARD_SHORTCUTS["menu_file_save"][1],
         )
         self._assign_keyboard_shortcut(
             self.actionSaveAs,
-            action_in_words=KEYBOARD_SHORTCUTS["file_save_as"][0],
-            shortcut=KEYBOARD_SHORTCUTS["file_save_as"][1],
+            action_in_words=KEYBOARD_SHORTCUTS["menu_file_save_as"][0],
+            shortcut=KEYBOARD_SHORTCUTS["menu_file_save_as"][1],
         )
 
         # global title of the window
@@ -145,7 +153,7 @@ class MainView(QMainWindow, Ui_MainWindow):
             filter="All Files (*)",
         )
         if selected_file_path:
-            self._send_file_path_selected(Path(selected_file_path))
+            self._send_file_path_selected_signal(Path(selected_file_path))
 
     def ask_save_file(self, window_title: str) -> None:
         """
@@ -160,7 +168,7 @@ class MainView(QMainWindow, Ui_MainWindow):
             filter="All Files (*)",
         )
         if selected_file_path:
-            self._send_file_path_selected(Path(selected_file_path))
+            self._send_file_path_selected_signal(Path(selected_file_path))
 
     def open_message_box(self, msg_type: MessageBox, message: str) -> None:
         """
@@ -197,6 +205,12 @@ class MainView(QMainWindow, Ui_MainWindow):
     def connect_menu_file_save_as(self, callback: Callable[[], None]) -> None:
         self._menu_file_save_as_signal.connect(callback)
 
+    def connect_menu_file_import_labels(self, callback: Callable[[], None]) -> None:
+        self._menu_file_import_labels_signal.connect(callback)
+
+    def connect_menu_file_import_sections(self, callback: Callable[[], None]) -> None:
+        self._menu_file_import_sections_signal.connect(callback)
+
     def connect_file_name_selected(self, callback: Callable[[Path], None]) -> None:
         self._file_path_selected_signal.connect(callback)
 
@@ -229,14 +243,22 @@ class MainView(QMainWindow, Ui_MainWindow):
         """when you trigger File -> Save as..."""
         self._menu_file_save_as_signal.emit()
 
-    def _send_file_path_selected(self, selected_path: Path) -> None:
+    def _send_menu_file_import_labels_signal(self) -> None:
+        """when you trigger File -> Import -> Import labels..."""
+        self._menu_file_import_labels_signal.emit()
+
+    def _send_menu_file_import_sections_signal(self) -> None:
+        """when you trigger File -> Import -> Import section labels..."""
+        self._menu_file_import_sections_signal.emit()
+
+    def _send_file_path_selected_signal(self, selected_path: Path) -> None:
         """
         When you selected a file from the FileDialog.
         ? Move this into the `ask_open_file` and `ask_save_file` methods? Just one line of code, but I felt this was more consistent with how the other code reads
         """
         self._file_path_selected_signal.emit(selected_path)
 
-    def _send_go_to_help_docs(self) -> None:
+    def _send_go_to_help_docs_signal(self) -> None:
         """when the `help` button is pressed"""
         self._go_to_help_docs_signal.emit()
 

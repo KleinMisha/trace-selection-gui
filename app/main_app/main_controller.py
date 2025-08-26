@@ -9,7 +9,39 @@ Hence, the MainController knows of:
 """
 
 from enum import Enum, auto
-from typing import Generic, Mapping, Protocol, TypeVar
+from pathlib import Path
+from typing import Callable, Generic, Mapping, Protocol, TypedDict, TypeVar
+
+from app.interactive_plot.plot_controller import InteractivePlotController
+from app.item_list.item_list_controller import ItemListController
+from app.label_assignment.label_panel_controller import LabelPanelController
+from app.main_app.main_model import Trace
+from app.section_label_assignment.sections_panel_controller import (
+    SectionsPanelController,
+)
+
+
+class ComponentControllers(TypedDict):
+    """
+    Register the new components over here
+    todo: Define the Controller's APIs as Protocols and register those here. Then only import the controller APIs
+    """
+
+    item_list: ItemListController
+    interactive_plot: InteractivePlotController
+    label_panel: LabelPanelController
+    sections_panel: SectionsPanelController
+
+
+class LightState(Enum):
+    ON = auto()
+    OFF = auto()
+
+
+class MessageBox(Enum):
+    INFO = auto()
+    WARNING = auto()
+    ERROR = auto()
 
 
 class Component(Enum):
@@ -51,16 +83,50 @@ class ComponentController(Generic[M, V], Protocol):
 
 
 class Model(Protocol):
-    pass
+    path_to_experiment_data: Path = Path("")
+    path_to_labels: Path = Path("")
+    path_to_section_labels: Path = Path("")
+
+    @property
+    def current_trace(self) -> Trace: ...
+
+    @property
+    def current_trace_id(self) -> str: ...
 
 
 class View(Protocol):
-    pass
+    def display_trace_id(self, name: str) -> None: ...
+    def update_progressbar(self, value: float) -> None: ...
+    def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
+    def display_ref_beads_ids(self, names: list[str]) -> None: ...
+    def ask_open_file(self, window_title: str) -> None: ...
+    def ask_save_file(self, window_title: str) -> None: ...
+    def open_message_box(self, msg_type: MessageBox, message: str) -> None: ...
+
+    def connect_next_trace(self, callback: Callable[[], None]) -> None: ...
+    def connect_prev_trace(self, callback: Callable[[], None]) -> None: ...
+    def connect_jump_to_trace(self, callback: Callable[[str], None]) -> None: ...
+    def connect_menu_file_open(self, callback: Callable[[], None]) -> None: ...
+    def connect_menu_file_save(self, callback: Callable[[], None]) -> None: ...
+    def connect_menu_file_save_as(self, callback: Callable[[], None]) -> None: ...
+    def connect_menu_file_import_labels(self, callback: Callable[[], None]) -> None: ...
+    def connect_menu_file_import_sections(
+        self, callback: Callable[[], None]
+    ) -> None: ...
+    def connect_file_name_selected(self, callback: Callable[[Path], None]) -> None: ...
+    def connect_go_to_help_docs(self, callback: Callable[[], None]) -> None: ...
 
 
 class MainController:
     """
-    todo: populate specifics after having written the tests
+    The MainController will be 'the brains of the whole operation'
+    ---
+    - handles direct communication with the MainModel and MainView (much like the individual component's controllers)
+    - handles communication between components (and components with the main app) via sending/receiving signals from the individual controllers.
+
+    Hence, the MainController knows of:
+    - the main app's Model and View
+    - the Controllers of the components.
     """
 
     def __init__(
@@ -75,6 +141,16 @@ class MainController:
         self.components = components
 
         # Connect (listen) to incoming signals:
+        self.main_view.connect_next_trace(self.handle_move_to_next_trace)
+        self.main_view.connect_prev_trace(self.handle_move_to_prev_trace)
+        self.main_view.connect_jump_to_trace(self.handle_jump_to_trace)
+        self.main_view.connect_menu_file_open(self.handle_menu_file_open)
+        self.main_view.connect_menu_file_save(self.handle_menu_file_save)
+        self.main_view.connect_menu_file_save_as(self.handle_menu_file_save_as)
+        self.main_view.connect_menu_file_import_labels(self.handle_menu_load_labels)
+        self.main_view.connect_menu_file_import_sections(self.handle_menu_load_sections)
+        self.main_view.connect_file_name_selected(self.handle_file_name_selected)
+        self.main_view.connect_go_to_help_docs(self.handle_go_to_help_docs)
 
     def build_composite_ui(self) -> None:
         """
@@ -83,22 +159,29 @@ class MainController:
         The MainView has a set of empty QWidgets with the same name as the component View we intend to use to populate it
         """
 
+    def register_component(self, controller: ComponentController):
+        """
+        #todo: check how to dynamically add element to the Enum?
+        ? If not easily possible, just remove this function altogether ?
+        """
+
     # main app logic
     def close_app(self) -> None:
         """Checks for untracked changes"""
 
-    def handle_move_to_next_trace(self) -> None: ...
+    def handle_move_to_next_trace(self) -> None:
+        self.main_view.display_trace_id(self.main_model.current_trace_id)
+
     def handle_move_to_prev_trace(self) -> None: ...
-    def handle_jump_to_trace(self) -> None: ...
+    def handle_jump_to_trace(self, trace_id: str) -> None: ...
+    def handle_file_name_selected(self, file_name: Path): ...
+
     def handle_menu_file_open(self) -> None: ...
     def handle_menu_file_save(self) -> None: ...
     def handle_menu_file_save_as(self) -> None: ...
-    def handle_menu_load_labels(
-        self,
-    ) -> None: ...  # TODO: Implement this into the menuBar + define the signal to be send by the MainView
-    def handle_menu_load_sections(
-        self,
-    ) -> None: ...  # TODO: Implement this into the menuBar + define the signal to be send by the MainView
+    def handle_menu_load_labels(self) -> None: ...
+    def handle_menu_load_sections(self) -> None: ...
+
     def handle_changed_ref_bead(self) -> None:
         # TODO: Implement this later
         raise NotImplementedError
@@ -107,8 +190,11 @@ class MainController:
         # TODO: Implement this later
         raise NotImplementedError
 
-    def handle_open_item_list_from_label_panel(self) -> None: ...
-    def handle_open_item_list_from_sections_panel(self) -> None: ...
+    def handle_open_item_list_from_label_panel(self) -> None:
+        """Button clicked in the `LabelsPanel` : instantiate `ItemList` with appropriate list of available labels"""
+
+    def handle_open_item_list_from_sections_panel(self) -> None:
+        """Button clicked in the `SectionsPanel` : instantiate `ItemList` with appropriate list of available labels"""
 
     def handle_line_added_in_plot(self, location: float) -> None:
         """Makes the InterActivePlot affect the SectionsPanel"""
