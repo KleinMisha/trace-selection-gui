@@ -3,22 +3,17 @@ View: Listens to the user's input and notifies the controller. Listens to the co
 """
 
 import re
-from enum import Enum, auto
 from typing import Callable
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
+from app.section_label_assignment.light_state import LightState
 from app.section_label_assignment.sections_panel_view_ui import Ui_SectionsPanel
 
 # TODO: Move into configuration file!!
 COLOR_OFF = "white"
 COLOR_ON = "green"
-
-
-class LightState(Enum):
-    ON = auto()
-    OFF = auto()
 
 
 class SectionsPanelView(QWidget, Ui_SectionsPanel):
@@ -30,8 +25,8 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
     _next_section_signal = pyqtSignal()
     _prev_section_signal = pyqtSignal()
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
         self.build_ui()
 
         # connect listening to user input:

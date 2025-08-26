@@ -36,8 +36,8 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     _adjusted_t_min_signal = pyqtSignal(str)
     _adjusted_t_max_signal = pyqtSignal(str)
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
         self.build_ui()
 
         # connect emitting signals

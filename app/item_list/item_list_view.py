@@ -19,8 +19,8 @@ class PyQtView(QWidget, Ui_ItemListWidget):
     _remove_item_signal = pyqtSignal(str)
     _close_window_signal = pyqtSignal()
 
-    def __init__(self, title: str | None = None) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget | None = None, title: str | None = None) -> None:
+        super().__init__(parent)
         self._title = title
         self.build_ui()
 
