@@ -6,8 +6,6 @@ NOTE: Because this will be a popup window ---> We do not pass it a placeholder w
 
 from typing import Optional
 
-from PyQt6.QtWidgets import QWidget
-
 from app.item_list.item_list_controller import ItemListController
 from app.item_list.item_list_model import ItemList as ItemListModel
 from app.item_list.item_list_view import PyQtView as ItemListView
