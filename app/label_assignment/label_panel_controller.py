@@ -2,15 +2,9 @@
 Controller: Handle communication with its own View and Model as well as with the MainController
 """
 
-from enum import Enum, auto
 from typing import Callable, Protocol
 
-
-class LightState(Enum):
-    """Simple state to toggle the indicator 'light'"""
-
-    ON = auto()
-    OFF = auto()
+from app.label_assignment.light_state import LightState
 
 
 class Model(Protocol):
