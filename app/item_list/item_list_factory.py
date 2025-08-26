@@ -14,7 +14,7 @@ from app.item_list.item_list_view import PyQtView as ItemListView
 def create_item_list(
     items: list[str], title: Optional[str] = None
 ) -> ItemListController:
-    """To be called by the main.py when setting up the entire app"""
+    """To be called by the MainController when starting a new popup window"""
     model = ItemListModel(items)
     view = ItemListView(title=title)
     controller = ItemListController(model, view)
