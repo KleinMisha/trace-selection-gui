@@ -5,18 +5,9 @@ Protocols for the Controllers of individual components that define everything ne
 NOTE: Here you define stripped-down versions of the controllers with only those methods strictly needed for the MainController.
 """
 
-from typing import Callable, Iterable, Protocol, runtime_checkable
+from typing import Callable, Protocol, runtime_checkable
 
-
-class Trace(Protocol):
-    """
-    ? Unsure if this belongs in here. Should only be part of the data Model, but it does feel as the simplest way of implementing the 'reset' on the plot.
-    """
-
-    t: Iterable[float]
-    z: Iterable[float]
-    labels: list[str]
-    section_labels: dict[tuple[int, int], list[str]]
+from app.main_app.main_model import Trace
 
 
 @runtime_checkable
