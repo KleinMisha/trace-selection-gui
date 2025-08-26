@@ -1,8 +1,8 @@
 import re
-from enum import Enum, auto
 from pathlib import Path
 from typing import Callable
 
+from main_app.state_variables import LightState, MessageBox
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
@@ -17,17 +17,6 @@ KEYBOARD_SHORTCUTS = {
 }
 COLOR_ON = "coral"
 COLOR_OFF = "white"
-
-
-class LightState(Enum):
-    ON = auto()
-    OFF = auto()
-
-
-class MessageBox(Enum):
-    INFO = auto()
-    WARNING = auto()
-    ERROR = auto()
 
 
 class MainView(QMainWindow, Ui_MainWindow):
