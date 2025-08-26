@@ -25,8 +25,8 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
     _next_section_signal = pyqtSignal()
     _prev_section_signal = pyqtSignal()
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
         self.build_ui()
 
         # connect listening to user input:
