@@ -131,3 +131,13 @@ class SectionsPanelModel:
             self.current_label_index -= 1
 
         self.available_labels = updated_list
+
+    def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]:
+        """Parse the Sections into the format the TimeTraceTools accepts / known by the Controller"""
+        section_labels = {}
+        for section in self.sections:
+            start = section.start_frame
+            end = section.end_frame
+            labels = section.assigned_labels
+            section_labels[(start, end)] = labels
+        return section_labels

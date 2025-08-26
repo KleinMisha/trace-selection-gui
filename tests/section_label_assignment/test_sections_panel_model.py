@@ -26,6 +26,29 @@ def sections() -> list[Section]:
     return [LeBron, jordan, kobe]
 
 
+@pytest.fixture
+def nicknames() -> tuple[dict[tuple[int, int], list[str]], list[Section]]:
+    nicknames_dict = {
+        (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+        (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
+        (15, None): ["The Joker"],
+        (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
+    }
+
+    shaq = Section(
+        32,
+        34,
+        assigned_labels=["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+    )
+    giannis_antetokounmpo = Section(
+        34, None, assigned_labels=["Giannis", "Greek Freak", "The Alphabet"]
+    )
+    jokic = Section(15, None, assigned_labels=["The Joker"])
+    curry = Section(None, 30, ["Baby-faced assassin", "Chef Curry", "Steph"])
+    nicknames_sections = [shaq, giannis_antetokounmpo, jokic, curry]
+    return nicknames_dict, nicknames_sections
+
+
 def test_move_to_next_label(available_labels: list[str]) -> None:
     """test happy case: moving to the next when not yet at the end of the list"""
     model = SectionsPanelModel(available_labels=available_labels, current_label_index=0)
@@ -309,7 +332,10 @@ def test_changing_the_final_frame_of_section(sections: list[Section]) -> None:
     assert model.current_section.end_frame == 42
 
 
-def test_resetting_sections_from_dictionary(sections: list[Section]) -> None:
+def test_resetting_sections_from_dictionary(
+    sections: list[Section],
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
     """
     Mimic changing to a different trace, with its own section labels
     NOTE: Yes, I had to keep it fun for myself ;). It is a legit test to perform though, but could've used less incoming sections.
@@ -319,26 +345,20 @@ def test_resetting_sections_from_dictionary(sections: list[Section]) -> None:
     LeBron = Section(start_frame=6, end_frame=23)
 
     # The incoming sections
-    nicknames = {
-        (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
-        (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
-        (15, None): ["The Joker"],
-        (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
-    }
-
-    shaq = Section(
-        32,
-        34,
-        assigned_labels=["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
-    )
-    giannis_antetokounmpo = Section(
-        34, None, assigned_labels=["Giannis", "Greek Freak", "The Alphabet"]
-    )
-    jokic = Section(15, None, assigned_labels=["The Joker"])
-    curry = Section(None, 30, ["Baby-faced assassin", "Chef Curry", "Steph"])
-    expected_sections = [shaq, giannis_antetokounmpo, jokic, curry]
+    nicknames_dict, expected_sections = nicknames
 
     # perform operation
     model = SectionsPanelModel(sections=sections)
-    model.reset_sections(section_labels=nicknames)
+    model.reset_sections(section_labels=nicknames_dict)
+    assert LeBron in original_sections
+    assert LeBron not in model.sections
     assert model.sections == expected_sections
+
+
+def test_creating_dictionary_from_sections(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Test producing the dictionary of section labels that is compatible with the time trace tools from the list of sections kept internally in the Model"""
+    expected_dictionary, nicknames_sections = nicknames
+    model = SectionsPanelModel(sections=nicknames_sections)
+    assert model.sections_to_dictionary() == expected_dictionary

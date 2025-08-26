@@ -19,6 +19,8 @@ class Model(Protocol):
     """Abstraction of Model prescribing the parts the Controller needs/depends on existing"""
 
     @property
+    def sections(self) -> list[Section]: ...
+    @property
     def current_label(self) -> str: ...
 
     @property
@@ -41,6 +43,7 @@ class Model(Protocol):
     def move_to_next_section(self) -> None: ...
     def move_to_previous_section(self) -> None: ...
     def update_available_labels(self, updated_list: list[str]) -> None: ...
+    def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]: ...
 
 
 class View(Protocol):
@@ -146,6 +149,10 @@ class SectionsPanelController:
     def set_end_section(self, value: int) -> None:
         self.model.set_end_section(value)
         self.view.display_section_end(value)
+
+    def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.sections_to_dictionary()
 
     # Used internally:
     def _determine_light_state(self) -> LightState:
