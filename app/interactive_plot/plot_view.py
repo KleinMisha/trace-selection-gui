@@ -10,7 +10,7 @@ from matplotlib.backend_bases import Event, MouseButton, MouseEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
 from app.interactive_plot.plot_view_ui import Ui_InteractivePlot
