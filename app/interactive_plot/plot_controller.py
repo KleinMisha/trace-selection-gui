@@ -109,6 +109,11 @@ class InteractivePlotController(QObject):
         self.view.connect_adjusted_t_min(self.handle_adjusted_t_min)
         self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
 
+    # To be called from outside:
+    def reset_for_new_trace(self, trace: TraceData) -> None:
+        """#TODO: need a way of cleanly resetting the plot + selected sections when you change focus to a new trace"""
+        raise NotImplementedError
+
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
         """
