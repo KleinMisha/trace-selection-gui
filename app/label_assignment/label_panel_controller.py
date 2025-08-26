@@ -11,6 +11,9 @@ class Model(Protocol):
     """Abstraction of Model that makes the Controller independent of specific implementation thereof"""
 
     @property
+    def assigned_labels(self) -> list[str]: ...
+
+    @property
     def current_label(self) -> str: ...
 
     @property
@@ -79,6 +82,9 @@ class LabelPanelController:
         self.model.update_available_labels(updated_list)
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
+
+    def get_assigned_labels(self) -> list[str]:
+        return self.model.assigned_labels
 
     # Used internally:
     def _determine_light_state(self) -> LightState:
