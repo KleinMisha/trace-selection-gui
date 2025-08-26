@@ -2,13 +2,9 @@
 Controller: Listens to the View and handles communicating back to the Model and View. Communicates to the MainController and listens to the MainController.
 """
 
-from enum import Enum, auto
 from typing import Callable, Protocol
 
-
-class LightState(Enum):
-    ON = auto()
-    OFF = auto()
+from app.section_label_assignment.light_state import LightState
 
 
 class Section(Protocol):
