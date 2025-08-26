@@ -38,3 +38,12 @@ def test_find_nearest_data_point(
     x_nearest, y_nearest = model.find_nearest_data_point(x_coordinate)
     assert x_nearest == expected_x
     assert y_nearest == expected_y
+
+
+def test_method_call_before_setting_data() -> None:
+    """Make sure you raise an AttributeError when attempting to call this method without there being any data"""
+    model = InteractivePlotModel(
+        trace_data=None, t_min=0.0, t_max=0.0, z_min=0.0, z_max=0.0
+    )
+    with pytest.raises(AttributeError):
+        model.find_nearest_data_point(x_coordinate=42.0)
