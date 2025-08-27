@@ -11,9 +11,9 @@ from app.main_app.main_view_ui import Ui_MainWindow
 
 # TODO: Move this into a configuration file
 KEYBOARD_SHORTCUTS = {
-    "menu_file_open": ("Open...", "Ctrl + O"),
-    "menu_file_save": ("Save...", "Ctrl + S"),
-    "menu_file_save_as": ("Save as...", "Ctrl + Shift + S"),
+    "actionOpen": ("Open...", "Ctrl+O"),
+    "actionSave": ("Save...", "Ctrl+S"),
+    "actionSaveAs": ("Save as...", "Ctrl+Shift+S"),
 }
 COLOR_ON = "coral"
 COLOR_OFF = "white"
@@ -65,18 +65,18 @@ class MainView(QMainWindow, Ui_MainWindow):
         # setting operating-system agnostic keyboard shortcuts / appropriate label in the MenuBar
         self._assign_keyboard_shortcut(
             self.actionOpen,
-            action_in_words=KEYBOARD_SHORTCUTS["menu_file_open"][0],
-            shortcut=KEYBOARD_SHORTCUTS["menu_file_open"][0],
+            action_in_words=KEYBOARD_SHORTCUTS["actionOpen"][0],
+            shortcut=KEYBOARD_SHORTCUTS["actionOpen"][1],
         )
         self._assign_keyboard_shortcut(
             self.actionSave,
-            action_in_words=KEYBOARD_SHORTCUTS["menu_file_save"][0],
-            shortcut=KEYBOARD_SHORTCUTS["menu_file_save"][1],
+            action_in_words=KEYBOARD_SHORTCUTS["actionSave"][0],
+            shortcut=KEYBOARD_SHORTCUTS["actionSave"][1],
         )
         self._assign_keyboard_shortcut(
             self.actionSaveAs,
-            action_in_words=KEYBOARD_SHORTCUTS["menu_file_save_as"][0],
-            shortcut=KEYBOARD_SHORTCUTS["menu_file_save_as"][1],
+            action_in_words=KEYBOARD_SHORTCUTS["actionSaveAs"][0],
+            shortcut=KEYBOARD_SHORTCUTS["actionSaveAs"][1],
         )
 
         # global title of the window

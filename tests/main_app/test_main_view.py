@@ -13,18 +13,139 @@ from unittest.mock import patch
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
 from app.main_app.main_view import (
     COLOR_OFF,
     COLOR_ON,
+    KEYBOARD_SHORTCUTS,
     LightState,
     MainView,
     MessageBox,
 )
 from app.main_app.main_view import QFileDialog as ViewFileDialog
 from app.main_app.main_view import QMessageBox as ViewMessageBox
+
+
+def test_trigger_file_open_signal(qtbot: QtBot) -> None:
+    """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("Open...")
+
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
+
+    # Create and register the view
+    view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+
+    view.connect_menu_file_open(mock_handler)
+    view.actionOpen.trigger()
+    assert received_signals == ["Open..."]
+
+
+def test_trigger_file_save_signal(qtbot: QtBot) -> None:
+    """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("Save...")
+
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
+
+    # Create and register the view
+    view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+
+    view.connect_menu_file_save(mock_handler)
+    view.actionSave.trigger()
+    assert received_signals == ["Save..."]
+
+
+def test_trigger_file_save_as_signal(qtbot: QtBot) -> None:
+    """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("Save as...")
+
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
+
+    # Create and register the view
+    view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+    view.connect_menu_file_save_as(mock_handler)
+    view.actionSaveAs.trigger()
+    assert received_signals == ["Save as..."]
+
+
+def test_trigger_file_import_labels_signal(qtbot: QtBot) -> None:
+    """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("Import labels...")
+
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
+
+    # Create and register the view
+    view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+    view.connect_menu_file_import_labels(mock_handler)
+    view.actionImportLabels.trigger()
+    assert received_signals == ["Import labels..."]
+
+
+def test_trigger_file_import_sections_signal(qtbot: QtBot) -> None:
+    """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("Import sections...")
+
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
+
+    # Create and register the view
+    view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+    view.connect_menu_file_import_sections(mock_handler)
+    view.actionImportSectionLabels.trigger()
+    assert received_signals == ["Import sections..."]
+
+
+def test_shortcuts_are_set_properly() -> None:
+    """Test the desired action has the desired keyboard shortcut assigned to it
+
+    NOTE: Testing actual key click events is apparently a pain on MacOS. Maybe an issue in general. In any case testing
+    that the keyboard shortcut is correctly assigned, should suffice as it is Qt's job to test if the key clicks actually work after assignment
+    """
+    view = MainView()
+    for action_name, (action_in_words, expected_shortcut) in KEYBOARD_SHORTCUTS.items():
+        action = getattr(view, action_name)
+        key_sequence = QKeySequence(expected_shortcut)
+        key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
+        expected_display_text = f"{action_in_words}\t{key_icons}"
+
+        assert action.shortcut().toString() == expected_shortcut
+        assert action.text() == expected_display_text
 
 
 def test_next_trace_button(qtbot: QtBot) -> None:
