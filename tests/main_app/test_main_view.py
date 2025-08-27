@@ -9,7 +9,7 @@ NOTE: Because of the code encapsulating different responsibilities, there are ac
 
 import re
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from PyQt6.QtCore import Qt
@@ -131,21 +131,34 @@ def test_trigger_file_import_sections_signal(qtbot: QtBot) -> None:
     assert received_signals == ["Import sections..."]
 
 
-def test_shortcuts_are_set_properly() -> None:
-    """Test the desired action has the desired keyboard shortcut assigned to it
+def test_keyboard_shortcuts(qtbot: QtBot) -> None:
+    """Simulate using keyboard shortcuts"""
+    # Ensure a QApplication exists
+    _ = QApplication.instance() or QApplication([])
 
-    NOTE: Testing actual key click events is apparently a pain on MacOS. Maybe an issue in general. In any case testing
-    that the keyboard shortcut is correctly assigned, should suffice as it is Qt's job to test if the key clicks actually work after assignment
-    """
     view = MainView()
+    qtbot.addWidget(view)
+    with qtbot.wait_exposed(view):
+        view.show()
+
     for action_name, (action_in_words, expected_shortcut) in KEYBOARD_SHORTCUTS.items():
-        action = getattr(view, action_name)
+        # get the correct QAction
+        action: QAction = getattr(view, action_name)
+
+        # Simple tests: Check that the display text and shortcuts are assigned as intended
         key_sequence = QKeySequence(expected_shortcut)
         key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
         expected_display_text = f"{action_in_words}\t{key_icons}"
-
         assert action.shortcut().toString() == expected_shortcut
         assert action.text() == expected_display_text
+
+        # Now connect a mock signal handler to the action and simulate sending the shortcut user input
+        primary_key = key_sequence[0].key()
+        mod_keys = key_sequence[0].keyboardModifiers()
+        mock_handler = Mock()
+        action.triggered.connect(mock_handler)
+        qtbot.keyClick(view.window(), primary_key, modifier=mod_keys)
+        mock_handler.assert_called_once()
 
 
 def test_next_trace_button(qtbot: QtBot) -> None:
