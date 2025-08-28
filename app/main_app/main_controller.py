@@ -10,55 +10,36 @@ Hence, the MainController knows of:
 
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Generic, Mapping, Protocol, TypedDict, TypeVar
+from typing import Callable, Concatenate, Protocol, TypedDict
 
-from app.interactive_plot.plot_controller import InteractivePlotController
-from app.item_list.item_list_controller import ItemListController
-from app.label_assignment.label_panel_controller import LabelPanelController
-from app.main_app.main_model import Trace
-from app.section_label_assignment.sections_panel_controller import (
+from app.main_app.component_controller_protocols import (
+    InteractivePlotController,
+    ItemListController,
+    LabelPanelController,
     SectionsPanelController,
 )
+from app.main_app.main_model import Trace
+from app.main_app.state_variables import LightState, MessageBox
 
 
 class ComponentControllers(TypedDict):
     """
     Register the new components over here
-    todo: Define the Controller's APIs as Protocols and register those here. Then only import the controller APIs
+
+    ---
+    NOTE: The types here refer to protocol types.
+
+    ---
+    NOTE II: The Item list is a popup window, so we pass the controller the controller factory (the callable that takes the list of items and returns the controller), not the controller itself.
     """
 
-    item_list: ItemListController
+    item_list: Callable[Concatenate[list[str], ...], ItemListController]
     interactive_plot: InteractivePlotController
     label_panel: LabelPanelController
     sections_panel: SectionsPanelController
 
 
-class LightState(Enum):
-    ON = auto()
-    OFF = auto()
-
-
-class MessageBox(Enum):
-    INFO = auto()
-    WARNING = auto()
-    ERROR = auto()
-
-
-class Component(Enum):
-    """
-    Register the name of the new component here.
-
-    TODO: Move this into the `main.py` (the entry-point) as that is the only part of the code that must actually know of the different options
-    TODO: In this code, it is enough for the Controller to understand `Component` as a type hint.
-    """
-
-    ITEM_LIST = auto()
-    INTERACTIVE_PLOT = auto()
-    LABEL_PANEL = auto()
-    SECTIONS_PANEL = auto()
-
-
-class File(Enum):
+class FileType(Enum):
     """
     The kinds of files to be opened/saved
     """
@@ -68,21 +49,24 @@ class File(Enum):
     SECTION_LABELS = auto()
 
 
-M = TypeVar("M", bound=object)
-V = TypeVar("V", bound=object)
+class FileAction(Enum):
+    """The kinds of actions performed on a file"""
+
+    OPEN = auto()
+    SAVE = auto()
 
 
-class ComponentController(Generic[M, V], Protocol):
-    """
-    Just to indicate that the components registered at the mainController are their controllers.
-    Only truly important part that defines the type of a Controller object : It holds a model and view object.
-    """
+class UnknownFileType(Exception):
+    pass
 
-    model: M
-    view: V
+
+class UnknownFileAction(Exception):
+    pass
 
 
 class Model(Protocol):
+    """API for the MainModel"""
+
     path_to_experiment_data: Path = Path("")
     path_to_labels: Path = Path("")
     path_to_section_labels: Path = Path("")
@@ -93,8 +77,30 @@ class Model(Protocol):
     @property
     def current_trace_id(self) -> str: ...
 
+    @property
+    def progress_percentage(self) -> float: ...
+
+    def move_to_next_trace(self) -> None: ...
+    def move_to_previous_trace(self) -> None: ...
+    def jump_to_index(self, target: int) -> None: ...
+    def set_file_path_to_experiment_data(self, path: Path | str) -> None: ...
+    def set_file_path_to_labels(self, path: Path | str) -> None: ...
+    def set_file_path_to_section_labels(self, path: Path | str) -> None: ...
+    def load_experiment_data(self) -> None: ...
+    def load_labels(self) -> None: ...
+    def load_section_labels(self) -> None: ...
+    def write_labels(self) -> None: ...
+    def write_section_labels(self) -> None: ...
+    def update_trace_labels(self, new_labels: list[str]) -> None: ...
+    def update_trace_section_labels(
+        self, new_section_labels: dict[tuple[int, int], list[str]]
+    ) -> None: ...
+    def find_index_from_id(self, trace_id: str) -> int: ...
+
 
 class View(Protocol):
+    """API for the MainView"""
+
     def display_trace_id(self, name: str) -> None: ...
     def update_progressbar(self, value: float) -> None: ...
     def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
@@ -126,43 +132,38 @@ class MainController:
 
     Hence, the MainController knows of:
     - the main app's Model and View
-    - the Controllers of the components.
+    - the API's / protocols of the component Controllers.
     """
 
     def __init__(
         self,
         model: Model,
         view: View,
-        components: Mapping[Component, ComponentController],
+        components: ComponentControllers,
     ) -> None:
-        self.main_model = model
-        self.main_view = view
+        self.model = model
+        self.view = view
         # a dictionary mapping the name of the available component (see Enum above) to the corresponding controller
         self.components = components
 
+        # Keep track of a first-in-first-out (FIFO) queue of opening/saving actions to be performed
+        self._pending_file_dialog_requests: list[tuple[FileType, FileAction]] = []
+
         # Connect (listen) to incoming signals:
-        self.main_view.connect_next_trace(self.handle_move_to_next_trace)
-        self.main_view.connect_prev_trace(self.handle_move_to_prev_trace)
-        self.main_view.connect_jump_to_trace(self.handle_jump_to_trace)
-        self.main_view.connect_menu_file_open(self.handle_menu_file_open)
-        self.main_view.connect_menu_file_save(self.handle_menu_file_save)
-        self.main_view.connect_menu_file_save_as(self.handle_menu_file_save_as)
-        self.main_view.connect_menu_file_import_labels(self.handle_menu_load_labels)
-        self.main_view.connect_menu_file_import_sections(self.handle_menu_load_sections)
-        self.main_view.connect_file_name_selected(self.handle_file_name_selected)
-        self.main_view.connect_go_to_help_docs(self.handle_go_to_help_docs)
+        self.view.connect_next_trace(self.handle_move_to_next_trace)
+        self.view.connect_prev_trace(self.handle_move_to_prev_trace)
+        self.view.connect_jump_to_trace(self.handle_jump_to_trace)
+        self.view.connect_menu_file_open(self.handle_menu_file_open)
+        self.view.connect_menu_file_save(self.handle_menu_file_save)
+        self.view.connect_menu_file_save_as(self.handle_menu_file_save_as)
+        self.view.connect_menu_file_import_labels(self.handle_menu_load_labels)
+        self.view.connect_menu_file_import_sections(self.handle_menu_load_sections)
+        self.view.connect_file_name_selected(self.handle_file_name_selected)
+        self.view.connect_go_to_help_docs(self.handle_go_to_help_docs)
 
     def build_composite_ui(self) -> None:
         """
-        Place Components into their placeholders in the MainView
-        ----
-        The MainView has a set of empty QWidgets with the same name as the component View we intend to use to populate it
-        """
-
-    def register_component(self, controller: ComponentController):
-        """
-        #todo: check how to dynamically add element to the Enum?
-        ? If not easily possible, just remove this function altogether ?
+        todo: check if this is still needed.
         """
 
     # main app logic
@@ -170,17 +171,194 @@ class MainController:
         """Checks for untracked changes"""
 
     def handle_move_to_next_trace(self) -> None:
-        self.main_view.display_trace_id(self.main_model.current_trace_id)
+        """
+        Updates the data of the current trace before moving to the next.
+        NOTE: This means the data also gets updated if you are already at the final one.
+        TODO: set untracked changes
+        ? Implement a way of checking if you actually changed something / have untracked changes?
+        """
+        # update the current trace's data before changing focus
+        self._update_current_trace()
 
-    def handle_move_to_prev_trace(self) -> None: ...
-    def handle_jump_to_trace(self, trace_id: str) -> None: ...
-    def handle_file_name_selected(self, file_name: Path): ...
+        # Change focus to the new trace
+        self.model.move_to_next_trace()
+        self.view.display_trace_id(self.model.current_trace_id)
 
-    def handle_menu_file_open(self) -> None: ...
-    def handle_menu_file_save(self) -> None: ...
-    def handle_menu_file_save_as(self) -> None: ...
-    def handle_menu_load_labels(self) -> None: ...
-    def handle_menu_load_sections(self) -> None: ...
+        # reset the components that work with one trace at the time
+        self._reset_components()
+
+        # update the progress bar
+        self.view.update_progressbar(self.model.progress_percentage)
+
+    def handle_move_to_prev_trace(self) -> None:
+        """
+        Updates the data of the current trace before moving to the previous.
+        NOTE: This means the data also gets updated if you are already at the first one.
+        TODO: set untracked changes
+        ? Implement a way of checking if you actually changed something / have untracked changes?
+        """
+
+        # update the current trace's data before changing focus
+        self._update_current_trace()
+
+        # Change focus to the new trace
+        self.model.move_to_previous_trace()
+        self.view.display_trace_id(self.model.current_trace_id)
+
+        # reset the components that work with one trace at the time
+        self._reset_components()
+
+        # update the progress bar
+        self.view.update_progressbar(self.model.progress_percentage)
+
+    def handle_jump_to_trace(self, trace_id: str) -> None:
+        """
+        Updates the data of the current trace before changing focus
+        NOTE: This means the data also gets updated if you are already at the final one.
+        TODO: set untracked changes
+        ? Implement a way of checking if you actually changed something / have untracked changes?
+        """
+
+        # update the current trace's data before changing focus
+        self._update_current_trace()
+
+        # Change focus to the new trace
+        target_index = self.model.find_index_from_id(trace_id)
+        self.model.jump_to_index(target_index)
+        self.view.display_trace_id(self.model.current_trace_id)
+
+        # reset the components that work with one trace at the time
+        self._reset_components()
+
+        # update the progress bar
+        self.view.update_progressbar(self.model.progress_percentage)
+
+    def handle_file_name_selected(self, file_name: Path):
+        """
+        Triggered when you selected a file name from the dialog
+        ---
+
+        ---
+        The View tells the Controller: "here is the selected file path"
+
+
+        ---
+        The Controller now:
+        - removes this request from the queue (as it successfully yielded a file path)
+        - sets the file paths in the model
+        - triggers the actions on the model side to do the actual opening/closing of the data + logic on the view side to reflect updates
+        - moves on to the next request (the _process_next_request() will automatically break out of this pattern when there are no more requests pending)
+        """
+        # current request is done: FIFO, so remove the top request
+        file_type, file_action = self._pending_file_dialog_requests.pop(0)
+
+        # update the model's file paths
+        if file_type == FileType.RAW_DATA:
+            self.model.set_file_path_to_experiment_data(file_name)
+        elif file_type == FileType.LABELS:
+            self.model.set_file_path_to_labels(file_name)
+        elif file_type == FileType.SECTION_LABELS:
+            self.model.set_file_path_to_section_labels(file_name)
+        else:
+            raise UnknownFileType(
+                f"Cannot handle selected file path. Undefined file type: {file_type.name}"
+            )
+
+        # process the selected file
+        if file_action == FileAction.OPEN:
+            self._open_file(file_type)
+        elif file_action == FileAction.SAVE:
+            self._save_file(file_type)
+        else:
+            raise UnknownFileAction(
+                f"Cannot handle selected file path. Undefined logic for a(n) {file_action.name}-action"
+            )
+
+        # move on to the next file dialog that must be opened
+        self._process_next_request()
+
+    def handle_menu_file_open(self) -> None:
+        """
+        Triggered when you activate the "Open..." action from the menu bar
+
+        ---
+        The View notified the Controller the action has been triggered
+
+        ---
+        The Controller now:
+        - posts the requests to open the file dialog for the raw data
+        - processes this request
+        - Tell the View to reflect changes after updating the data
+        """
+        # the Open... action implies loading the raw experiment data
+        self._post_open_request(FileType.RAW_DATA)
+        self._process_next_request()
+        self._reset_components()
+
+    def handle_menu_file_save(self) -> None:
+        """
+        Triggered when you activate the "Save..." action from the menu bar
+        ---
+        Saves both the labels and section_labels
+        ---
+        If you previously set the output file paths (for instance, by doing 'Save as...' previously),
+        it is assumed the user wants to write into the same set of files.
+
+        ---
+        If any of the file paths are (yet) unknown (for instance, you do 'Save...' without having done 'Save as...')
+        default to performing the logic of the 'Save as...' action
+
+        ---
+        #TODO: 'No more untracked changes'
+        """
+
+        if self._out_file_paths_are_set():
+            # First update the data to take the latest changes into account
+            self._update_current_trace()
+            self._save_file(FileType.LABELS)
+            self._save_file(FileType.SECTION_LABELS)
+        else:
+            self.handle_menu_file_save_as()
+
+    def handle_menu_file_save_as(self) -> None:
+        """
+        Triggered when you activate the "Save as..." action from the menu bar
+        ---
+        It is assumed you want to manually select the output file paths
+
+        ---
+        The View notified the Controller the action has been triggered
+
+        ---
+        The Controller now:
+        - posts the requests to open the file dialogs; one for every kind of data to be saved
+        - processes the first request (will trigger processing the remaining requests)
+
+        ---
+          #TODO: set 'no untracked changes'
+        """
+        # First update the data to take the latest changes into account
+        self._update_current_trace()
+
+        self._post_save_request(FileType.LABELS)
+        self._post_save_request(FileType.SECTION_LABELS)
+        self._process_next_request()
+
+    def handle_menu_load_labels(self) -> None:
+        """
+        Controller does similar to "Open...", but now for the file containing the labels
+        """
+        self._post_open_request(FileType.LABELS)
+        self._process_next_request()
+        self._reset_components()
+
+    def handle_menu_load_sections(self) -> None:
+        """
+        Controller does similar to "Open...", but now for the file containing the section labels
+        """
+        self._post_open_request(FileType.SECTION_LABELS)
+        self._process_next_request()
+        self._reset_components()
 
     def handle_changed_ref_bead(self) -> None:
         # TODO: Implement this later
@@ -206,8 +384,115 @@ class MainController:
         # TODO: Implement this later when MkDocs website is running
         raise NotImplementedError
 
-    def _open_file_route(self, file_type: File) -> None:
-        """route to the correct function depending on the kind of file that you opened"""
+    # file-handling logic
+    def _process_next_request(self) -> None:
+        """Checks the next job in the queue and triggers the View to open the corresponding FileDialog"""
 
-    def _save_file_route(self, file_type: File) -> None:
-        """route to the correct function depending on the kind of file that is being saved"""
+        # if there are no more requests, you are done
+        if not self._pending_file_dialog_requests:
+            return
+
+        # Otherwise, process the next in line. FIFO: So check for the earliest posted job
+        file_type, file_action = self._pending_file_dialog_requests[0]
+        if file_action == FileAction.OPEN:
+            self.view.ask_open_file(
+                window_title=f"File to read {file_type.name.lower().replace('_', ' ')} from"
+            )
+        elif file_action == FileAction.SAVE:
+            self.view.ask_save_file(
+                window_title=f"File to save {file_type.name.lower().replace('_', ' ')} into"
+            )
+        else:
+            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
+            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
+            raise UnknownFileAction(
+                f"Cannot process ({file_type.name},{file_action.name}). No logic defined for an '{file_action.name}'-action"
+            )
+
+    def _post_open_request(self, file_type: FileType) -> None:
+        """Adds a job to open a file to the FIFO queue"""
+        self._pending_file_dialog_requests.append((file_type, FileAction.OPEN))
+
+    def _post_save_request(self, file_type: FileType) -> None:
+        """Adds a job to save a file to the FIFO queue"""
+        self._pending_file_dialog_requests.append((file_type, FileAction.SAVE))
+
+    def _open_file(self, file_type: FileType) -> None:
+        """Trigger the correct actions on the Model-side depending on the type of data we are trying to open"""
+
+        if file_type == FileType.RAW_DATA:
+            self.model.load_experiment_data()
+        elif file_type == FileType.LABELS:
+            self.model.load_labels()
+        elif file_type == FileType.SECTION_LABELS:
+            self.model.load_section_labels()
+        else:
+            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
+            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
+            raise UnknownFileType(
+                f"Cannot open file. Undefined file type {file_type.name}"
+            )
+
+    def _save_file(self, file_type: FileType) -> None:
+        """Trigger the correct actions on the Model-side depending on the type of data we are trying to save"""
+        if file_type == FileType.LABELS:
+            self.model.write_labels()
+        elif file_type == FileType.SECTION_LABELS:
+            self.model.write_section_labels()
+        else:
+            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
+            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
+            raise UnknownFileType(f"Cannot save a {file_type.name}-file.")
+
+    def _out_file_paths_are_set(self) -> bool:
+        """
+        Checks that all file paths are already set for saving. If so, no need to re-open file-dialog when 'Save...' (not 'Save as...')
+
+        ---
+        NOTE: Only checks for the files you are going to be saving.
+        """
+        if self.model.path_to_labels == Path(""):
+            return False
+        if self.model.path_to_section_labels == Path(""):
+            return False
+        return True
+
+    # updating traces logic
+    def _update_current_trace(self) -> None:
+        """
+        Update the experiment data to reflect the latests set of sections/labels chosen.
+        ---
+        Will be triggered whenever the app changes focus to a new trace
+
+        ---
+        NOTE: By construction, you will always have updated any other trace
+        """
+        # Update the current trace's labels (from the LabelPanel)
+        new_labels = self.components["label_panel"].get_assigned_labels()
+        self.model.update_trace_labels(new_labels)
+
+        # update the current trace's section labels (from the SectionsPanel)
+        new_section_labels = self.components["sections_panel"].get_section_labels()
+        self.model.update_trace_section_labels(new_section_labels)
+
+    def _reset_components(self) -> None:
+        """
+        Resets the components by passing them the (relevant part) of the current trace's data
+        ---
+        Will be triggered whenever the app changes focus to a new trace.
+
+        ----
+        NOTE: The list of available labels is assumed to be shared amongst traces (for you entire experiment).Therefore, it does not have to get updated here.
+        """
+        # plot the new trace
+        self.components["interactive_plot"].reset_for_new_trace(
+            self.model.current_trace
+        )
+        # reset the assigned labels
+        self.components["label_panel"].reset_for_new_trace(
+            self.model.current_trace.labels
+        )
+        # reset the assigned section labels
+        self.components["sections_panel"].reset_for_new_trace(
+            self.model.current_trace.section_labels
+        )
