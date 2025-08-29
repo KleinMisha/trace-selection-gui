@@ -44,6 +44,7 @@ class Model(Protocol):
     def move_to_previous_section(self) -> None: ...
     def update_available_labels(self, updated_list: list[str]) -> None: ...
     def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]: ...
+    def determine_section_boundaries(self) -> list[int]: ...
 
 
 class View(Protocol):
@@ -153,6 +154,10 @@ class SectionsPanelController:
     def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
         """Such that the MainController can access this method on the component Model"""
         return self.model.sections_to_dictionary()
+
+    def get_section_boundaries(self) -> list[int]:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.determine_section_boundaries()
 
     # Used internally:
     def _determine_light_state(self) -> LightState:

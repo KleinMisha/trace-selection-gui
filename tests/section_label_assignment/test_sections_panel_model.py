@@ -362,3 +362,13 @@ def test_creating_dictionary_from_sections(
     expected_dictionary, nicknames_sections = nicknames
     model = SectionsPanelModel(sections=nicknames_sections)
     assert model.sections_to_dictionary() == expected_dictionary
+
+
+def test_determining_section_boundaries(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Test producing the list of frame numbers where sections start / end goes as expected"""
+    expected_boundaries = [32, 34, 34, 15, 30]
+    _, nicknames_sections = nicknames
+    model = SectionsPanelModel(sections=nicknames_sections)
+    assert model.determine_section_boundaries() == expected_boundaries
