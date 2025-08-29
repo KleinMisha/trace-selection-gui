@@ -409,6 +409,172 @@ def test_handle_filename_unknown_action(main_controller: MainController) -> None
         main_controller.handle_file_name_selected(Path(""))
 
 
-def test_move_to_next_trace() -> None: ...
-def test_move_to_previous_trace() -> None: ...
-def test_jump_to_trace() -> None: ...
+def test_reset_components(
+    main_controller: MainController, components: ComponentControllers
+) -> None:
+    """Test the correct sequence of calls are made to reset all components when changing focus"""
+    mock_labels = ["mock", "mock", "mock"]
+    mock_sections = {(1, 2): ["mock"]}
+
+    class MockTrace:
+        def __init__(
+            self,
+            t: list[float],
+            z: list[float],
+            labels: list[str],
+            section_labels: dict[tuple[int, int], list[str]],
+        ) -> None:
+            self.t = t
+            self.z = z
+            self.labels = labels
+            self.section_labels = section_labels
+
+    mock_trace = MockTrace(
+        t=[float(n) for n in range(100)],
+        z=[float(n) for n in range(100)],
+        labels=mock_labels,
+        section_labels=mock_sections,
+    )
+    cast(Any, type(main_controller.model)).current_trace = PropertyMock(
+        return_value=mock_trace
+    )
+    expected_boundaries = [6, 23, 34, 45]
+
+    with (
+        patch.object(
+            components["sections_panel"],
+            attribute="get_section_boundaries",
+            return_value=expected_boundaries,
+        ) as mock_one,
+        patch.object(
+            components["interactive_plot"], attribute="reset_for_new_trace"
+        ) as mock_two,
+        patch.object(
+            components["label_panel"], attribute="reset_for_new_trace"
+        ) as mock_three,
+        patch.object(
+            components["sections_panel"], attribute="reset_for_new_trace"
+        ) as mock_four,
+    ):
+        main_controller._reset_components()
+        mock_one.assert_called_once()
+        mock_two.assert_called_once_with(
+            mock_trace, [float(b) for b in expected_boundaries]
+        )
+        mock_three.assert_called_once_with(mock_labels)
+        mock_four.assert_called_once_with(mock_sections)
+
+
+def test_updating_model_data_current_trace(
+    main_controller: MainController, components: ComponentControllers
+) -> None:
+    """Tests updating the model's data (the labels and section labels for the current trace) happens using the correct API calls"""
+    mock_labels = ["mock", "mock", "mock"]
+    mock_sections = {(1, 2): ["mock"]}
+    with (
+        patch.object(
+            components["label_panel"],
+            attribute="get_assigned_labels",
+            return_value=mock_labels,
+        ) as mock_one,
+        patch.object(
+            main_controller.model, attribute="update_trace_labels"
+        ) as mock_two,
+        patch.object(
+            components["sections_panel"],
+            attribute="get_section_labels",
+            return_value=mock_sections,
+        ) as mock_three,
+        patch.object(
+            main_controller.model, attribute="update_trace_section_labels"
+        ) as mock_four,
+    ):
+        main_controller._update_current_trace()
+        mock_one.assert_called_once()
+        mock_two.assert_called_once_with(mock_labels)
+        mock_three.assert_called_once()
+        mock_four.assert_called_once_with(mock_sections)
+
+
+def test_move_to_next_trace(main_controller: MainController) -> None:
+    """test changing focus to next trace leads to correct calls"""
+    expected_percentage = 50.0
+    expected_trace_id = "mock"
+    cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
+        return_value=expected_trace_id
+    )
+    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
+        return_value=expected_percentage
+    )
+    with (
+        patch.object(main_controller, attribute="_update_current_trace") as mock_one,
+        patch.object(main_controller.model, attribute="move_to_next_trace") as mock_two,
+        patch.object(main_controller.view, attribute="display_trace_id") as mock_three,
+        patch.object(main_controller, attribute="_reset_components") as mock_four,
+        patch.object(main_controller.view, attribute="update_progressbar") as mock_five,
+    ):
+        main_controller.handle_move_to_next_trace()
+        mock_one.assert_called_once()
+        mock_two.assert_called_once()
+        mock_three.assert_called_once_with(expected_trace_id)
+        mock_four.assert_called_once()
+        mock_five.assert_called_once_with(expected_percentage)
+
+
+def test_move_to_previous_trace(main_controller: MainController) -> None:
+    """test changing focus to next trace leads to correct calls"""
+    expected_percentage = 50.0
+    expected_trace_id = "mock"
+    cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
+        return_value=expected_trace_id
+    )
+    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
+        return_value=expected_percentage
+    )
+    with (
+        patch.object(main_controller, attribute="_update_current_trace") as mock_one,
+        patch.object(
+            main_controller.model, attribute="move_to_previous_trace"
+        ) as mock_two,
+        patch.object(main_controller.view, attribute="display_trace_id") as mock_three,
+        patch.object(main_controller, attribute="_reset_components") as mock_four,
+        patch.object(main_controller.view, attribute="update_progressbar") as mock_five,
+    ):
+        main_controller.handle_move_to_prev_trace()
+        mock_one.assert_called_once()
+        mock_two.assert_called_once()
+        mock_three.assert_called_once_with(expected_trace_id)
+        mock_four.assert_called_once()
+        mock_five.assert_called_once_with(expected_percentage)
+
+
+def test_jump_to_trace(main_controller: MainController) -> None:
+    """test changing focus to next trace leads to correct calls"""
+    expected_percentage = 50.0
+    expected_trace_id = "mock"
+    expected_trace_index = 23
+    cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
+        return_value=expected_trace_id
+    )
+    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
+        return_value=expected_percentage
+    )
+    with (
+        patch.object(main_controller, attribute="_update_current_trace") as mock_one,
+        patch.object(
+            main_controller.model,
+            attribute="find_index_from_id",
+            return_value=expected_trace_index,
+        ) as mock_two,
+        patch.object(main_controller.model, attribute="jump_to_index") as mock_three,
+        patch.object(main_controller.view, attribute="display_trace_id") as mock_four,
+        patch.object(main_controller, attribute="_reset_components") as mock_five,
+        patch.object(main_controller.view, attribute="update_progressbar") as mock_six,
+    ):
+        main_controller.handle_jump_to_trace(expected_trace_id)
+        mock_one.assert_called_once()
+        mock_two.assert_called_once_with(expected_trace_id)
+        mock_three.assert_called_once_with(expected_trace_index)
+        mock_four.assert_called_once_with(expected_trace_id)
+        mock_five.assert_called_once()
+        mock_six.assert_called_once_with(expected_percentage)

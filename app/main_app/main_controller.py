@@ -485,8 +485,12 @@ class MainController:
         NOTE: The list of available labels is assumed to be shared amongst traces (for you entire experiment).Therefore, it does not have to get updated here.
         """
         # plot the new trace
+        horizontal_line_time_points = [
+            self.model.current_trace.t[frame]
+            for frame in self.components["sections_panel"].get_section_boundaries()
+        ]
         self.components["interactive_plot"].reset_for_new_trace(
-            self.model.current_trace
+            self.model.current_trace, horizontal_line_time_points
         )
         # reset the assigned labels
         self.components["label_panel"].reset_for_new_trace(
