@@ -58,7 +58,7 @@ class Model(Protocol):
     def trace_data(self) -> TraceData | None: ...
 
     @trace_data.setter
-    def trace_data(self, value: float) -> None: ...
+    def trace_data(self, data: TraceData) -> None: ...
 
     def find_nearest_data_point(self, x_coordinate: float) -> tuple[float, float]: ...
 
@@ -110,9 +110,17 @@ class InteractivePlotController(QObject):
         self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
 
     # To be called from outside:
-    def reset_for_new_trace(self, trace: TraceData) -> None:
-        """#TODO: need a way of cleanly resetting the plot + selected sections when you change focus to a new trace"""
-        raise NotImplementedError
+    def reset_for_new_trace(
+        self, trace: TraceData, section_boundaries: list[float]
+    ) -> None:
+        """(Re)set the data known to the model and plot the new trace + previously selected sections"""
+        self.model.trace_data = trace
+        self.view.clear_figure()
+        self.view.show_t_vs_z_plot(trace.t, trace.z)
+        for time_point in section_boundaries:
+            self.view.show_line_in_plot(time_point)
+
+        self.view.update_figure()
 
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
