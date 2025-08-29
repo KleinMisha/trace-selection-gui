@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LabelPanelModel:
-    available_labels: list[str] = field(default_factory=list)
-    assigned_labels: list[str] = field(default_factory=list)
+    available_labels: list[str] = field(default_factory=lambda: [""])
+    assigned_labels: list[str] = field(default_factory=lambda: [""])
     current_idx: int = 0
 
     @property

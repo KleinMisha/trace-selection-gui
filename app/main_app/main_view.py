@@ -2,12 +2,12 @@ import re
 from pathlib import Path
 from typing import Callable
 
-from main_app.state_variables import LightState, MessageBox
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
 from app.main_app.main_view_ui import Ui_MainWindow
+from app.main_app.state_variables import LightState, MessageBox
 
 # TODO: Move this into a configuration file
 KEYBOARD_SHORTCUTS = {
