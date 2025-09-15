@@ -19,5 +19,5 @@ def create_label_panel(placeholder: QWidget | None = None) -> LabelPanelControll
     view = LabelPanelView(parent=placeholder)
     controller = LabelPanelController(model, view)
     if placeholder:
-        fill_component_to_placeholder(view, placeholder)
+        fill_component_to_placeholder(view, placeholder, force_layout=True)
     return controller

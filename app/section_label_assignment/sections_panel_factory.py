@@ -24,6 +24,6 @@ def create_sections_panel(
 
     # ensure the component fills the placeholder correctly
     if placeholder:
-        fill_component_to_placeholder(view, placeholder)
+        fill_component_to_placeholder(view, placeholder, force_layout=True)
 
     return controller

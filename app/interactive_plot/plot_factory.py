@@ -27,5 +27,5 @@ def create_plot_controller(placeholder: QWidget | None) -> InteractivePlotContro
     view = InterActivePlotView(parent=placeholder)
     controller = InteractivePlotController(model, view)
     if placeholder:
-        fill_component_to_placeholder(view, placeholder)
+        fill_component_to_placeholder(view, placeholder, force_layout=False)
     return controller
