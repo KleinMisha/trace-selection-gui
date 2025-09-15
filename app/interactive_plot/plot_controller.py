@@ -122,6 +122,10 @@ class InteractivePlotController(QObject):
 
         self.view.update_figure()
 
+    def has_data(self) -> bool:
+        """Convenience method used both in this controller + the main controller to guard against actions at startup"""
+        return True if self.model.trace_data else False
+
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
         """
@@ -130,8 +134,11 @@ class InteractivePlotController(QObject):
         However, we technically do not need both for now. Hence, the "_" as an argument.
         ? Should this be removed?
         """
-        t_data_point, _ = self.model.find_nearest_data_point(x_click)
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.has_data():
+            return
 
+        t_data_point, _ = self.model.find_nearest_data_point(x_click)
         # TODO: use the main controller to pass the appropriate color
         self.view.show_line_in_plot(t_data_point)
         self.view.update_figure()
@@ -143,6 +150,10 @@ class InteractivePlotController(QObject):
         """
         triggers when the user clicks in the plot (right mouse button)
         """
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.has_data():
+            return
+
         self.view.clear_last_line_from_plot()
         self.view.update_figure()
 

@@ -31,13 +31,15 @@ class InteractivePlotModel:
         """
         Find the data point closest to where the user clicked (i.e. the values used as input to this method)
         NOTE: the value leads (not the time point), because the user will like to click close to a particular feature observed.
-        """
 
         # ? this can be made adjustable if also plots for x and y data are included.
         # ? to achieve a general version, this function must get the axis / keys you want to axis from the data as input
+        """
+
+        # todo: Figure out some way of getting rid of this essentially redundant piece of code. The Controller already is handling the case of having no data yet.
         if self.trace_data is None:
             raise AttributeError(
-                "Cannot determine nearest-point before setting the trace data"
+                "Failed to find nearest data point: No data has been set / loaded."
             )
         x_data = self.trace_data.t
         y_data = self.trace_data.z

@@ -25,6 +25,7 @@ class InteractivePlotController(Protocol):
     def reset_for_new_trace(
         self, trace: Trace, section_boundaries: list[float]
     ) -> None: ...
+    def has_data(self) -> bool: ...
 
 
 @runtime_checkable

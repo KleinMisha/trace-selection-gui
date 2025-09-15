@@ -161,11 +161,6 @@ class MainController:
         self.view.connect_file_name_selected(self.handle_file_name_selected)
         self.view.connect_go_to_help_docs(self.handle_go_to_help_docs)
 
-    def build_composite_ui(self) -> None:
-        """
-        todo: check if this is still needed.
-        """
-
     # main app logic
     def close_app(self) -> None:
         """Checks for untracked changes"""
@@ -177,6 +172,10 @@ class MainController:
         TODO: set untracked changes
         ? Implement a way of checking if you actually changed something / have untracked changes?
         """
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self._data_is_loaded():
+            return
+
         # update the current trace's data before changing focus
         self._update_current_trace()
 
@@ -198,6 +197,9 @@ class MainController:
         ? Implement a way of checking if you actually changed something / have untracked changes?
         """
 
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self._data_is_loaded():
+            return
         # update the current trace's data before changing focus
         self._update_current_trace()
 
@@ -218,6 +220,9 @@ class MainController:
         TODO: set untracked changes
         ? Implement a way of checking if you actually changed something / have untracked changes?
         """
+        # If the user enters a number before any data is loaded, simply ignore the action
+        if not self._data_is_loaded():
+            return
 
         # update the current trace's data before changing focus
         self._update_current_trace()
@@ -457,7 +462,7 @@ class MainController:
             return False
         return True
 
-    # updating traces logic
+    # Logic that requires accessing the component controllers
     def _update_current_trace(self) -> None:
         """
         Update the experiment data to reflect the latests set of sections/labels chosen.
@@ -500,3 +505,6 @@ class MainController:
         self.components["sections_panel"].reset_for_new_trace(
             self.model.current_trace.section_labels
         )
+
+    def _data_is_loaded(self) -> bool:
+        return self.components["interactive_plot"].has_data()
