@@ -37,11 +37,10 @@ def test_handle_left_mouse_click(location: float) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     controller = InteractivePlotController(model, view)
-
+    cast(Mock, model.has_data).return_value = True
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
     controller.handle_left_mouse_click(location, 42.0)
-
     cast(Mock, view.show_line_in_plot).assert_called_once_with(location)
     cast(Mock, view.update_figure).assert_called_once()
 
@@ -61,10 +60,51 @@ def test_handle_right_mouse_click() -> None:
     view: View = cast(View, Mock(spec=View))
     controller = InteractivePlotController(model, view)
     controller.connect_line_removed_from_plot(mock_handler)
+    cast(Mock, model.has_data).return_value = True
     controller.handle_right_mouse_click()
     cast(Mock, view.clear_last_line_from_plot).assert_called_once()
     cast(Mock, view.update_figure).assert_called_once()
     assert received_signals == ["right click"]
+
+
+@pytest.mark.parametrize("location", [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0])
+def test_handle_left_mouse_click_without_data(location: float) -> None:
+    """
+    Trigger handler at Controller: Are signals received by Model and View ?
+    """
+    received_signals = []
+
+    def mock_handler(value: float) -> None:
+        received_signals.append(value)
+
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    controller = InteractivePlotController(model, view)
+    cast(Mock, model.has_data).return_value = False
+    cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
+    controller.connect_line_added_to_plot(mock_handler)
+    controller.handle_left_mouse_click(location, 42.0)
+    cast(Mock, view.show_line_in_plot).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+    assert received_signals == []
+
+
+def test_handle_right_mouse_click_without_data() -> None:
+    """tests that controller simply breaks out of the handling function if you click before data is set"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("right click")
+
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    controller = InteractivePlotController(model, view)
+    controller.connect_line_removed_from_plot(mock_handler)
+    cast(Mock, model.has_data).return_value = False
+    controller.handle_right_mouse_click()
+    cast(Mock, view.clear_last_line_from_plot).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+    assert received_signals == []
 
 
 @pytest.mark.parametrize(
