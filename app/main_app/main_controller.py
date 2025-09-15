@@ -507,4 +507,4 @@ class MainController:
         )
 
     def _data_is_loaded(self) -> bool:
-        return self.components["interactive_plot"].has_data()
+        return self.components["interactive_plot"].data_is_loaded()

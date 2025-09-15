@@ -62,6 +62,8 @@ class Model(Protocol):
 
     def find_nearest_data_point(self, x_coordinate: float) -> tuple[float, float]: ...
 
+    def has_data(self) -> bool: ...
+
 
 class View(Protocol):
     """Protocol for the InteractivePlot View"""
@@ -122,9 +124,9 @@ class InteractivePlotController(QObject):
 
         self.view.update_figure()
 
-    def has_data(self) -> bool:
+    def data_is_loaded(self) -> bool:
         """Convenience method used both in this controller + the main controller to guard against actions at startup"""
-        return True if self.model.trace_data else False
+        return self.model.has_data()
 
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
@@ -135,7 +137,7 @@ class InteractivePlotController(QObject):
         ? Should this be removed?
         """
         # If the user clicks before any data is loaded, simply ignore the action
-        if not self.has_data():
+        if not self.data_is_loaded():
             return
 
         t_data_point, _ = self.model.find_nearest_data_point(x_click)
@@ -151,7 +153,7 @@ class InteractivePlotController(QObject):
         triggers when the user clicks in the plot (right mouse button)
         """
         # If the user clicks before any data is loaded, simply ignore the action
-        if not self.has_data():
+        if not self.data_is_loaded():
             return
 
         self.view.clear_last_line_from_plot()

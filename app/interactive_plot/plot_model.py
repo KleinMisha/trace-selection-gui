@@ -45,3 +45,6 @@ class InteractivePlotModel:
         y_data = self.trace_data.z
         idx_nearest = np.argmin(abs(x_data - x_coordinate))
         return x_data[idx_nearest], y_data[idx_nearest]
+
+    def has_data(self) -> bool:
+        return True if self.trace_data else False
