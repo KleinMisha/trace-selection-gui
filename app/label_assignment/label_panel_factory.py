@@ -6,9 +6,11 @@ NOTE: It also takes care of placing the component in its respective placeholder 
 """
 
 from PyQt6.QtWidgets import QWidget
+
+from app.component_factory_helpers import fill_component_to_placeholder
+from app.label_assignment.label_panel_controller import LabelPanelController
 from app.label_assignment.label_panel_model import LabelPanelModel
 from app.label_assignment.label_panel_view import LabelPanelView
-from app.label_assignment.label_panel_controller import LabelPanelController
 
 
 def create_label_panel(placeholder: QWidget | None = None) -> LabelPanelController:
@@ -16,4 +18,6 @@ def create_label_panel(placeholder: QWidget | None = None) -> LabelPanelControll
     model = LabelPanelModel()
     view = LabelPanelView(parent=placeholder)
     controller = LabelPanelController(model, view)
+    if placeholder:
+        fill_component_to_placeholder(view, placeholder)
     return controller

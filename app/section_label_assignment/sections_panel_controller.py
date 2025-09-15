@@ -5,14 +5,7 @@ Controller: Listens to the View and handles communicating back to the Model and 
 from typing import Callable, Protocol
 
 from app.section_label_assignment.light_state import LightState
-
-
-class Section(Protocol):
-    """Only the Model actually depends on the Section class, but it has a property the Controller will be needing."""
-
-    start_frame: int | None
-    end_frame: int | None
-    assigned_labels: list[str]
+from app.section_label_assignment.sections_panel_model import Section
 
 
 class Model(Protocol):

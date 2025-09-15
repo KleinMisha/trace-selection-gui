@@ -25,6 +25,8 @@ def main():
     # Start setting up the main controller
     model = MainModel()
     view = MainView()
+    view.show()
+
     components: ComponentControllers = {
         "interactive_plot": create_plot_controller(
             placeholder=view.InterActivePlotView
@@ -37,7 +39,6 @@ def main():
 
     # start the application
     _ = controller
-    view.show()
     app.exec()
 
 

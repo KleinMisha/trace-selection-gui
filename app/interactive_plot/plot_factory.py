@@ -7,6 +7,7 @@ NOTE: It also takes care of placing the component in its respective placeholder 
 
 from PyQt6.QtWidgets import QWidget
 
+from app.component_factory_helpers import fill_component_to_placeholder
 from app.interactive_plot.plot_controller import InteractivePlotController
 from app.interactive_plot.plot_model import InteractivePlotModel
 from app.interactive_plot.plot_view import InterActivePlotView
@@ -25,4 +26,6 @@ def create_plot_controller(placeholder: QWidget | None) -> InteractivePlotContro
     )
     view = InterActivePlotView(parent=placeholder)
     controller = InteractivePlotController(model, view)
+    if placeholder:
+        fill_component_to_placeholder(view, placeholder)
     return controller
