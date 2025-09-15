@@ -15,9 +15,9 @@ from PyQt6.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 def fill_component_to_placeholder(
     component: QWidget, placeholder: QWidget, force_layout: bool = True
 ) -> None:
-    """ensures the component view fills the placeholder correctly"""
+    """Places the component inside the placeholder and ensures it fills up the entire space of the placeholder."""
     # undo the background used as visual indicator when creating the UI for the MainView
-    placeholder.setStyleSheet("background-color: transparent;")
+    placeholder.setStyleSheet("")
     # Make the component expand to fill available space
     component.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
