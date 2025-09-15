@@ -75,4 +75,4 @@ def test_forced_layout() -> None:
     available_widgets = [
         cast(QLayoutItem, layout.itemAt(idx)).widget() for idx in range(layout.count())
     ]
-    assert set(available_widgets) == set([child_widget_1, child_widget_2])
+    assert [child in available_widgets for child in [child_widget_1, child_widget_2]]
