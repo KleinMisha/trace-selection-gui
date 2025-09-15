@@ -31,16 +31,16 @@ def fill_component_to_placeholder(
 
 
 def _force_component_layout(component: QWidget) -> None:
-    """Force a top-level layout unto the component view in case the component otherwise does not scale / translate properly into the desired placeholder"""
-    if component.layout() is None:
-        # Get all existing child widgets before creating layout
-        existing_children = [
-            child for child in component.children() if isinstance(child, QWidget)
-        ]
+    """Force a top-level layout onto the component view in case the component otherwise does not scale / translate properly into the desired placeholder"""
 
-        # Give the component a top-level layout and register / add its child components
-        component_layout = QVBoxLayout(component)
-        component_layout.setContentsMargins(0, 0, 0, 0)
-        for child in existing_children:
-            child.setParent(None)
-            component_layout.addWidget(child)
+    # Get all existing child widgets before creating layout
+    existing_children = [
+        child for child in component.children() if isinstance(child, QWidget)
+    ]
+
+    # Give the component a top-level layout and register / add its child components
+    component_layout = QVBoxLayout(component)
+    component_layout.setContentsMargins(0, 0, 0, 0)
+    for child in existing_children:
+        child.setParent(None)
+        component_layout.addWidget(child)
