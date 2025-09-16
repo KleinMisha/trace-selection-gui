@@ -4,7 +4,7 @@ Tests main controller's logic: Are signals correctly passed between controllers?
 
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Type, cast
+from typing import Any, cast
 from unittest.mock import Mock, PropertyMock, call, create_autospec, patch
 
 import pytest

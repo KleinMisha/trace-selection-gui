@@ -5,20 +5,13 @@ NOTE: Tests are simple, but there as a safety valve when refactoring the code
 
 from typing import cast
 
-import pytest
 from PyQt6.QtWidgets import QApplication, QWidget
 
-from app.section_label_assignment.sections_panel_factory import create_sections_panel
 from app.main_app.component_controller_protocols import SectionsPanelController
+from app.section_label_assignment.sections_panel_factory import create_sections_panel
 
 
-# ensure there is always a QApplication instance (Qt requirement)
-@pytest.fixture(scope="session", autouse=True)
-def app():
-    return QApplication([])
-
-
-def test_resulting_controller_satisfies_protocol() -> None:
+def test_resulting_controller_satisfies_protocol(qapp: QApplication) -> None:
     """
     Checks that the controller returned by the factory indeed
     satisfies the requirements for it to function in the MainController
@@ -27,14 +20,14 @@ def test_resulting_controller_satisfies_protocol() -> None:
     assert isinstance(controller, SectionsPanelController)
 
 
-def test_resulting_controller_has_model_and_view_attrs() -> None:
+def test_resulting_controller_has_model_and_view_attrs(qapp: QApplication) -> None:
     """Checks the controller indeed has a Model and a View"""
     controller = create_sections_panel(None)
     assert hasattr(controller, "model")
     assert hasattr(controller, "view")
 
 
-def test_view_is_placed_in_desired_placeholder() -> None:
+def test_view_is_placed_in_desired_placeholder(qapp: QApplication) -> None:
     """simply check that the component's view has it's parent set correctly"""
     mock_placeholder = QWidget()
     controller = create_sections_panel(mock_placeholder)
