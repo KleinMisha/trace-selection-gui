@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LabelPanelModel:
-    available_labels: list[str] = field(default_factory=lambda: [""])
-    assigned_labels: list[str] = field(default_factory=lambda: [""])
+    available_labels: list[str] = field(default_factory=lambda: [])
+    assigned_labels: list[str] = field(default_factory=lambda: [])
     current_idx: int = 0
 
     @property
@@ -40,11 +40,15 @@ class LabelPanelModel:
             self.current_idx -= 1
 
     def reset_assigned_labels(self, labels_new_trace: list[str]) -> None:
-        """Will be called by MainController when moving to the next trace"""
-        self.assigned_labels = labels_new_trace
+        """Will be called (indirectly) by MainController when moving to the next trace"""
+
+        # If you make a label unavailable, you should also not be able to assign it / auto unassign it from traces
+        self.assigned_labels = [
+            label for label in labels_new_trace if label in self.available_labels
+        ]
 
     def update_available_labels(self, updated_list: list[str]) -> None:
-        """Will be called by the MainController when done editing the ItemList"""
+        """Will be called (indirectly) by the MainController when done editing the ItemList"""
         original_list = self.available_labels.copy()
         # make sure to keep pointing at the same label when you shrink the label list
         if len(updated_list) < len(original_list) and self.current_idx > 0:

@@ -4,6 +4,8 @@ Controller: Handle communication with its own View and Model as well as with the
 
 from typing import Callable, Protocol
 
+from PyQt6.QtCore import QObject, pyqtSignal
+
 from app.label_assignment.light_state import LightState
 
 
@@ -12,6 +14,9 @@ class Model(Protocol):
 
     @property
     def assigned_labels(self) -> list[str]: ...
+
+    @property
+    def available_labels(self) -> list[str]: ...
 
     @property
     def current_label(self) -> str: ...
@@ -36,10 +41,14 @@ class View(Protocol):
     def connect_unassign_label(self, callback: Callable[[], None]) -> None: ...
     def connect_next_label(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_label(self, callback: Callable[[], None]) -> None: ...
+    def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
 
 
-class LabelPanelController:
+class LabelPanelController(QObject):
+    _open_item_list_signal = pyqtSignal()
+
     def __init__(self, model: Model, view: View) -> None:
+        super().__init__()
         self.model = model
         self.view = view
 
@@ -48,6 +57,7 @@ class LabelPanelController:
         self.view.connect_unassign_label(self.handle_unassign_label)
         self.view.connect_next_label(self.handle_move_to_next)
         self.view.connect_prev_label(self.handle_move_to_previous)
+        self.view.connect_open_item_list(self.handle_open_item_list)
 
     def handle_assign_label(self) -> None:
         """Triggered when 'add' button is clicked"""
@@ -71,6 +81,10 @@ class LabelPanelController:
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
+    def handle_open_item_list(self) -> None:
+        """ "Informs the MainController the button has been pressed"""
+        self._send_open_item_list_signal()
+
     # API for the MainController:
     def reset_for_new_trace(self, labels_new_trace: list[str]) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
@@ -86,7 +100,17 @@ class LabelPanelController:
     def get_assigned_labels(self) -> list[str]:
         return self.model.assigned_labels
 
+    def get_available_labels(self) -> list[str]:
+        return self.model.available_labels
+
+    def connect_open_item_list(self, callback: Callable[[], None]) -> None:
+        self._open_item_list_signal.connect(callback)
+
     # Used internally:
+    def _send_open_item_list_signal(self) -> None:
+        """Passes on the signal to the MainController"""
+        self._open_item_list_signal.emit()
+
     def _determine_light_state(self) -> LightState:
         if self.model.current_is_assigned:
             return LightState.ON

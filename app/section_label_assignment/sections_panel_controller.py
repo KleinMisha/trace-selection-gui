@@ -4,6 +4,8 @@ Controller: Listens to the View and handles communicating back to the Model and 
 
 from typing import Callable, Protocol
 
+from PyQt6.QtCore import QObject, pyqtSignal
+
 from app.section_label_assignment.light_state import LightState
 from app.section_label_assignment.sections_panel_model import Section
 
@@ -21,6 +23,9 @@ class Model(Protocol):
 
     @property
     def current_is_assigned(self) -> bool: ...
+
+    @property
+    def available_labels(self) -> list[str]: ...
 
     def create_new_section(self) -> None: ...
     def remove_last_section(self) -> None: ...
@@ -54,9 +59,12 @@ class View(Protocol):
     def connect_prev_label(self, callback: Callable[[], None]) -> None: ...
     def connect_next_section(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_section(self, callback: Callable[[], None]) -> None: ...
+    def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
 
 
-class SectionsPanelController:
+class SectionsPanelController(QObject):
+    _open_item_list_signal = pyqtSignal()
+
     def __init__(self, model: Model, view: View) -> None:
         self.model = model
         self.view = view
@@ -68,6 +76,7 @@ class SectionsPanelController:
         self.view.connect_prev_label(self.handle_move_to_prev_label)
         self.view.connect_next_section(self.handle_move_to_next_section)
         self.view.connect_prev_section(self.handle_move_to_prev_section)
+        self.view.connect_open_item_list(self.handle_open_item_list)
 
     def handle_assign_label(self) -> None:
         """Triggered when `add` button is clicked"""
@@ -115,6 +124,10 @@ class SectionsPanelController:
 
         self.view.toggle_indicator(self._determine_light_state())
 
+    def handle_open_item_list(self) -> None:
+        """ "Informs the MainController the button has been pressed"""
+        self._send_open_item_list_signal()
+
     # API for the MainController:
     def reset_for_new_trace(
         self, sections_new_trace: dict[tuple[int, int], list[str]]
@@ -152,7 +165,17 @@ class SectionsPanelController:
         """Such that the MainController can access this method on the component Model"""
         return self.model.determine_section_boundaries()
 
+    def get_available_labels(self) -> list[str]:
+        return self.model.available_labels
+
+    def connect_open_item_list(self, callback: Callable[[], None]) -> None:
+        self._open_item_list_signal.connect(callback)
+
     # Used internally:
+    def _send_open_item_list_signal(self) -> None:
+        """Passes on the signal to the MainController"""
+        self._open_item_list_signal.emit()
+
     def _determine_light_state(self) -> LightState:
         if self.model.current_is_assigned:
             return LightState.ON

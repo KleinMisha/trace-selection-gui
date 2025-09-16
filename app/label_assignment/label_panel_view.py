@@ -76,7 +76,7 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
         self._prev_label_signal.connect(callback)
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
-        """Connect a callback from the MainController"""
+        """Connect a callback from the controller that will simply 're-emit'/pass on the signal to the MainController"""
         self._open_item_list_signal.connect(callback)
 
     # emit signals when triggered by user's input

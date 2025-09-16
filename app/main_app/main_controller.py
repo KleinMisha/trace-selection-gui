@@ -149,7 +149,7 @@ class MainController:
         # Keep track of a first-in-first-out (FIFO) queue of opening/saving actions to be performed
         self._pending_file_dialog_requests: list[tuple[FileType, FileAction]] = []
 
-        # Connect (listen) to incoming signals:
+        # Connect (listen) to incoming signals from the MainView:
         self.view.connect_next_trace(self.handle_move_to_next_trace)
         self.view.connect_prev_trace(self.handle_move_to_prev_trace)
         self.view.connect_jump_to_trace(self.handle_jump_to_trace)
@@ -160,6 +160,20 @@ class MainController:
         self.view.connect_menu_file_import_sections(self.handle_menu_load_sections)
         self.view.connect_file_name_selected(self.handle_file_name_selected)
         self.view.connect_go_to_help_docs(self.handle_go_to_help_docs)
+
+        # Connect (listen) to signals from the components
+        self.connect_components()
+
+    def connect_components(self) -> None:
+        """
+        Establish connections to the signals emitted by components.
+        """
+        self.components["label_panel"].connect_open_item_list(
+            self.handle_open_item_list_from_label_panel
+        )
+        self.components["sections_panel"].connect_open_item_list(
+            self.handle_open_item_list_from_sections_panel
+        )
 
     # main app logic
     def close_app(self) -> None:
@@ -376,8 +390,41 @@ class MainController:
     def handle_open_item_list_from_label_panel(self) -> None:
         """Button clicked in the `LabelsPanel` : instantiate `ItemList` with appropriate list of available labels"""
 
+        # ensure to only open one copy of the window at the time to avoid confusion(even if you press the button multiple times)
+        if getattr(self, "popup_window_from_labels", None):
+            return
+
+        available_labels = self.components["label_panel"].get_available_labels()
+        # create an instance variable, to have the window actually persist after you exit this function.
+        self.popup_window_from_labels = self.components["item_list"](available_labels)
+        self.popup_window_from_labels.connect_window_closed_signal(
+            self.handle_close_item_list_from_label_panel
+        )
+        self.popup_window_from_labels.show()
+
+    def handle_close_item_list_from_label_panel(self, items: list[str]) -> None:
+        """Update the list of available labels"""
+
+        self.components["label_panel"].update_available_labels(items)
+        self.popup_window_from_labels = None
+
     def handle_open_item_list_from_sections_panel(self) -> None:
         """Button clicked in the `SectionsPanel` : instantiate `ItemList` with appropriate list of available labels"""
+        # ensure to only open one copy of the window at the time to avoid confusion(even if you press the button multiple times)
+        if getattr(self, "popup_window_from_sections", None):
+            return
+        available_labels = self.components["sections_panel"].get_available_labels()
+        # create an instance variable, to have the window actually persist after you exit this function.
+        self.popup_window_from_sections = self.components["item_list"](available_labels)
+        self.popup_window_from_sections.connect_window_closed_signal(
+            self.handle_close_item_list_from_sections_panel
+        )
+        self.popup_window_from_sections.show()
+
+    def handle_close_item_list_from_sections_panel(self, items: list[str]) -> None:
+        """Update the list of available section labels"""
+        self.components["sections_panel"].update_available_labels(items)
+        self.popup_window_from_sections = None
 
     def handle_line_added_in_plot(self, location: float) -> None:
         """Makes the InterActivePlot affect the SectionsPanel"""
@@ -461,6 +508,8 @@ class MainController:
         if self.model.path_to_section_labels == Path(""):
             return False
         return True
+
+        super().__init__()
 
     # Logic that requires accessing the component controllers
     def _update_current_trace(self) -> None:

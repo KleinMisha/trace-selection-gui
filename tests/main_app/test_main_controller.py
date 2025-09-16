@@ -54,6 +54,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
     mock_item_list_ctrl = create_autospec(ItemListController, instance=True)
 
     # Use pytest.MonkeyPatch to patch the actual version of the factory the MainController will see
+    mock_item_list_factory = Mock(side_effect=mock_factory)
     monkeypatch.setattr(
         "app.item_list.item_list_factory.create_item_list", mock_factory
     )
@@ -62,7 +63,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
         "interactive_plot": mock_plot_ctrl,
         "label_panel": mock_label_ctrl,
         "sections_panel": mock_sections_ctrl,
-        "item_list": mock_factory,
+        "item_list": mock_item_list_factory,
     }
 
 
@@ -578,3 +579,168 @@ def test_jump_to_trace(main_controller: MainController) -> None:
         mock_four.assert_called_once_with(expected_trace_id)
         mock_five.assert_called_once()
         mock_six.assert_called_once_with(expected_percentage)
+
+
+def test_handle_open_item_list_from_labels_panel(
+    main_controller: MainController,
+) -> None:
+    """test correctly displaying the popup window.
+    NOTE: Because of all the mock components made in the fixture (see above), this process becomes easier.
+    No need to mock again. Only patch the return of functions.
+    """
+    expected_labels = ["mock", "mock", "mock"]
+    with patch.object(
+        main_controller.components["label_panel"],
+        attribute="get_available_labels",
+        return_value=expected_labels,
+    ) as _:
+        # send the signal to open the window:
+        main_controller.handle_open_item_list_from_label_panel()
+
+        # check the controller creates a new window with the available labels set according to what the labels panel says it are:
+        cast(
+            Mock, main_controller.components["label_panel"].get_available_labels
+        ).assert_called_once()
+        cast(Mock, main_controller.components["item_list"]).assert_called_once_with(
+            expected_labels
+        )
+
+        # To have the window persist after exiting the` handle_open_item_list_...()`, the main controller should store the window as an instance variable
+        assert main_controller.popup_window_from_labels == main_controller.components[
+            "item_list"
+        ](expected_labels)
+        mock_window = cast(ItemListController, main_controller.popup_window_from_labels)
+
+        # Make sure to connect the logic for when you close the window
+        cast(Mock, mock_window.connect_window_closed_signal).assert_called_once_with(
+            main_controller.handle_close_item_list_from_label_panel
+        )
+
+        # Make sure to actually show the new window
+        cast(Mock, mock_window.show).assert_called_once()
+
+
+def test_only_one_popup_from_labels_panel_exists(
+    main_controller: MainController,
+) -> None:
+    """Check that when pressing the button in the labels panel multiple times, that only a single window is shown"""
+    expected_labels = ["mock", "mock", "mock"]
+    with patch.object(
+        main_controller.components["label_panel"],
+        attribute="get_available_labels",
+        return_value=expected_labels,
+    ) as _:
+        # send the signal to open the window a couple of times:
+        main_controller.handle_open_item_list_from_label_panel()
+        main_controller.handle_open_item_list_from_label_panel()
+        main_controller.handle_open_item_list_from_label_panel()
+
+        # check subsequent logic is only called once
+        cast(Mock, main_controller.components["item_list"]).assert_called_once_with(
+            expected_labels
+        )
+        mock_window = cast(ItemListController, main_controller.popup_window_from_labels)
+        cast(Mock, mock_window.show).assert_called_once()
+
+
+def test_close_item_list_from_sections_panel(main_controller: MainController) -> None:
+    """check the control flow from opening the window -> closing it --> then check the available labels are updated correctly"""
+
+
+def test_handle_open_item_list_from_sections_panel(
+    main_controller: MainController,
+) -> None:
+    """test correctly displaying the popup window.
+    NOTE: Because of all the mock components made in the fixture (see above), this process becomes easier.
+    No need to mock again. Only patch the return of functions.
+    """
+    expected_labels = ["mock", "mock", "mock"]
+    with patch.object(
+        main_controller.components["sections_panel"],
+        attribute="get_available_labels",
+        return_value=expected_labels,
+    ) as _:
+        # send the signal to open the window:
+        main_controller.handle_open_item_list_from_sections_panel()
+
+        # check the controller creates a new window with the available labels set according to what the labels panel says it are:
+        cast(
+            Mock, main_controller.components["sections_panel"].get_available_labels
+        ).assert_called_once()
+        cast(Mock, main_controller.components["item_list"]).assert_called_once_with(
+            expected_labels
+        )
+
+        # To have the window persist after exiting the` handle_open_item_list_...()`, the main controller should store the window as an instance variable
+        assert main_controller.popup_window_from_sections == main_controller.components[
+            "item_list"
+        ](expected_labels)
+        mock_window = cast(
+            ItemListController, main_controller.popup_window_from_sections
+        )
+
+        # Make sure to connect the logic for when you close the window
+        cast(Mock, mock_window.connect_window_closed_signal).assert_called_once_with(
+            main_controller.handle_close_item_list_from_sections_panel
+        )
+
+        # Make sure to actually show the new window
+        cast(Mock, mock_window.show).assert_called_once()
+
+
+def test_only_one_popup_from_sections_panel_exists(
+    main_controller: MainController,
+) -> None:
+    """Check that when pressing the button in the labels panel multiple times, that only a single window is shown"""
+    expected_labels = ["mock", "mock", "mock"]
+    with patch.object(
+        main_controller.components["sections_panel"],
+        attribute="get_available_labels",
+        return_value=expected_labels,
+    ) as _:
+        # send the signal to open the window a couple of times:
+        main_controller.handle_open_item_list_from_sections_panel()
+        main_controller.handle_open_item_list_from_sections_panel()
+        main_controller.handle_open_item_list_from_sections_panel()
+
+        # check subsequent logic is only called once
+        cast(Mock, main_controller.components["item_list"]).assert_called_once_with(
+            expected_labels
+        )
+        mock_window = cast(
+            ItemListController, main_controller.popup_window_from_sections
+        )
+        cast(Mock, mock_window.show).assert_called_once()
+
+
+def test_opening_both_item_lists(main_controller: MainController) -> None:
+    """You should be able to open both windows as separate pop up windows"""
+    expected_labels = ["label", "label", "label"]
+    expected_section_labels = ["section", "section", "section"]
+    with (
+        patch.object(
+            main_controller.components["label_panel"],
+            attribute="get_available_labels",
+            return_value=expected_labels,
+        ) as _,
+        patch.object(
+            main_controller.components["sections_panel"],
+            attribute="get_available_labels",
+            return_value=expected_section_labels,
+        ) as _,
+    ):
+        # call both methods
+        main_controller.handle_open_item_list_from_label_panel()
+        main_controller.handle_open_item_list_from_sections_panel()
+
+        # check the windows are displaying the correct lists
+        expected_calls = [call(expected_labels), call(expected_section_labels)]
+        cast(Mock, main_controller.components["item_list"]).assert_has_calls(
+            expected_calls
+        )
+        assert main_controller.popup_window_from_labels == main_controller.components[
+            "item_list"
+        ](expected_labels)
+        assert main_controller.popup_window_from_sections == main_controller.components[
+            "item_list"
+        ](expected_section_labels)
