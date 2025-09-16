@@ -66,6 +66,7 @@ class SectionsPanelController(QObject):
     _open_item_list_signal = pyqtSignal()
 
     def __init__(self, model: Model, view: View) -> None:
+        super().__init__()
         self.model = model
         self.view = view
 
