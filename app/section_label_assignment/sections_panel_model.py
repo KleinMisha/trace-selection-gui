@@ -31,7 +31,7 @@ class Section:
 @dataclass
 class SectionsPanelModel:
     available_labels: list[str] = field(default_factory=lambda: [""])
-    sections: list[Section] = field(default_factory=lambda: [])
+    sections: list[Section] = field(default_factory=lambda: [Section()])
     current_label_index: int = 0
     current_section_index: int = 0
 
