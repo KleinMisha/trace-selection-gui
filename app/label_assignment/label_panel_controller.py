@@ -81,7 +81,7 @@ class LabelPanelController(QObject):
 
     def handle_move_to_next(self) -> None:
         """Triggered when 'next' button is clicked"""
-        if not self.model.available_labels:
+        if not self.model.has_labels:
             # break out of this function when there are no labels at the start
             return
         self.model.move_to_next()
@@ -90,7 +90,7 @@ class LabelPanelController(QObject):
 
     def handle_move_to_previous(self) -> None:
         """Triggered when 'previous' button is clicked"""
-        if not self.model.available_labels:
+        if not self.model.has_labels:
             # break out of this function when there are no labels at the start
             return
         self.model.move_to_previous()
@@ -131,7 +131,7 @@ class LabelPanelController(QObject):
         self._open_item_list_signal.emit()
 
     def _determine_light_state(self) -> LightState:
-        if self.model.current_is_assigned:
+        if self.model.has_labels and self.model.current_is_assigned:
             return LightState.ON
 
         return LightState.OFF

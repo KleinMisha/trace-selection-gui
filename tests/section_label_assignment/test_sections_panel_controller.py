@@ -74,7 +74,7 @@ def test_unassign_label() -> None:
 
 
 def test_unassign_non_existing_label() -> None:
-    """Calling the add label before there is any label available"""
+    """Calling the remove label before there is any label available"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = SectionsPanelController(model, view)
@@ -161,6 +161,17 @@ def test_change_available_labels() -> None:
         ["mock", "mocker", "most mockest"]
     )
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_change_without_available_labels() -> None:
+    """Mimic calling the update when there are no available labels"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.update_available_labels(updated_list=["mock", "mocker", "most mockest"])
+    cast(Mock, model.update_available_labels).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 @pytest.mark.parametrize("is_assigned", [True, False])

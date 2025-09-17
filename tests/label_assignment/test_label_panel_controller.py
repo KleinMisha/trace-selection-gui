@@ -30,9 +30,21 @@ def test_assign_label() -> None:
     controller = LabelPanelController(model, view)
 
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.handle_assign_label()
     cast(Mock, model.assign_current_label).assert_called_once()
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_assign_non_existing_label() -> None:
+    """Calling the add label before there is any label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = LabelPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.handle_assign_label()
+    cast(Mock, model.assign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_unassign_label() -> None:
@@ -40,11 +52,22 @@ def test_unassign_label() -> None:
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = LabelPanelController(model, view)
-
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.handle_unassign_label()
     cast(Mock, model.unassign_current_label).assert_called_once()
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.OFF)
+
+
+def test_unassign_non_existing_label() -> None:
+    """Calling the remove label before there is any label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = LabelPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.handle_unassign_label()
+    cast(Mock, model.unassign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_move_to_next() -> None:
@@ -57,11 +80,25 @@ def test_move_to_next() -> None:
     view = cast(View, Mock(spec=View))
     controller = LabelPanelController(model, view)
 
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
     controller.handle_move_to_next()
     cast(Mock, model.move_to_next).assert_called_once()
     cast(Mock, view.display_label).assert_called_once_with("mock")
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_move_to_next_no_available_labels() -> None:
+    """test moving before there is a label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = LabelPanelController(model, view)
+
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.handle_move_to_next()
+    cast(Mock, model.move_to_next).assert_not_called()
+    cast(Mock, view.display_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_move_to_previous() -> None:
@@ -80,6 +117,19 @@ def test_move_to_previous() -> None:
     cast(Mock, model.move_to_previous).assert_called_once()
     cast(Mock, view.display_label).assert_called_once_with("mock")
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_move_to_previous_no_available_labels() -> None:
+    """test moving before there is a label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = LabelPanelController(model, view)
+
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.handle_move_to_previous()
+    cast(Mock, model.move_to_previous).assert_not_called()
+    cast(Mock, view.display_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_change_assigned_labels() -> None:
@@ -106,11 +156,23 @@ def test_change_available_labels() -> None:
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = LabelPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.update_available_labels(updated_list=["mock", "mocker", "most mockest"])
     cast(Mock, model.update_available_labels).assert_called_once_with(
         ["mock", "mocker", "most mockest"]
     )
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_change_without_available_labels() -> None:
+    """Mimic calling the update when there are no available labels"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = LabelPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    controller.update_available_labels(updated_list=["mock", "mocker", "most mockest"])
+    cast(Mock, model.update_available_labels).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 @pytest.mark.parametrize("is_assigned", [True, False])
