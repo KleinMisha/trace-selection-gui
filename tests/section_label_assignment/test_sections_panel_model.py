@@ -372,3 +372,24 @@ def test_determining_section_boundaries(
     _, nicknames_sections = nicknames
     model = SectionsPanelModel(sections=nicknames_sections)
     assert model.determine_section_boundaries() == expected_boundaries
+
+
+def test_getting_start_frame(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Fetch the current starting frame. Also check that it returns None when not available"""
+    _, nicknames_sections = nicknames
+    # using jokix as it only as a start frame
+    jokic_model = SectionsPanelModel(sections=[nicknames_sections[2]])
+    # using curry as it only has a end frame
+    curry_model = SectionsPanelModel(sections=[nicknames_sections[-1]])
+
+    assert jokic_model.current_section_has_start
+    assert not jokic_model.current_section_has_end
+    assert jokic_model.current_section_start_frame == 15
+    assert jokic_model.current_section_end_frame is None
+
+    assert not curry_model.current_section_has_start
+    assert curry_model.current_section_has_end
+    assert curry_model.current_section_start_frame is None
+    assert curry_model.current_section_end_frame == 30

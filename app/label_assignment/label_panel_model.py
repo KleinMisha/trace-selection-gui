@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class LabelPanelModel:
-    available_labels: list[str] = field(default_factory=lambda: [])
-    assigned_labels: list[str] = field(default_factory=lambda: [])
+    available_labels: list[str] = field(default_factory=list)
+    assigned_labels: list[str] = field(default_factory=list)
     current_idx: int = 0
 
     @property
@@ -18,6 +18,10 @@ class LabelPanelModel:
     @property
     def current_is_assigned(self) -> bool:
         return self.current_label in self.assigned_labels
+
+    @property
+    def has_labels(self) -> bool:
+        return bool(self.available_labels)
 
     def assign_current_label(self) -> None:
         """Avoid duplicates: only assign when not already done before"""

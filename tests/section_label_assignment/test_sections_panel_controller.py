@@ -31,9 +31,34 @@ def test_assign_label() -> None:
     controller = SectionsPanelController(model, view)
 
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.handle_assign_label()
     cast(Mock, model.assign_current_label).assert_called_once()
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_assign_non_existing_label() -> None:
+    """Calling the add label before there is any label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=True)
+    controller.handle_assign_label()
+    cast(Mock, model.assign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
+
+
+def test_assign_label_no_existing_section() -> None:
+    """Attempt calling before there is a section available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=False)
+    controller.handle_assign_label()
+    cast(Mock, model.assign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_unassign_label() -> None:
@@ -46,6 +71,30 @@ def test_unassign_label() -> None:
     controller.handle_unassign_label()
     cast(Mock, model.unassign_current_label).assert_called_once()
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.OFF)
+
+
+def test_unassign_non_existing_label() -> None:
+    """Calling the add label before there is any label available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=True)
+    controller.handle_unassign_label()
+    cast(Mock, model.unassign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
+
+
+def test_unassign_label_no_existing_section() -> None:
+    """Attempt calling before there is a section available"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=False)
+    controller.handle_unassign_label()
+    cast(Mock, model.unassign_current_label).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 def test_move_to_next_label() -> None:
@@ -143,10 +192,9 @@ def test_move_to_next_section() -> None:
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = SectionsPanelController(model, view)
-
-    cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
-    cast(Any, type(model.current_section)).start_frame = PropertyMock(return_value=8)
-    cast(Any, type(model.current_section)).end_frame = PropertyMock(return_value=24)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=True)
+    cast(Any, type(model)).current_section_start_frame = PropertyMock(return_value=8)
+    cast(Any, type(model)).current_section_end_frame = PropertyMock(return_value=24)
     controller.handle_move_to_next_section()
     cast(Mock, model.move_to_next_section).assert_called_once()
     cast(Mock, view.display_section_start).assert_called_once_with(8)
@@ -163,15 +211,40 @@ def test_move_to_previous_section() -> None:
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = SectionsPanelController(model, view)
-
-    cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
-    cast(Any, type(model.current_section)).start_frame = PropertyMock(return_value=8)
-    cast(Any, type(model.current_section)).end_frame = PropertyMock(return_value=24)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=True)
+    cast(Any, type(model)).current_section_start_frame = PropertyMock(return_value=8)
+    cast(Any, type(model)).current_section_end_frame = PropertyMock(return_value=24)
     controller.handle_move_to_prev_section()
     cast(Mock, model.move_to_previous_section).assert_called_once()
     cast(Mock, view.display_section_start).assert_called_once_with(8)
     cast(Mock, view.display_section_end).assert_called_once_with(24)
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
+
+
+def test_move_to_next_without_a_section() -> None:
+    """if you press the button to move to the next section, while there is no section for the current trace, nothing should happen"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=False)
+    controller.handle_move_to_next_section()
+    cast(Mock, model.move_to_previous_section).assert_not_called()
+    cast(Mock, view.display_section_start).assert_not_called()
+    cast(Mock, view.display_section_end).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
+
+
+def test_move_to_previous_without_a_section() -> None:
+    """if you press the button to move to the next section, while there is no section for the current trace, nothing should happen"""
+    model = cast(Model, Mock(spec=Model))
+    view = cast(View, Mock(spec=View))
+    controller = SectionsPanelController(model, view)
+    cast(Any, type(model)).has_sections = PropertyMock(return_value=False)
+    controller.handle_move_to_prev_section()
+    cast(Mock, model.move_to_previous_section).assert_not_called()
+    cast(Mock, view.display_section_start).assert_not_called()
+    cast(Mock, view.display_section_end).assert_not_called()
+    cast(Mock, view.toggle_indicator).assert_not_called()
 
 
 @pytest.mark.parametrize("frame", [23, 45, 34, 30, 8, 24])

@@ -15,7 +15,7 @@ from app.label_assignment.label_panel_view import LabelPanelView
 
 def create_label_panel(placeholder: QWidget | None = None) -> LabelPanelController:
     """To be called by the main.py when setting up the entire app"""
-    model = LabelPanelModel(assigned_labels=[], available_labels=["remove me please"])
+    model = LabelPanelModel()
     view = LabelPanelView(parent=placeholder)
     controller = LabelPanelController(model, view)
     if placeholder:

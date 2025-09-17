@@ -2,7 +2,7 @@
 Controller: Listens to the View and handles communicating back to the Model and View. Communicates to the MainController and listens to the MainController.
 """
 
-from typing import Callable, Protocol
+from typing import Callable, Optional, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
@@ -27,6 +27,24 @@ class Model(Protocol):
     @property
     def available_labels(self) -> list[str]: ...
 
+    @property
+    def has_labels(self) -> bool: ...
+
+    @property
+    def has_sections(self) -> bool: ...
+
+    @property
+    def current_section_has_start(self) -> bool: ...
+
+    @property
+    def current_section_has_end(self) -> bool: ...
+
+    @property
+    def current_section_start_frame(self) -> int | None: ...
+
+    @property
+    def current_section_end_frame(self) -> int | None: ...
+
     def create_new_section(self) -> None: ...
     def remove_last_section(self) -> None: ...
     def set_start_section(self, value: int) -> None: ...
@@ -50,8 +68,8 @@ class View(Protocol):
 
     def display_label(self, label: str) -> None: ...
     def toggle_indicator(self, state: LightState) -> None: ...
-    def display_section_start(self, frame: int) -> None: ...
-    def display_section_end(self, frame: int) -> None: ...
+    def display_section_start(self, frame: Optional[int]) -> None: ...
+    def display_section_end(self, frame: Optional[int]) -> None: ...
 
     def connect_assign_label(self, callback: Callable[[], None]) -> None: ...
     def connect_unassign_label(self, callback: Callable[[], None]) -> None: ...
@@ -81,48 +99,64 @@ class SectionsPanelController(QObject):
 
     def handle_assign_label(self) -> None:
         """Triggered when `add` button is clicked"""
+        if not self.model.has_labels or not self.model.has_sections:
+            # break out of this function when there are no labels at the start
+            return
         self.model.assign_current_label()
         self.view.toggle_indicator(LightState.ON)
 
     def handle_unassign_label(self) -> None:
         """Triggered when `remove` button is clicked"""
+        if not self.model.has_labels or not self.model.has_sections:
+            # break out of this function when there are no labels at the start
+            return
         self.model.unassign_current_label()
         self.view.toggle_indicator(LightState.OFF)
 
     def handle_move_to_next_label(self) -> None:
         """Triggered when `next label` button is clicked"""
+
+        if not self.model.has_labels:
+            # break out of this function when there are no labels at the start
+            return
+
         self.model.move_to_next_label()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
     def handle_move_to_prev_label(self) -> None:
         """Triggered when `previous label` button is clicked"""
+
+        if not self.model.has_labels:
+            # break out of this function when there are no labels at the start
+            return
+
         self.model.move_to_previous_label()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
     def handle_move_to_next_section(self) -> None:
         """Triggered when `next section` button is clicked"""
+
+        if not self.model.has_sections:
+            # break out of this function when there are no sections at the start
+            return
+
         self.model.move_to_next_section()
-
-        if self.model.current_section.start_frame is not None:
-            self.view.display_section_start(self.model.current_section.start_frame)
-
-        if self.model.current_section.end_frame is not None:
-            self.view.display_section_end(self.model.current_section.end_frame)
-
+        self.view.display_section_start(self.model.current_section_start_frame)
+        self.view.display_section_end(self.model.current_section_end_frame)
         self.view.toggle_indicator(self._determine_light_state())
 
     def handle_move_to_prev_section(self) -> None:
         """Triggered when `previous section` button is clicked"""
+
+        if not self.model.has_sections:
+            # break out of this function when there are no sections at the start
+            return
+
         self.model.move_to_previous_section()
-
-        if self.model.current_section.start_frame is not None:
-            self.view.display_section_start(self.model.current_section.start_frame)
-
-        if self.model.current_section.end_frame is not None:
-            self.view.display_section_end(self.model.current_section.end_frame)
-
+        self.view.display_section_start(self.model.current_section_start_frame)
+        self.view.display_section_end(self.model.current_section_end_frame)
         self.view.toggle_indicator(self._determine_light_state())
 
     def handle_open_item_list(self) -> None:
@@ -135,17 +169,15 @@ class SectionsPanelController(QObject):
     ) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
         self.model.reset_sections(sections_new_trace)
-
-        if self.model.current_section.start_frame is not None:
-            self.view.display_section_start(self.model.current_section.start_frame)
-
-        if self.model.current_section.end_frame is not None:
-            self.view.display_section_end(self.model.current_section.end_frame)
-
+        self.view.display_section_start(self.model.current_section_start_frame)
+        self.view.display_section_end(self.model.current_section_end_frame)
         self.view.toggle_indicator(self._determine_light_state())
 
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be triggered from MainController: Adjust the set of available labels after using the ItemList window."""
+        if not self.model.has_labels:
+            return
+
         self.model.update_available_labels(updated_list)
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
@@ -178,7 +210,7 @@ class SectionsPanelController(QObject):
         self._open_item_list_signal.emit()
 
     def _determine_light_state(self) -> LightState:
-        if self.model.current_is_assigned:
+        if self.model.has_sections and self.model.current_is_assigned:
             return LightState.ON
 
         return LightState.OFF

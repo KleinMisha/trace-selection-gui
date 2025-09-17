@@ -14,7 +14,15 @@ class Section:
     end_frame: Optional[int] = None
     assigned_labels: list[str] = field(default_factory=list)
 
-    # expose some methods to make the syntax slightly more readable below (not strictly needed, could assign directly)
+    # expose some methods to make the syntax slightly more readable below (not strictly needed, could assign directly, but this hides implementation details)
+    @property
+    def has_start_frame(self) -> bool:
+        return bool(self.start_frame)
+
+    @property
+    def has_end_frame(self) -> bool:
+        return bool(self.end_frame)
+
     def set_start_frame(self, value: int) -> None:
         self.start_frame = value
 
@@ -30,8 +38,8 @@ class Section:
 
 @dataclass
 class SectionsPanelModel:
-    available_labels: list[str] = field(default_factory=lambda: [""])
-    sections: list[Section] = field(default_factory=lambda: [Section()])
+    available_labels: list[str] = field(default_factory=list)
+    sections: list[Section] = field(default_factory=list)
     current_label_index: int = 0
     current_section_index: int = 0
 
@@ -46,6 +54,36 @@ class SectionsPanelModel:
     @property
     def current_is_assigned(self) -> bool:
         return self.current_label in self.current_section.assigned_labels
+
+    @property
+    def has_labels(self) -> bool:
+        return bool(self.available_labels)
+
+    @property
+    def has_sections(self) -> bool:
+        return bool(self.sections)
+
+    @property
+    def current_section_has_start(self) -> bool:
+        return self.current_section.has_start_frame if self.has_sections else False
+
+    @property
+    def current_section_has_end(self) -> bool:
+        return self.current_section.has_end_frame if self.has_sections else False
+
+    @property
+    def current_section_start_frame(self) -> int | None:
+        """hides implementation details of how sections are modelled to the controller"""
+        if not self.current_section_has_start:
+            return None
+        return self.current_section.start_frame
+
+    @property
+    def current_section_end_frame(self) -> int | None:
+        """hides implementation details of how sections are modelled to the controller"""
+        if not self.current_section_has_end:
+            return None
+        return self.current_section.end_frame
 
     def create_new_section(self) -> None:
         """make a new section available for values to be set"""

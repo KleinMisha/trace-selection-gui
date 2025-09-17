@@ -24,6 +24,9 @@ class Model(Protocol):
     @property
     def current_is_assigned(self) -> bool: ...
 
+    @property
+    def has_labels(self) -> bool: ...
+
     def assign_current_label(self) -> None: ...
     def unassign_current_label(self) -> None: ...
     def move_to_next(self) -> None: ...
@@ -61,22 +64,35 @@ class LabelPanelController(QObject):
 
     def handle_assign_label(self) -> None:
         """Triggered when 'add' button is clicked"""
+        if not self.model.has_labels:
+            # break out of this function when there are no labels at the start
+            return
+
         self.model.assign_current_label()
         self.view.toggle_indicator(LightState.ON)
 
     def handle_unassign_label(self) -> None:
         """Triggered when 'remove' button is clicked"""
+        if not self.model.has_labels:
+            # break out of this function when there are no labels at the start
+            return
         self.model.unassign_current_label()
         self.view.toggle_indicator(LightState.OFF)
 
     def handle_move_to_next(self) -> None:
         """Triggered when 'next' button is clicked"""
+        if not self.model.available_labels:
+            # break out of this function when there are no labels at the start
+            return
         self.model.move_to_next()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
     def handle_move_to_previous(self) -> None:
         """Triggered when 'previous' button is clicked"""
+        if not self.model.available_labels:
+            # break out of this function when there are no labels at the start
+            return
         self.model.move_to_previous()
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
@@ -93,6 +109,9 @@ class LabelPanelController(QObject):
 
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be triggered from MainController: Adjust the set of available labels after using the ItemList window."""
+        if not self.model.has_labels:
+            return
+
         self.model.update_available_labels(updated_list)
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())

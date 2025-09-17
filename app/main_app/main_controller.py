@@ -404,7 +404,6 @@ class MainController:
 
     def handle_close_item_list_from_label_panel(self, items: list[str]) -> None:
         """Update the list of available labels"""
-
         self.components["label_panel"].update_available_labels(items)
         self.popup_window_from_labels = None
 

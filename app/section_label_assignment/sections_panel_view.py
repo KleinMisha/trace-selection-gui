@@ -3,7 +3,7 @@ View: Listens to the user's input and notifies the controller. Listens to the co
 """
 
 import re
-from typing import Callable
+from typing import Callable, Optional
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
@@ -65,11 +65,11 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
         )
         self.IndicatorAdded.setStyleSheet(new_styling)
 
-    def display_section_start(self, frame: int) -> None:
-        self.StartOfSection.setText(str(frame))
+    def display_section_start(self, frame: Optional[int]) -> None:
+        self.StartOfSection.setText(self._format_frame(frame))
 
-    def display_section_end(self, frame: int) -> None:
-        self.EndOfSection.setText(str(frame))
+    def display_section_end(self, frame: Optional[int]) -> None:
+        self.EndOfSection.setText(self._format_frame(frame))
 
     # Connect callbacks of controller to emitted signals
     def connect_assign_label(self, callback: Callable[[], None]) -> None:
@@ -122,3 +122,7 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
     def _send_prev_section_signal(self) -> None:
         """When the 'previous section' button is pressed"""
         self._prev_section_signal.emit()
+
+    # used only internally
+    def _format_frame(self, frame: Optional[int]) -> str:
+        return str(frame) if frame else "--"
