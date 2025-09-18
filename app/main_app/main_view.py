@@ -5,9 +5,9 @@ from typing import Callable
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
+from state_variables import EventSeverity, LightState
 
 from app.main_app.main_view_ui import Ui_MainWindow
-from app.main_app.state_variables import LightState, MessageBox
 
 # TODO: Move this into a configuration file
 KEYBOARD_SHORTCUTS = {
@@ -159,7 +159,7 @@ class MainView(QMainWindow, Ui_MainWindow):
         if selected_file_path:
             self._send_file_path_selected_signal(Path(selected_file_path))
 
-    def open_message_box(self, msg_type: MessageBox, message: str) -> None:
+    def open_message_box(self, msg_type: EventSeverity, message: str) -> None:
         """
         Display a message box to the user
         ----
@@ -168,11 +168,11 @@ class MainView(QMainWindow, Ui_MainWindow):
         ---
         NOTE: I know this is handled using if/else, but it seems to be a save assumption that this will never grow with many more options anyways.
         """
-        if msg_type == MessageBox.INFO:
+        if msg_type == EventSeverity.INFO:
             QMessageBox.information(self, title="Note", text=message)
-        elif msg_type == MessageBox.WARNING:
+        elif msg_type == EventSeverity.WARNING:
             QMessageBox.warning(self, title="Warning", text=message)
-        elif msg_type == MessageBox.ERROR:
+        elif msg_type == EventSeverity.ERROR:
             QMessageBox.critical(self, title="Error", text=message)
 
     # Connect callbacks of controller to emitted signals

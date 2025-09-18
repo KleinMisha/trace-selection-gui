@@ -21,9 +21,9 @@ from app.main_app.main_view import (
     COLOR_OFF,
     COLOR_ON,
     KEYBOARD_SHORTCUTS,
+    EventSeverity,
     LightState,
     MainView,
-    MessageBox,
 )
 from app.main_app.main_view import QFileDialog as ViewFileDialog
 from app.main_app.main_view import QMessageBox as ViewMessageBox
@@ -217,13 +217,13 @@ def test_indicator_untracked_changes_off() -> None:
 @pytest.mark.parametrize(
     "message_box, message, title, expected_method",
     [
-        (MessageBox.INFO, "Info", "Note", "information"),
-        (MessageBox.WARNING, "Warning", "Warning", "warning"),
-        (MessageBox.ERROR, "Error", "Error", "critical"),
+        (EventSeverity.INFO, "Info", "Note", "information"),
+        (EventSeverity.WARNING, "Warning", "Warning", "warning"),
+        (EventSeverity.ERROR, "Error", "Error", "critical"),
     ],
 )
 def test_opening_the_correct_message_box(
-    message_box: MessageBox, message: str, title: str, expected_method: str
+    message_box: EventSeverity, message: str, title: str, expected_method: str
 ) -> None:
     """Use unittest.mock.patch to mock the correct method depending on the input"""
     view = MainView()

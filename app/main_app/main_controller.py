@@ -12,6 +12,9 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Callable, Concatenate, Protocol, TypedDict
 
+from state_variables import EventSeverity, LightState
+
+from app.exceptions import with_error_handling
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
@@ -19,7 +22,6 @@ from app.main_app.component_controller_protocols import (
     SectionsPanelController,
 )
 from app.main_app.main_model import Trace
-from app.main_app.state_variables import LightState, MessageBox
 
 
 class ComponentControllers(TypedDict):
@@ -72,6 +74,9 @@ class Model(Protocol):
     @property
     def progress_percentage(self) -> float: ...
 
+    @property
+    def has_traces(self) -> bool: ...
+
     def move_to_next_trace(self) -> None: ...
     def move_to_previous_trace(self) -> None: ...
     def jump_to_index(self, target: int) -> None: ...
@@ -99,7 +104,7 @@ class View(Protocol):
     def display_ref_beads_ids(self, names: list[str]) -> None: ...
     def ask_open_file(self, window_title: str) -> None: ...
     def ask_save_file(self, window_title: str) -> None: ...
-    def open_message_box(self, msg_type: MessageBox, message: str) -> None: ...
+    def open_message_box(self, msg_type: EventSeverity, message: str) -> None: ...
 
     def connect_next_trace(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_trace(self, callback: Callable[[], None]) -> None: ...
@@ -171,6 +176,10 @@ class MainController:
     def close_app(self) -> None:
         """Checks for untracked changes"""
 
+    def handle_error(self, severity: EventSeverity, message: str) -> None:
+        """When a method fails expectedly: do not crash the code, but show a message box"""
+        self.view.open_message_box(severity, message)
+
     def handle_move_to_next_trace(self) -> None:
         """
         Updates the data of the current trace before moving to the next.
@@ -219,6 +228,7 @@ class MainController:
         # update the progress bar
         self.view.update_progressbar(self.model.progress_percentage)
 
+    @with_error_handling(severity=EventSeverity.INFO)
     def handle_jump_to_trace(self, trace_id: str) -> None:
         """
         Updates the data of the current trace before changing focus
@@ -365,11 +375,11 @@ class MainController:
 
     def handle_changed_ref_bead(self) -> None:
         # TODO: Implement this later
-        raise NotImplementedError
+        self.view.open_message_box(EventSeverity.INFO, "Not implemented yet.")
 
     def handle_toggle_subtract_ref_bead(self) -> None:
         # TODO: Implement this later
-        raise NotImplementedError
+        self.view.open_message_box(EventSeverity.INFO, "Not implemented yet.")
 
     def handle_open_item_list_from_label_panel(self) -> None:
         """Button clicked in the `LabelsPanel` : instantiate `ItemList` with appropriate list of available labels"""
@@ -417,7 +427,9 @@ class MainController:
 
     def handle_go_to_help_docs(self) -> None:
         # TODO: Implement this later when MkDocs website is running
-        raise NotImplementedError
+        self.view.open_message_box(
+            EventSeverity.INFO, "Coming soon... (not implemented yet)"
+        )
 
     # file-handling logic
     def _process_next_request(self) -> None:
@@ -446,6 +458,7 @@ class MainController:
         """Adds a job to save a file to the FIFO queue"""
         self._pending_file_dialog_requests.append((file_type, FileAction.SAVE))
 
+    @with_error_handling(severity=EventSeverity.ERROR)
     def _open_file(self, file_type: FileType) -> None:
         """Trigger the correct actions on the Model-side depending on the type of data we are trying to open"""
 
@@ -456,6 +469,7 @@ class MainController:
         elif file_type == FileType.SECTION_LABELS:
             self.model.load_section_labels()
 
+    @with_error_handling(severity=EventSeverity.ERROR)
     def _save_file(self, file_type: FileType) -> None:
         """Trigger the correct actions on the Model-side depending on the type of data we are trying to save"""
         if file_type == FileType.LABELS:
@@ -521,4 +535,7 @@ class MainController:
         )
 
     def _data_is_loaded(self) -> bool:
-        return self.components["interactive_plot"].data_is_loaded()
+        return (
+            self.model.has_traces
+            and self.components["interactive_plot"].data_is_loaded()
+        )

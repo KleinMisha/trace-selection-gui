@@ -24,21 +24,7 @@ from time_trace_tools.data_types.magnetic_tweezers_trace import (
     MagneticTweezersTrace as Trace,
 )
 
-
-class MissingExperimentError(Exception):
-    """
-    To indicate you cannot perform certain operations before having loaded the experiment
-    ---
-    !NOTE: if this occurs, it is actually a programming error. The assertions in the code below are there to:
-    ! 1. make the type-checker happy
-    ! 2. specify a contract to all developers: please make sure the MainController guards against calling this method when there is no data.
-    ! In short, just ensure you never call these methods before it would be possible.
-    """
-
-    def __init__(self, function_name: str) -> None:
-        super().__init__(
-            f"Called '{function_name}' before loading any data.\nAdd a guard clause at appropriate point in code (typically in the MainController)"
-        )
+from app.exceptions import InvalidInputError, MissingExperimentError
 
 
 @dataclass
@@ -121,8 +107,11 @@ class MainModel:
         """determine the index you want to jump to"""
         if not self._experiment:
             raise MissingExperimentError("find_index_from_id")
-        target_trace = self._experiment.fetch_trace(trace_id)
-        return self._experiment.traces.index(target_trace)
+        try:
+            target_trace = self._experiment.fetch_trace(trace_id)
+            return self._experiment.traces.index(target_trace)
+        except KeyError:
+            raise InvalidInputError(f"No trace with id {trace_id} found")
 
     def set_file_path_to_experiment_data(self, path: Path | str) -> None:
         self.path_to_experiment_data = Path(path)

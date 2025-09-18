@@ -6,7 +6,7 @@ from typing import Callable, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from app.label_assignment.light_state import LightState
+from app.state_variables import LightState
 
 
 class Model(Protocol):

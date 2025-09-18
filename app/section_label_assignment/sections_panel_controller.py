@@ -6,8 +6,8 @@ from typing import Callable, Optional, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from app.section_label_assignment.light_state import LightState
 from app.section_label_assignment.sections_panel_model import Section
+from app.state_variables import LightState
 
 
 class Model(Protocol):

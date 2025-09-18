@@ -10,7 +10,7 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
-from app.label_assignment.light_state import LightState
+from app.state_variables import LightState
 
 # TODO: Move into configuration file!!
 COLOR_OFF = "white"

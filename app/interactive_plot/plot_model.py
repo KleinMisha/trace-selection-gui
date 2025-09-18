@@ -8,6 +8,8 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
+from app.exceptions import MissingExperimentError
+
 
 class TraceData(Protocol):
     """Represents the simplified version of the data container strictly needed for this part of the application"""
@@ -35,12 +37,8 @@ class InteractivePlotModel:
         # ? this can be made adjustable if also plots for x and y data are included.
         # ? to achieve a general version, this function must get the axis / keys you want to axis from the data as input
         """
-
-        # todo: Figure out some way of getting rid of this essentially redundant piece of code. The Controller already is handling the case of having no data yet.
-        if self.trace_data is None:
-            raise AttributeError(
-                "Failed to find nearest data point: No data has been set / loaded."
-            )
+        if not self.trace_data:
+            raise MissingExperimentError("find_nearest_data_point")
         x_data = self.trace_data.t
         y_data = self.trace_data.z
         idx_nearest = np.argmin(abs(x_data - x_coordinate))
