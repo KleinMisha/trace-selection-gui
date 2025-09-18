@@ -21,8 +21,6 @@ from app.main_app.main_controller import (
     FileAction,
     FileType,
     MainController,
-    UnknownFileAction,
-    UnknownFileType,
 )
 from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
@@ -117,22 +115,6 @@ def test_process_save_file_request(
     )
 
 
-def test_process_unknown_action(main_controller: MainController) -> None:
-    """Should raise an exception if we attempt to process a request with some unknown action
-
-    NOTE: As long as you won't define more than 99 file actions this test works ;-).
-    """
-
-    class FakeState(Enum):
-        UNKNOWN = 99
-
-    main_controller._pending_file_dialog_requests.append(
-        (FileType.LABELS, cast(FileAction, FakeState.UNKNOWN))
-    )
-    with pytest.raises(UnknownFileAction):
-        main_controller._process_next_request()
-
-
 def test_process_without_pending_requests(main_controller: MainController) -> None:
     """Should break out of the function immediately, as there is no new request to process"""
     main_controller._process_next_request()
@@ -159,16 +141,6 @@ def test_open_file(
         mock_loader.assert_called_once()
 
 
-def test_open_unknown_file_type(main_controller: MainController) -> None:
-    """edge case: Attempt to open a file type for which no load method is defined"""
-
-    class FakeState(Enum):
-        UNKNOWN = 99
-
-    with pytest.raises(UnknownFileType):
-        main_controller._open_file(cast(FileType, FakeState.UNKNOWN))
-
-
 @pytest.mark.parametrize(
     "file_type, method_name",
     [
@@ -185,16 +157,6 @@ def test_save_file(
     ) as mock_loader:
         main_controller._save_file(file_type)
         mock_loader.assert_called_once()
-
-
-def test_save_unknown_file_type(main_controller: MainController) -> None:
-    """edge case: Attempt to save a file type for which no writer method is defined"""
-
-    class FakeState(Enum):
-        UNKNOWN = 99
-
-    with pytest.raises(UnknownFileType):
-        main_controller._save_file(cast(FileType, FakeState.UNKNOWN))
 
 
 def test_menu_open_file(main_controller: MainController) -> None:
@@ -368,17 +330,6 @@ def test_handle_filename_selected(
     assert len(main_controller._pending_file_dialog_requests) == 0
 
 
-def test_handle_filename_unknown_file_type(main_controller: MainController) -> None:
-    """check it raises the desired exception"""
-
-    class FakeState(Enum):
-        UNKNOWN = 99
-
-    main_controller._post_open_request(cast(FileType, FakeState.UNKNOWN))
-    with pytest.raises(UnknownFileType):
-        main_controller.handle_file_name_selected(Path(""))
-
-
 @pytest.mark.parametrize(
     "file_action, method_name",
     [(FileAction.OPEN, "_open_file"), (FileAction.SAVE, "_save_file")],
@@ -395,19 +346,6 @@ def test_handle_filename_known_actions(
     with patch.object(main_controller, attribute=method_name) as mock_method:
         main_controller.handle_file_name_selected(Path(""))
         mock_method.assert_called_once_with(FileType.LABELS)
-
-
-def test_handle_filename_unknown_action(main_controller: MainController) -> None:
-    """check it raises the desired exception"""
-
-    class FakeState(Enum):
-        UNKNOWN = 99
-
-    main_controller._pending_file_dialog_requests.append(
-        (FileType.LABELS, cast(FileAction, FakeState.UNKNOWN))
-    )
-    with pytest.raises(UnknownFileAction):
-        main_controller.handle_file_name_selected(Path(""))
 
 
 def test_reset_components(

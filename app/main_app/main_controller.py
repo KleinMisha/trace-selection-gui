@@ -56,14 +56,6 @@ class FileAction(Enum):
     SAVE = auto()
 
 
-class UnknownFileType(Exception):
-    pass
-
-
-class UnknownFileAction(Exception):
-    pass
-
-
 class Model(Protocol):
     """API for the MainModel"""
 
@@ -278,20 +270,12 @@ class MainController:
             self.model.set_file_path_to_labels(file_name)
         elif file_type == FileType.SECTION_LABELS:
             self.model.set_file_path_to_section_labels(file_name)
-        else:
-            raise UnknownFileType(
-                f"Cannot handle selected file path. Undefined file type: {file_type.name}"
-            )
 
         # process the selected file
         if file_action == FileAction.OPEN:
             self._open_file(file_type)
         elif file_action == FileAction.SAVE:
             self._save_file(file_type)
-        else:
-            raise UnknownFileAction(
-                f"Cannot handle selected file path. Undefined logic for a(n) {file_action.name}-action"
-            )
 
         # move on to the next file dialog that must be opened
         self._process_next_request()
@@ -453,12 +437,6 @@ class MainController:
             self.view.ask_save_file(
                 window_title=f"File to save {file_type.name.lower().replace('_', ' ')} into"
             )
-        else:
-            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
-            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
-            raise UnknownFileAction(
-                f"Cannot process ({file_type.name},{file_action.name}). No logic defined for an '{file_action.name}'-action"
-            )
 
     def _post_open_request(self, file_type: FileType) -> None:
         """Adds a job to open a file to the FIFO queue"""
@@ -477,12 +455,6 @@ class MainController:
             self.model.load_labels()
         elif file_type == FileType.SECTION_LABELS:
             self.model.load_section_labels()
-        else:
-            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
-            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
-            raise UnknownFileType(
-                f"Cannot open file. Undefined file type {file_type.name}"
-            )
 
     def _save_file(self, file_type: FileType) -> None:
         """Trigger the correct actions on the Model-side depending on the type of data we are trying to save"""
@@ -490,10 +462,6 @@ class MainController:
             self.model.write_labels()
         elif file_type == FileType.SECTION_LABELS:
             self.model.write_section_labels()
-        else:
-            # TODO: Decide what to do upon raising this exception: Use some kind of 'handle_exception'-decorator?
-            #! will only do this after discussing with others as using decorators in Python can lead to opening pandora's box (although this is one of those cases for which it could be acceptable)
-            raise UnknownFileType(f"Cannot save a {file_type.name}-file.")
 
     def _out_file_paths_are_set(self) -> bool:
         """
@@ -507,8 +475,6 @@ class MainController:
         if self.model.path_to_section_labels == Path(""):
             return False
         return True
-
-        super().__init__()
 
     # Logic that requires accessing the component controllers
     def _update_current_trace(self) -> None:

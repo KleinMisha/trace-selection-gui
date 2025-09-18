@@ -124,7 +124,6 @@ def test_initial_values() -> None:
     assert model.current_trace_id == ""
     assert model._number_of_traces == 0
 
-    # TODO: If this moves to controller --> remove this assertion
     with pytest.raises(MissingExperimentError):
         model.current_trace
 

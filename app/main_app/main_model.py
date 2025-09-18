@@ -5,9 +5,6 @@ NOTE: To shorten the code in this file, I made it directly depend on the `Magnet
     from `time_trace_tools`.
     ? If you want to make this more general. Define Protocols for the Trace and Experiment that define the parts that define those attributes and methods
     ? accessed by the MainModel.
-
-TODO: Find a more gracious way of dealing with the case that you did not assign the experiment at initiation.
-TODO: Currently, all these methods are performing checks that are truly only going to happen if you happen to trigger an action before loading the data. Maybe the Controller could take care of this with a simple check?
 """
 
 from dataclasses import dataclass
@@ -29,11 +26,18 @@ from time_trace_tools.data_types.magnetic_tweezers_trace import (
 
 
 class MissingExperimentError(Exception):
-    """To indicate you cannot perform certain operations before having loaded the experiment"""
+    """
+    To indicate you cannot perform certain operations before having loaded the experiment
+    ---
+    !NOTE: this is actually a programming error. The assertions in the code below are there to:
+    ! 1. make the type-checker happy
+    ! 2. specify a contract to all developers: please make sure the MainController guards against calling this method when there is no data.
+    """
 
-    # TODO: MOVE THIS INTO THE CONTROLLER? THE CONTROLLER SHOULD BE CATCHING EXCEPTIONS, NOT THE MODEL ?
-    # TODO: Have some way of initializing things in the 'NO_DATA' state :: The model exists, but not yet the experiment.
-    pass
+    def __init__(self, function_name: str) -> None:
+        super().__init__(
+            f"Called '{function_name}' before loading any data.\nAdd a guard clause at appropriate point in code (typically in the MainController)"
+        )
 
 
 @dataclass
@@ -51,29 +55,33 @@ class MainModel:
     _current_trace_index: int = 0
 
     @property
-    def current_trace(self) -> Trace:
-        if self._experiment is None:
-            raise MissingExperimentError(
-                "Error in `current_trace`: Please load your data first (Menu --> File --> Open)."
-            )
+    def has_traces(self) -> bool:
+        return bool(self._experiment) and bool(self._experiment.traces)
 
+    @property
+    def has_experiment(self) -> bool:
+        return bool(self._experiment)
+
+    @property
+    def current_trace(self) -> Trace:
+        if not self._experiment:
+            raise MissingExperimentError("current_trace")
         return self._experiment.traces[self._current_trace_index]
 
     @property
     def current_trace_id(self) -> str:
-        """Default to returning the empty string, such that things still work before having loaded any data."""
-        if self._experiment is not None:
-            return self.current_trace.ID
-        return ""
+        if not self._experiment:
+            return ""
+        return self.current_trace.ID
 
     @property
     def _number_of_traces(self) -> int:
         """
         Default to 0, such that things will also work before having loaded any data.
         """
-        if self._experiment is not None:
-            return len(self._experiment)
-        return 0
+        if not self._experiment:
+            return 0
+        return len(self._experiment)
 
     @property
     def progress_percentage(self) -> float:
@@ -81,9 +89,9 @@ class MainModel:
         Determine how far the current index is w.r.t the length to the data set.
         default to 0%, such that things will also work before having loaded any data.
         """
-        if self._experiment is not None:
-            return self._current_trace_index / (self._number_of_traces - 1) * 100.0
-        return 0.0
+        if not self._experiment:
+            return 0.0
+        return self._current_trace_index / (self._number_of_traces - 1) * 100.0
 
     def move_to_next_trace(self) -> None:
         """Do nothing if you are pointing at the final trace"""
@@ -110,10 +118,8 @@ class MainModel:
 
     def find_index_from_id(self, trace_id: str) -> int:
         """determine the index you want to jump to"""
-        if self._experiment is None:
-            raise MissingExperimentError(
-                "Error in `find_index_from_id`: Please load your data first (Menu --> File --> Open)."
-            )
+        if not self._experiment:
+            raise MissingExperimentError("find_index_from_id")
         target_trace = self._experiment.fetch_trace(trace_id)
         return self._experiment.traces.index(target_trace)
 
@@ -148,42 +154,36 @@ class MainModel:
         """
         Updates the data (on the current trace) when receiving the information from the `LabelPanelModel` (the controller).
         """
-        if self._experiment is not None:
-            self.current_trace.add_labels(new_labels)
+        return self.current_trace.add_labels(new_labels)
 
     def update_trace_section_labels(
         self, new_section_labels: dict[tuple[int, int], list[str]]
     ) -> None:
         """
         Updates the data (on the current trace) when receiving the information from the `LabelPanelModel` (the controller).
-        Sets that you now have untracked changes (before saving)
         """
-        if self._experiment is not None:
-            self.current_trace.add_labelled_sections_from_dictionary(new_section_labels)
+        self.current_trace.add_labelled_sections_from_dictionary(new_section_labels)
 
     def load_labels(self) -> None:
-        if self._experiment is None:
-            raise MissingExperimentError(
-                "Error in `load_labels`: Please load your data first (Menu --> File --> Open)."
-            )
-
+        if not self._experiment:
+            raise MissingExperimentError("load_labels")
         labels_from_file = read_json(self.path_to_labels)
         self._experiment.set_labels(labels_from_file)
 
     def load_section_labels(self) -> None:
-        if self._experiment is None:
-            raise MissingExperimentError(
-                "Error in `load_section_labels`: Please load your data first (Menu --> File --> Open)."
-            )
+        if not self._experiment:
+            raise MissingExperimentError("load_section_labels")
         section_labels_from_file = read_json(self.path_to_section_labels)
         self._experiment.set_section_labels(section_labels_from_file)
 
     def write_labels(self) -> None:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
-        if self._experiment is not None:
-            write_experiment_labels(self._experiment, self.path_to_labels)
+        if not self._experiment:
+            raise MissingExperimentError("write_labels")
+        write_experiment_labels(self._experiment, self.path_to_labels)
 
     def write_section_labels(self) -> None:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
-        if self._experiment is not None:
-            write_experiment_section_labels(self._experiment, self.path_to_labels)
+        if not self._experiment:
+            raise MissingExperimentError("write_section_labels")
+        write_experiment_section_labels(self._experiment, self.path_to_labels)
