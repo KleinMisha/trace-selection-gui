@@ -29,9 +29,10 @@ class MissingExperimentError(Exception):
     """
     To indicate you cannot perform certain operations before having loaded the experiment
     ---
-    !NOTE: this is actually a programming error. The assertions in the code below are there to:
+    !NOTE: if this occurs, it is actually a programming error. The assertions in the code below are there to:
     ! 1. make the type-checker happy
     ! 2. specify a contract to all developers: please make sure the MainController guards against calling this method when there is no data.
+    ! In short, just ensure you never call these methods before it would be possible.
     """
 
     def __init__(self, function_name: str) -> None:
