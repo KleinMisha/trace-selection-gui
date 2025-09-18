@@ -123,9 +123,20 @@ def test_initial_values() -> None:
     assert model.progress_percentage == 0.0
     assert model.current_trace_id == ""
     assert model._number_of_traces == 0
-
+    assert not model.has_experiment
+    assert not model.has_traces
     with pytest.raises(MissingExperimentError):
         model.current_trace
+    with pytest.raises(MissingExperimentError):
+        model.write_labels()
+    with pytest.raises(MissingExperimentError):
+        model.write_section_labels()
+    with pytest.raises(MissingExperimentError):
+        model.load_labels()
+    with pytest.raises(MissingExperimentError):
+        model.load_section_labels()
+    with pytest.raises(MissingExperimentError):
+        model.find_index_from_id("ANYTHING")
 
 
 def test_number_of_traces_in_experiment(experiment: Experiment) -> None:
