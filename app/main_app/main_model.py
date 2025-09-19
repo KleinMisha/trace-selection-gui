@@ -24,7 +24,11 @@ from time_trace_tools.data_types.magnetic_tweezers_trace import (
     MagneticTweezersTrace as Trace,
 )
 
-from app.exceptions import InvalidInputError, MissingExperimentError
+from app.exceptions import (
+    InvalidInputError,
+    MissingExperimentError,
+    UnsupportedFileTypeError,
+)
 
 
 @dataclass
@@ -111,6 +115,7 @@ class MainModel:
             target_trace = self._experiment.fetch_trace(trace_id)
             return self._experiment.traces.index(target_trace)
         except KeyError:
+            # re-raise as a custom exception type.
             raise InvalidInputError(f"No trace with id {trace_id} found")
 
     def set_file_path_to_experiment_data(self, path: Path | str) -> None:
@@ -125,11 +130,9 @@ class MainModel:
     def load_experiment_data(self) -> None:
         """
         Read the data from file. Wrapper around functionality from TimeTraceTools
-        ? Possibly make this more generic, so it could also work with other types of Experiments/TimeTraces ?
-        ? Unfortunately, we must use some kind of specific implementation at some point. Not sure if it can be deferred to later? Use some kind of BaseMainModel?
-        ? Pro: possible generality. Con: Inheritance / coupling + a bit more complicated code for functionality not even sure will be used by the lab anyways. 99% of users are going to use it for magnetic tweezers data anyways.
         """
         # Instantiate your magnetic tweezers Experiment
+        self._validate_file_extension(self.path_to_experiment_data, [".txt", ".npy"])
         experiment = Experiment(ID="")
         experiment.load_raw_data(
             self.path_to_experiment_data, data_loader_fn=read_mt_data
@@ -157,12 +160,15 @@ class MainModel:
     def load_labels(self) -> None:
         if not self._experiment:
             raise MissingExperimentError("load_labels")
+        self._validate_file_extension(self.path_to_labels, ["json"])
         labels_from_file = read_json(self.path_to_labels)
         self._experiment.set_labels(labels_from_file)
 
     def load_section_labels(self) -> None:
         if not self._experiment:
             raise MissingExperimentError("load_section_labels")
+
+        self._validate_file_extension(self.path_to_section_labels, ["json"])
         section_labels_from_file = read_json(self.path_to_section_labels)
         self._experiment.set_section_labels(section_labels_from_file)
 
@@ -170,10 +176,22 @@ class MainModel:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
         if not self._experiment:
             raise MissingExperimentError("write_labels")
+        self._validate_file_extension(self.path_to_labels, ["json"])
         write_experiment_labels(self._experiment, self.path_to_labels)
 
     def write_section_labels(self) -> None:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
         if not self._experiment:
             raise MissingExperimentError("write_section_labels")
+        self._validate_file_extension(self.path_to_labels, ["json"])
         write_experiment_section_labels(self._experiment, self.path_to_labels)
+
+    def _validate_file_extension(
+        self, file: Path, allowed_extensions: list[str]
+    ) -> None:
+        """checks the file extension of the selected file path"""
+        file_extension = file.suffix
+        if file_extension not in allowed_extensions:
+            raise UnsupportedFileTypeError(
+                f"File {file.name} (extension: {file.suffix}) is not one of the valid file extensions: \n{','.join(allowed_extensions)}"
+            )

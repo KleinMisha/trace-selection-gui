@@ -3,7 +3,7 @@ Custom exceptions we want to catch (covers 'expected errors due to user interact
 """
 
 import functools
-from typing import Any, Callable, Protocol
+from typing import Callable, Concatenate, ParamSpec, Protocol, TypeVar
 
 from app.state_variables import EventSeverity
 
@@ -43,24 +43,38 @@ class ErrorController(Protocol):
     def handle_error(self, severity: EventSeverity, message: str) -> None: ...
 
 
-def with_error_handling(severity: EventSeverity) -> Callable[..., Any]:
+# --- Type aliases for clarity ---
+P = ParamSpec("P")  # generic args and kwargs
+C = TypeVar("C", bound="ErrorController")  # Controller instance
+# A method of the error handling controller that takes in 'self' followed by other parameters, and has no return
+ControllerMethodNone = Callable[Concatenate[C, P], None]
+# A decorator that wraps around this method to add additional functionality to it.
+DecoratorNoneReturn = Callable[[ControllerMethodNone[C, P]], ControllerMethodNone[C, P]]
+
+
+def with_error_handling(severity: EventSeverity) -> DecoratorNoneReturn[C, P]:
     """
     Collects error handling at one place in the code.
-    Using a decorator as this seemed to be the easiest/cleanest way.
 
-    see -- <YOUTUBE LINK> --- for a tutorial on how this works
+    ---
+    Using a decorator as this seemed to be the easiest/cleanest way.
+    see -- https://www.youtube.com/watch?v=QH5fw9kxDQA --- for a tutorial on how this works
+
+    ---
+    ⚠️ Only use it on functions whose return is `None`, otherwise this decorator will silently change the original function's signature. The code would work, but this could potentially lead to a debugging nightmare.
     """
 
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+    def decorator(func: ControllerMethodNone[C, P]) -> ControllerMethodNone[C, P]:
         @functools.wraps(func)
-        def wrapper(self: ErrorController, *args, **kwargs) -> Any:
+        def wrapper(self: C, *args: P.args, **kwargs: P.kwargs) -> None:
             try:
                 # attempt to apply the original function call
                 result = func(self, *args, **kwargs)
                 return result
             except ApplicationError as e:
                 # on failure --> the ErrorHandler choses what to do. Typically show a message box.
-                self.handle_error(severity, message=str(e))
+                failure_message = f"{type(e).__name__} : {str(e)}"
+                self.handle_error(severity, message=failure_message)
                 return None
 
         return wrapper

@@ -307,6 +307,10 @@ class MainController:
         self._post_open_request(FileType.RAW_DATA)
         self._process_next_request()
         self._reset_components()
+        success_message = (
+            f"\N{CHECK MARK} Successfully loaded {self.model.path_to_experiment_data}"
+        )
+        self.view.open_message_box(EventSeverity.INFO, success_message)
 
     def handle_menu_file_save(self) -> None:
         """
@@ -330,6 +334,15 @@ class MainController:
             self._update_current_trace()
             self._save_file(FileType.LABELS)
             self._save_file(FileType.SECTION_LABELS)
+
+            success_message = "\n".join(
+                [
+                    f"\N{CHECK MARK} Successfully saved labels into:  {self.model.path_to_labels}",
+                    f"\N{CHECK MARK} Successfully saved section labels into:  {self.model.path_to_section_labels}",
+                ]
+            )
+            self.view.open_message_box(EventSeverity.INFO, success_message)
+
         else:
             self.handle_menu_file_save_as()
 
@@ -356,6 +369,13 @@ class MainController:
         self._post_save_request(FileType.LABELS)
         self._post_save_request(FileType.SECTION_LABELS)
         self._process_next_request()
+        success_message = "\n".join(
+            [
+                f"\N{CHECK MARK} Successfully saved labels into:  {self.model.path_to_labels}",
+                f"\N{CHECK MARK} Successfully saved section labels into:  {self.model.path_to_section_labels}",
+            ]
+        )
+        self.view.open_message_box(EventSeverity.INFO, success_message)
 
     def handle_menu_load_labels(self) -> None:
         """
