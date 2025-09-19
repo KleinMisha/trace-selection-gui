@@ -5,9 +5,9 @@ from typing import Callable
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
-from state_variables import EventSeverity, LightState
 
 from app.main_app.main_view_ui import Ui_MainWindow
+from app.state_variables import EventSeverity, LightState
 
 # TODO: Move this into a configuration file
 KEYBOARD_SHORTCUTS = {
@@ -169,11 +169,11 @@ class MainView(QMainWindow, Ui_MainWindow):
         NOTE: I know this is handled using if/else, but it seems to be a save assumption that this will never grow with many more options anyways.
         """
         if msg_type == EventSeverity.INFO:
-            QMessageBox.information(self, title="Note", text=message)
+            QMessageBox.information(self, "Note", message)
         elif msg_type == EventSeverity.WARNING:
-            QMessageBox.warning(self, title="Warning", text=message)
+            QMessageBox.warning(self, "Warning", message)
         elif msg_type == EventSeverity.ERROR:
-            QMessageBox.critical(self, title="Error", text=message)
+            QMessageBox.critical(self, "Error", message)
 
     # Connect callbacks of controller to emitted signals
     def connect_next_trace(self, callback: Callable[[], None]) -> None:

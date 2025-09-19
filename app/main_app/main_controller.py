@@ -12,8 +12,6 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Callable, Concatenate, Protocol, TypedDict
 
-from state_variables import EventSeverity, LightState
-
 from app.exceptions import with_error_handling
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
@@ -22,6 +20,7 @@ from app.main_app.component_controller_protocols import (
     SectionsPanelController,
 )
 from app.main_app.main_model import Trace
+from app.state_variables import EventSeverity, LightState
 
 
 class ComponentControllers(TypedDict):
