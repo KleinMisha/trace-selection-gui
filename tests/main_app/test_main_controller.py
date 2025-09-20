@@ -167,12 +167,10 @@ def test_menu_open_file(main_controller: MainController) -> None:
     with (
         patch.object(main_controller, attribute="_post_open_request") as mock_one,
         patch.object(main_controller, attribute="_process_next_request") as mock_two,
-        patch.object(main_controller, "_reset_components") as mock_three,
     ):
         main_controller.handle_menu_file_open()
         mock_one.assert_called_once_with(FileType.RAW_DATA)
         mock_two.assert_called_once()
-        mock_three.assert_called_once()
 
 
 def test_menu_save_as(main_controller: MainController) -> None:
@@ -233,12 +231,10 @@ def test_menu_import_labels(main_controller: MainController) -> None:
     with (
         patch.object(main_controller, attribute="_post_open_request") as mock_one,
         patch.object(main_controller, attribute="_process_next_request") as mock_two,
-        patch.object(main_controller, "_reset_components") as mock_three,
     ):
         main_controller.handle_menu_load_labels()
         mock_one.assert_called_once_with(FileType.LABELS)
         mock_two.assert_called_once()
-        mock_three.assert_called_once()
 
 
 def test_menu_import_section_labels(main_controller: MainController) -> None:
@@ -246,12 +242,10 @@ def test_menu_import_section_labels(main_controller: MainController) -> None:
     with (
         patch.object(main_controller, attribute="_post_open_request") as mock_one,
         patch.object(main_controller, attribute="_process_next_request") as mock_two,
-        patch.object(main_controller, "_reset_components") as mock_three,
     ):
         main_controller.handle_menu_load_sections()
         mock_one.assert_called_once_with(FileType.SECTION_LABELS)
         mock_two.assert_called_once()
-        mock_three.assert_called_once()
 
 
 def test_not_yet_set_file_paths(main_controller: MainController) -> None:
@@ -320,10 +314,12 @@ def test_handle_filename_selected(
             main_controller, attribute="_process_next_request"
         ) as mock_processor,
         patch.object(main_controller, attribute="_open_file") as mock_open,
+        patch.object(main_controller, attribute="_reset_components") as mock_reset,
     ):
         main_controller.handle_file_name_selected(mock_path)
         mock_setter.assert_called_once_with(mock_path)
         mock_open.assert_called_once_with(file_type)
+        mock_reset.assert_called_once()
         mock_processor.assert_called_once()
 
     # now check that the request has been popped
