@@ -383,7 +383,6 @@ class MainController:
         """
         self._post_open_request(FileType.LABELS)
         self._process_next_request()
-        self._reset_components()
 
     def handle_menu_load_sections(self) -> None:
         """
@@ -391,7 +390,6 @@ class MainController:
         """
         self._post_open_request(FileType.SECTION_LABELS)
         self._process_next_request()
-        self._reset_components()
 
     def handle_changed_ref_bead(self) -> None:
         # TODO: Implement this later
