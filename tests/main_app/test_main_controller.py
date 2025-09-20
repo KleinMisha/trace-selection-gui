@@ -515,6 +515,33 @@ def test_jump_to_trace(main_controller: MainController) -> None:
         mock_six.assert_called_once_with(expected_percentage)
 
 
+@pytest.mark.parametrize(
+    "method_name",
+    [
+        "handle_move_to_next_trace",
+        "handle_move_to_prev_trace",
+        "handle_jump_to_trace",
+    ],
+)
+def test_no_change_of_focus_without_data_loaded(
+    main_controller: MainController, method_name: str
+) -> None:
+    """make sure you break out of these functions as soon as you fail the check that you do not have any data loaded"""
+    # initialize the system without any loaded data
+    cast(Any, type(main_controller))._data_is_loaded = PropertyMock(return_value=False)
+    handler = main_controller.__getattribute__(method_name)
+    # make sure to not call the first function that is part of the logic (common for all the methods in question)
+    with patch.object(
+        main_controller, attribute="_update_current_trace"
+    ) as mock_updater:
+        if method_name == "handle_jump_to_trace":
+            result = handler("mock")
+        else:
+            result = handler()
+        assert result is None
+        mock_updater.assert_not_called()
+
+
 def test_handle_open_item_list_from_labels_panel(
     main_controller: MainController,
 ) -> None:
