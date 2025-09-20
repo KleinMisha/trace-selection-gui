@@ -187,7 +187,7 @@ class MainController:
         ? Implement a way of checking if you actually changed something / have untracked changes?
         """
         # If the user clicks before any data is loaded, simply ignore the action
-        if not self._data_is_loaded():
+        if not self._data_is_loaded:
             return
 
         # update the current trace's data before changing focus
@@ -212,7 +212,7 @@ class MainController:
         """
 
         # If the user clicks before any data is loaded, simply ignore the action
-        if not self._data_is_loaded():
+        if not self._data_is_loaded:
             return
         # update the current trace's data before changing focus
         self._update_current_trace()
@@ -236,7 +236,7 @@ class MainController:
         ? Implement a way of checking if you actually changed something / have untracked changes?
         """
         # If the user enters a number before any data is loaded, simply ignore the action
-        if not self._data_is_loaded():
+        if not self._data_is_loaded:
             return
 
         # update the current trace's data before changing focus
@@ -550,6 +550,7 @@ class MainController:
             self.model.current_trace.section_labels
         )
 
+    @property
     def _data_is_loaded(self) -> bool:
         return (
             self.model.has_traces
