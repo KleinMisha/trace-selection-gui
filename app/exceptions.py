@@ -73,7 +73,7 @@ def with_error_handling(severity: EventSeverity) -> DecoratorNoneReturn[C, P]:
                 return result
             except ApplicationError as e:
                 # on failure --> the ErrorHandler choses what to do. Typically show a message box.
-                failure_message = f"{type(e).__name__} : {str(e)}"
+                failure_message = f"{type(e).__name__}: {str(e)}"
                 self.handle_error(severity, message=failure_message)
                 return None
 
