@@ -253,22 +253,31 @@ class MainController:
         # update the progress bar
         self.view.update_progressbar(self.model.progress_percentage)
 
+    @with_error_handling(severity=EventSeverity.ERROR)
     def handle_file_name_selected(self, file_name: Path):
         """
-        Triggered when you selected a file name from the dialog
-        ---
-
+        Triggered when a file path is selected in the file dialog.
         ---
         The View tells the Controller: "here is the selected file path"
 
+        ---
+        Origin:
+        - View signal: file_name_selected
+
+        Handler responsibility:
+        - Dequeue the corresponding file request (FIFO).
+        - Update the model with the selected file path.
+        - triggers the actions on the model side to do the actual opening/closing of the data + logic on the view side to reflect updates
+        - On successful loading of the data: Tells the components to update their model/view to reflect the updated state of the main model.
+        - moves on to the next request (the _process_next_request() will automatically break out of this pattern when there are no more requests pending)
 
         ---
-        The Controller now:
-        - removes this request from the queue (as it successfully yielded a file path)
-        - sets the file paths in the model
-        - triggers the actions on the model side to do the actual opening/closing of the data + logic on the view side to reflect updates
-        - moves on to the next request (the _process_next_request() will automatically break out of this pattern when there are no more requests pending)
+        Notes:
+        - If the user cancels the dialog, this signal will not fire (no-op).
+        - This method completes the file-open or file-save operation
+          that was initiated in `handle_menu_file_open` or `handle_menu_file_save`.
         """
+
         # current request is done: FIFO, so remove the top request
         file_type, file_action = self._pending_file_dialog_requests.pop(0)
 
@@ -283,39 +292,47 @@ class MainController:
         # process the selected file
         if file_action == FileAction.OPEN:
             self._open_file(file_type)
+            self._reset_components()
+            success_message = f"\N{CHECK MARK} Successfully loaded {file_type.name.lower()} from: {file_name}"
+            self.view.open_message_box(EventSeverity.INFO, success_message)
+
         elif file_action == FileAction.SAVE:
             self._save_file(file_type)
+            success_message = f"\N{CHECK MARK} Successfully saved {file_type.name.lower()} into: {file_name}"
+            self.view.open_message_box(EventSeverity.INFO, success_message)
 
         # move on to the next file dialog that must be opened
         self._process_next_request()
 
     def handle_menu_file_open(self) -> None:
         """
-        Triggered when you activate the "Open..." action from the menu bar
+        Triggered when you activate the "Open..." action from the menu bar.
+        ----
+
+        Origin:
+        - View signal: menu_file_open
+
+        Handler responsibility:
+        - Post a request to open the file dialog for raw data.
+        - Trigger processing of the next pending request (opens the dialog).
 
         ---
-        The View notified the Controller the action has been triggered
-
-        ---
-        The Controller now:
-        - posts the requests to open the file dialog for the raw data
-        - processes this request
-        - Tell the View to reflect changes after updating the data
+        Notes:
+        - This method only initiates the open action.
+        - The controller awaits the *file selected* signal from the view.
+        - Further processing is handled in `handle_file_name_selected_from_dialogue`.
         """
         # the Open... action implies loading the raw experiment data
         self._post_open_request(FileType.RAW_DATA)
         self._process_next_request()
-        self._reset_components()
-        success_message = (
-            f"\N{CHECK MARK} Successfully loaded {self.model.path_to_experiment_data}"
-        )
-        self.view.open_message_box(EventSeverity.INFO, success_message)
 
     def handle_menu_file_save(self) -> None:
         """
-        Triggered when you activate the "Save..." action from the menu bar
-        ---
-        Saves both the labels and section_labels
+        Triggered when you activate the "Save..." action from the menu bar.
+        ----
+        Origin:
+        - View signal: menu_file_save_as
+
         ---
         If you previously set the output file paths (for instance, by doing 'Save as...' previously),
         it is assumed the user wants to write into the same set of files.
@@ -323,25 +340,12 @@ class MainController:
         ---
         If any of the file paths are (yet) unknown (for instance, you do 'Save...' without having done 'Save as...')
         default to performing the logic of the 'Save as...' action
-
-        ---
-        #TODO: 'No more untracked changes'
         """
-
         if self._out_file_paths_are_set():
             # First update the data to take the latest changes into account
             self._update_current_trace()
             self._save_file(FileType.LABELS)
             self._save_file(FileType.SECTION_LABELS)
-
-            success_message = "\n".join(
-                [
-                    f"\N{CHECK MARK} Successfully saved labels into:  {self.model.path_to_labels}",
-                    f"\N{CHECK MARK} Successfully saved section labels into:  {self.model.path_to_section_labels}",
-                ]
-            )
-            self.view.open_message_box(EventSeverity.INFO, success_message)
-
         else:
             self.handle_menu_file_save_as()
 
@@ -352,15 +356,19 @@ class MainController:
         It is assumed you want to manually select the output file paths
 
         ---
-        The View notified the Controller the action has been triggered
+        Origin:
+        - View signal: menu_file_save_as
 
         ---
-        The Controller now:
-        - posts the requests to open the file dialogs; one for every kind of data to be saved
-        - processes the first request (will trigger processing the remaining requests)
+        Handler responsibility:
+        - Post requests to open the file dialog for selecting the destinations for both the labels and section labels.
+        - Trigger processing of the next pending request (opens the first dialog).
 
         ---
-          #TODO: set 'no untracked changes'
+        Notes:
+        - This method only initiates the save as action.
+        - The controller awaits the *file selected* signal from the view.
+        - Further processing is handled in `handle_file_name_selected_from_dialogue`.
         """
         # First update the data to take the latest changes into account
         self._update_current_trace()
@@ -368,13 +376,6 @@ class MainController:
         self._post_save_request(FileType.LABELS)
         self._post_save_request(FileType.SECTION_LABELS)
         self._process_next_request()
-        success_message = "\n".join(
-            [
-                f"\N{CHECK MARK} Successfully saved labels into:  {self.model.path_to_labels}",
-                f"\N{CHECK MARK} Successfully saved section labels into:  {self.model.path_to_section_labels}",
-            ]
-        )
-        self.view.open_message_box(EventSeverity.INFO, success_message)
 
     def handle_menu_load_labels(self) -> None:
         """
@@ -477,7 +478,6 @@ class MainController:
         """Adds a job to save a file to the FIFO queue"""
         self._pending_file_dialog_requests.append((file_type, FileAction.SAVE))
 
-    @with_error_handling(severity=EventSeverity.ERROR)
     def _open_file(self, file_type: FileType) -> None:
         """Trigger the correct actions on the Model-side depending on the type of data we are trying to open"""
 
@@ -488,7 +488,6 @@ class MainController:
         elif file_type == FileType.SECTION_LABELS:
             self.model.load_section_labels()
 
-    @with_error_handling(severity=EventSeverity.ERROR)
     def _save_file(self, file_type: FileType) -> None:
         """Trigger the correct actions on the Model-side depending on the type of data we are trying to save"""
         if file_type == FileType.LABELS:
@@ -512,7 +511,7 @@ class MainController:
     # Logic that requires accessing the component controllers
     def _update_current_trace(self) -> None:
         """
-        Update the experiment data to reflect the latests set of sections/labels chosen.
+        Update the data of the MainModel to reflect the latests set of sections/labels chosen.
         ---
         Will be triggered whenever the app changes focus to a new trace
 
