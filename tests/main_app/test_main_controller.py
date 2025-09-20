@@ -24,6 +24,7 @@ from app.main_app.main_controller import (
 )
 from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
+from app.state_variables import EventSeverity
 
 
 @pytest.fixture
@@ -727,3 +728,12 @@ def test_opening_both_item_lists(main_controller: MainController) -> None:
         assert main_controller.popup_window_from_sections == main_controller.components[
             "item_list"
         ](expected_section_labels)
+
+
+@pytest.mark.parametrize("severity", [s for s in EventSeverity])
+def test_handle_error(main_controller: MainController, severity: EventSeverity) -> None:
+    """when decorator calls this function: ensure proper handling (in this case requesting the correct message box to appear)"""
+    main_controller.handle_error(severity, message="testing the handling")
+    cast(Mock, main_controller.view.open_message_box).assert_called_once_with(
+        severity, "testing the handling"
+    )
