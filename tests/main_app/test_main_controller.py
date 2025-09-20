@@ -604,8 +604,17 @@ def test_only_one_popup_from_labels_panel_exists(
         cast(Mock, mock_window.show).assert_called_once()
 
 
-def test_close_item_list_from_sections_panel(main_controller: MainController) -> None:
+def test_close_item_list_from_labels_panel(main_controller: MainController) -> None:
     """check the control flow from opening the window -> closing it --> then check the available labels are updated correctly"""
+
+    mock_items = ["mock", "mocker", "most mockest"]
+    with patch.object(
+        main_controller.components["label_panel"],
+        attribute="update_available_labels",
+    ) as mock_updater:
+        main_controller.handle_close_item_list_from_label_panel(mock_items)
+        mock_updater.assert_called_once_with(mock_items)
+        assert main_controller.popup_window_from_labels is None
 
 
 def test_handle_open_item_list_from_sections_panel(
@@ -647,6 +656,19 @@ def test_handle_open_item_list_from_sections_panel(
 
         # Make sure to actually show the new window
         cast(Mock, mock_window.show).assert_called_once()
+
+
+def test_close_item_list_from_sections_panel(main_controller: MainController) -> None:
+    """check the control flow from opening the window -> closing it --> then check the available labels are updated correctly"""
+
+    mock_items = ["mock", "mocker", "most mockest"]
+    with patch.object(
+        main_controller.components["sections_panel"],
+        attribute="update_available_labels",
+    ) as mock_updater:
+        main_controller.handle_close_item_list_from_sections_panel(mock_items)
+        mock_updater.assert_called_once_with(mock_items)
+        assert main_controller.popup_window_from_sections is None
 
 
 def test_only_one_popup_from_sections_panel_exists(
