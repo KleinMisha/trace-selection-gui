@@ -229,7 +229,7 @@ def test_opening_the_correct_message_box(
     view = MainView()
     with patch.object(target=ViewMessageBox, attribute=expected_method) as mock_msg_box:
         view.open_message_box(message_box, message)
-        mock_msg_box.assert_called_once_with(view, title=title, text=message)
+        mock_msg_box.assert_called_once_with(view, title, message)
 
 
 def test_opening_the_correct_file() -> None:
