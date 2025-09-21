@@ -8,6 +8,8 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
+from app.exceptions import MissingExperimentError
+
 
 class TraceData(Protocol):
     """Represents the simplified version of the data container strictly needed for this part of the application"""
@@ -18,9 +20,6 @@ class TraceData(Protocol):
     @property
     def z(self) -> NDArray[np.floating]: ...
 
-    @property
-    def section_labels(self) -> dict[tuple[int, int], list[str]]: ...
-
 
 @dataclass
 class InteractivePlotModel:
@@ -28,17 +27,22 @@ class InteractivePlotModel:
     t_max: float
     z_min: float
     z_max: float
-    trace_data: TraceData
+    trace_data: TraceData | None = None
 
     def find_nearest_data_point(self, x_coordinate: float) -> tuple[float, float]:
         """
         Find the data point closest to where the user clicked (i.e. the values used as input to this method)
         NOTE: the value leads (not the time point), because the user will like to click close to a particular feature observed.
-        """
 
         # ? this can be made adjustable if also plots for x and y data are included.
         # ? to achieve a general version, this function must get the axis / keys you want to axis from the data as input
+        """
+        if not self.trace_data:
+            raise MissingExperimentError("find_nearest_data_point")
         x_data = self.trace_data.t
         y_data = self.trace_data.z
         idx_nearest = np.argmin(abs(x_data - x_coordinate))
         return x_data[idx_nearest], y_data[idx_nearest]
+
+    def has_data(self) -> bool:
+        return True if self.trace_data else False

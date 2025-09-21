@@ -55,12 +55,14 @@ class Model(Protocol):
     def z_max(self, value: float) -> None: ...
 
     @property
-    def trace_data(self) -> TraceData: ...
+    def trace_data(self) -> TraceData | None: ...
 
     @trace_data.setter
-    def trace_date(self, value: float) -> None: ...
+    def trace_data(self, data: TraceData) -> None: ...
 
     def find_nearest_data_point(self, x_coordinate: float) -> tuple[float, float]: ...
+
+    def has_data(self) -> bool: ...
 
 
 class View(Protocol):
@@ -109,6 +111,23 @@ class InteractivePlotController(QObject):
         self.view.connect_adjusted_t_min(self.handle_adjusted_t_min)
         self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
 
+    # To be called from outside:
+    def reset_for_new_trace(
+        self, trace: TraceData, section_boundaries: list[float]
+    ) -> None:
+        """(Re)set the data known to the model and plot the new trace + previously selected sections"""
+        self.model.trace_data = trace
+        self.view.clear_figure()
+        self.view.show_t_vs_z_plot(trace.t, trace.z)
+        for time_point in section_boundaries:
+            self.view.show_line_in_plot(time_point)
+
+        self.view.update_figure()
+
+    def data_is_loaded(self) -> bool:
+        """Convenience method used both in this controller + the main controller to guard against actions at startup"""
+        return self.model.has_data()
+
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
         """
@@ -117,9 +136,11 @@ class InteractivePlotController(QObject):
         However, we technically do not need both for now. Hence, the "_" as an argument.
         ? Should this be removed?
         """
-        t_data_point, _ = self.model.find_nearest_data_point(x_click)
-        print("Hello")
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.data_is_loaded():
+            return
 
+        t_data_point, _ = self.model.find_nearest_data_point(x_click)
         # TODO: use the main controller to pass the appropriate color
         self.view.show_line_in_plot(t_data_point)
         self.view.update_figure()
@@ -131,6 +152,10 @@ class InteractivePlotController(QObject):
         """
         triggers when the user clicks in the plot (right mouse button)
         """
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.data_is_loaded():
+            return
+
         self.view.clear_last_line_from_plot()
         self.view.update_figure()
 

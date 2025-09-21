@@ -24,6 +24,9 @@ class View(Protocol):
     def connect_close_window(self, callback: Callable[[], None]) -> None:
         """Connect emitted signal when this window gets closed"""
 
+    def show(self) -> None:
+        """Will inherit this from QWidget (or QObject)"""
+
 
 class Model(Protocol):
     """The Model stores the actual data, and can perform actual operations on them. The Controller can instruct the model to perform these operations."""
@@ -87,3 +90,7 @@ class ItemListController(QObject):
         self, callback: Callable[[list[str]], None]
     ) -> None:
         self._window_closed_signal.connect(callback)
+
+    def show(self) -> None:
+        """API: Allows the MainController to do view.show()"""
+        self.view.show()

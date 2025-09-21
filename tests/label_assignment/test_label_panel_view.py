@@ -7,7 +7,6 @@ NOTE: Simulates user clicks with pyQt specific functionalities. So that part is 
 
 import re
 
-import pytest
 from PyQt6.QtCore import Qt
 from pytestqt.qtbot import QtBot
 

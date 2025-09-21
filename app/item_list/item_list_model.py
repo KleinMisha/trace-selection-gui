@@ -9,10 +9,10 @@ from dataclasses import dataclass, field
 class ItemList:
     labels: list[str] = field(default_factory=list)
 
-    def add_item(self, name) -> None:
+    def add_item(self, name: str) -> None:
         self.labels.append(name)
 
-    def remove_item(self, name) -> None:
+    def remove_item(self, name: str) -> None:
         self.labels.remove(name)
 
     def get_items(self) -> list[str]:

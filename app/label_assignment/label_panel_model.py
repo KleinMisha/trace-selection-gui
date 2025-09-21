@@ -19,6 +19,10 @@ class LabelPanelModel:
     def current_is_assigned(self) -> bool:
         return self.current_label in self.assigned_labels
 
+    @property
+    def has_labels(self) -> bool:
+        return bool(self.available_labels)
+
     def assign_current_label(self) -> None:
         """Avoid duplicates: only assign when not already done before"""
         if not self.current_is_assigned:
@@ -40,11 +44,15 @@ class LabelPanelModel:
             self.current_idx -= 1
 
     def reset_assigned_labels(self, labels_new_trace: list[str]) -> None:
-        """Will be called by MainController when moving to the next trace"""
-        self.assigned_labels = labels_new_trace
+        """Will be called (indirectly) by MainController when moving to the next trace"""
+
+        # If you make a label unavailable, you should also not be able to assign it / auto unassign it from traces
+        self.assigned_labels = [
+            label for label in labels_new_trace if label in self.available_labels
+        ]
 
     def update_available_labels(self, updated_list: list[str]) -> None:
-        """Will be called by the MainController when done editing the ItemList"""
+        """Will be called (indirectly) by the MainController when done editing the ItemList"""
         original_list = self.available_labels.copy()
         # make sure to keep pointing at the same label when you shrink the label list
         if len(updated_list) < len(original_list) and self.current_idx > 0:

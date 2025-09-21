@@ -26,6 +26,29 @@ def sections() -> list[Section]:
     return [LeBron, jordan, kobe]
 
 
+@pytest.fixture
+def nicknames() -> tuple[dict[tuple[int, int], list[str]], list[Section]]:
+    nicknames_dict = {
+        (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+        (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
+        (15, None): ["The Joker"],
+        (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
+    }
+
+    shaq = Section(
+        32,
+        34,
+        assigned_labels=["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+    )
+    giannis_antetokounmpo = Section(
+        34, None, assigned_labels=["Giannis", "Greek Freak", "The Alphabet"]
+    )
+    jokic = Section(15, None, assigned_labels=["The Joker"])
+    curry = Section(None, 30, ["Baby-faced assassin", "Chef Curry", "Steph"])
+    nicknames_sections = [shaq, giannis_antetokounmpo, jokic, curry]
+    return nicknames_dict, nicknames_sections
+
+
 def test_move_to_next_label(available_labels: list[str]) -> None:
     """test happy case: moving to the next when not yet at the end of the list"""
     model = SectionsPanelModel(available_labels=available_labels, current_label_index=0)
@@ -94,6 +117,22 @@ def test_do_not_move_beyond_first_section(sections: list[Section]) -> None:
     model = SectionsPanelModel(sections=sections, current_section_index=0)
     model.move_to_previous_section()
     assert model.current_section_index == 0
+
+
+def test_jump_to_section(sections: list[Section]) -> None:
+    """test shifting focus to a selected section index"""
+    model = SectionsPanelModel(sections=sections, current_section_index=0)
+    number_sections = len(model.sections)
+    # happy case: jump to index within bounds
+    for target in range(1, number_sections - 1):
+        model.jump_to_section(target)
+        assert model.current_section_index == target
+
+    # edge case: index exceeds outside available range --> simply do not anything
+    expected_index = model.current_section_index
+    for target in [-1, number_sections]:
+        model.jump_to_section(target)
+        assert model.current_section_index == expected_index
 
 
 def test_assigning_new_label(
@@ -262,7 +301,7 @@ def test_creating_a_new_section() -> None:
     assert model.current_section.end_frame is None
 
 
-def removing_last_added_section(sections: list[Section]) -> None:
+def test_removing_last_added_section(sections: list[Section]) -> None:
     """
     Should be trivial as simplest implementation is just some basic builtin python operations,
     but better safe then sorry. When refactoring code, you might change things unintentionally
@@ -274,7 +313,7 @@ def removing_last_added_section(sections: list[Section]) -> None:
     assert model.sections == [LeBron, jordan]
 
 
-def removing_when_no_section_yet(sections: list[Section]) -> None:
+def test_removing_when_no_section_yet(sections: list[Section]) -> None:
     """
     Should be implemented in a way such that nothing happens when you try to remove a section while not having created one first
     (or trying to remove one more than you have in total)
@@ -309,7 +348,10 @@ def test_changing_the_final_frame_of_section(sections: list[Section]) -> None:
     assert model.current_section.end_frame == 42
 
 
-def test_resetting_sections_from_dictionary(sections: list[Section]) -> None:
+def test_resetting_sections_from_dictionary(
+    sections: list[Section],
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
     """
     Mimic changing to a different trace, with its own section labels
     NOTE: Yes, I had to keep it fun for myself ;). It is a legit test to perform though, but could've used less incoming sections.
@@ -319,26 +361,70 @@ def test_resetting_sections_from_dictionary(sections: list[Section]) -> None:
     LeBron = Section(start_frame=6, end_frame=23)
 
     # The incoming sections
-    nicknames = {
-        (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
-        (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
-        (15, None): ["The Joker"],
-        (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
-    }
-
-    shaq = Section(
-        32,
-        34,
-        assigned_labels=["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
-    )
-    giannis_antetokounmpo = Section(
-        34, None, assigned_labels=["Giannis", "Greek Freak", "The Alphabet"]
-    )
-    jokic = Section(15, None, assigned_labels=["The Joker"])
-    curry = Section(None, 30, ["Baby-faced assassin", "Chef Curry", "Steph"])
-    expected_sections = [shaq, giannis_antetokounmpo, jokic, curry]
+    nicknames_dict, expected_sections = nicknames
 
     # perform operation
     model = SectionsPanelModel(sections=sections)
-    model.reset_sections(section_labels=nicknames)
+    model.reset_sections(section_labels=nicknames_dict)
+    assert LeBron in original_sections
+    assert LeBron not in model.sections
     assert model.sections == expected_sections
+
+
+def test_creating_dictionary_from_sections(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Test producing the dictionary of section labels that is compatible with the time trace tools from the list of sections kept internally in the Model"""
+    expected_dictionary, nicknames_sections = nicknames
+    model = SectionsPanelModel(sections=nicknames_sections)
+    assert model.sections_to_dictionary() == expected_dictionary
+
+
+def test_determining_section_boundaries(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Test producing the list of frame numbers where sections start / end goes as expected"""
+    expected_boundaries = [32, 34, 34, 15, 30]
+    _, nicknames_sections = nicknames
+    model = SectionsPanelModel(sections=nicknames_sections)
+    assert model.determine_section_boundaries() == expected_boundaries
+
+
+def test_getting_start_frame(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """Fetch the current starting frame. Also check that it returns None when not available"""
+    _, nicknames_sections = nicknames
+    # using jokix as it only as a start frame
+    jokic_model = SectionsPanelModel(sections=[nicknames_sections[2]])
+    # using curry as it only has a end frame
+    curry_model = SectionsPanelModel(sections=[nicknames_sections[-1]])
+
+    assert jokic_model.current_section_has_start
+    assert not jokic_model.current_section_has_end
+    assert jokic_model.current_section_start_frame == 15
+    assert jokic_model.current_section_end_frame is None
+
+    assert not curry_model.current_section_has_start
+    assert curry_model.current_section_has_end
+    assert curry_model.current_section_start_frame is None
+    assert curry_model.current_section_end_frame == 30
+
+
+def test_no_section_bounds_without_before_data():
+    """check the properties will be set to FALSE when there is no (first) section available"""
+    model = SectionsPanelModel(sections=[])
+    assert not model.current_section_has_start
+    assert not model.current_section_has_end
+
+
+def test_has_labels(available_labels: list[str]) -> None:
+    """test contract for API to it's controller"""
+    model = SectionsPanelModel(available_labels=available_labels)
+    assert model.has_labels
+
+
+def test_does_not_have_labels() -> None:
+    """test contract for API to it's controller"""
+    model = SectionsPanelModel()
+    assert not model.has_labels

@@ -4,22 +4,17 @@ toggle on/off indicator showing if current label is included, listen to user's r
 """
 
 import re
-from enum import Enum, auto
 from typing import Callable
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
+from app.state_variables import LightState
 
 # TODO: Move into configuration file!!
 COLOR_OFF = "white"
 COLOR_ON = "green"
-
-
-class LightState(Enum):
-    ON = auto()
-    OFF = auto()
 
 
 class LabelPanelView(QWidget, Ui_LabelAssignment):
@@ -29,8 +24,8 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
     _prev_label_signal = pyqtSignal()
     _open_item_list_signal = pyqtSignal()
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
         self.build_ui()
 
         # connect listening to user input:
@@ -81,7 +76,7 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
         self._prev_label_signal.connect(callback)
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
-        """Connect a callback from the MainController"""
+        """Connect a callback from the controller that will simply 're-emit'/pass on the signal to the MainController"""
         self._open_item_list_signal.connect(callback)
 
     # emit signals when triggered by user's input

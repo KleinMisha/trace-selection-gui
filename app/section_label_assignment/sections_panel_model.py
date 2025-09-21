@@ -14,11 +14,19 @@ class Section:
     end_frame: Optional[int] = None
     assigned_labels: list[str] = field(default_factory=list)
 
-    # expose some methods to make the syntax slightly more readable below (not strictly needed, could assign directly)
-    def set_start_frame(self, value: int) -> None:
+    # expose some methods to make the syntax slightly more readable below (not strictly needed, could assign directly, but this hides implementation details)
+    @property
+    def has_start_frame(self) -> bool:
+        return bool(self.start_frame)
+
+    @property
+    def has_end_frame(self) -> bool:
+        return bool(self.end_frame)
+
+    def set_start_frame(self, value: Optional[int]) -> None:
         self.start_frame = value
 
-    def set_end_frame(self, value: int) -> None:
+    def set_end_frame(self, value: Optional[int]) -> None:
         self.end_frame = value
 
     def assign_label(self, label: str) -> None:
@@ -47,6 +55,36 @@ class SectionsPanelModel:
     def current_is_assigned(self) -> bool:
         return self.current_label in self.current_section.assigned_labels
 
+    @property
+    def has_labels(self) -> bool:
+        return bool(self.available_labels)
+
+    @property
+    def has_sections(self) -> bool:
+        return bool(self.sections)
+
+    @property
+    def current_section_has_start(self) -> bool:
+        return self.current_section.has_start_frame if self.has_sections else False
+
+    @property
+    def current_section_has_end(self) -> bool:
+        return self.current_section.has_end_frame if self.has_sections else False
+
+    @property
+    def current_section_start_frame(self) -> int | None:
+        """hides implementation details of how sections are modelled to the controller"""
+        if not self.current_section_has_start:
+            return None
+        return self.current_section.start_frame
+
+    @property
+    def current_section_end_frame(self) -> int | None:
+        """hides implementation details of how sections are modelled to the controller"""
+        if not self.current_section_has_end:
+            return None
+        return self.current_section.end_frame
+
     def create_new_section(self) -> None:
         """make a new section available for values to be set"""
         self.sections.append(Section())
@@ -56,11 +94,11 @@ class SectionsPanelModel:
         if len(self.sections) > 0:
             self.sections.pop()
 
-    def set_start_section(self, value: int) -> None:
+    def set_start_section(self, value: Optional[int]) -> None:
         """sets the starting frame for the current section"""
         self.current_section.set_start_frame(value)
 
-    def set_end_section(self, value: int) -> None:
+    def set_end_section(self, value: Optional[int]) -> None:
         """sets the final frame for the current section"""
         self.current_section.set_end_frame(value)
 
@@ -123,6 +161,11 @@ class SectionsPanelModel:
         if self.current_section_index > 0:
             self.current_section_index -= 1
 
+    def jump_to_section(self, target: int) -> None:
+        """convenience method needed to edit values on a newly added section dynamically"""
+        if 0 < target < len(self.sections) - 1:
+            self.current_section_index = target
+
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be called by the MainController when done editing the ItemList"""
         original_list = self.available_labels.copy()
@@ -131,3 +174,28 @@ class SectionsPanelModel:
             self.current_label_index -= 1
 
         self.available_labels = updated_list
+
+    def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]:
+        """Parse the Sections into the format the TimeTraceTools accepts / known by the Controller"""
+        section_labels = {}
+        for section in self.sections:
+            start = section.start_frame
+            end = section.end_frame
+            labels = section.assigned_labels
+            section_labels[(start, end)] = labels
+        return section_labels
+
+    def determine_section_boundaries(self) -> list[int]:
+        """
+        Parse the Sections into the set of frames where vertical lines should be shown in the plot.
+        ---
+
+        Needed to be accessed by the MainController
+        """
+        boundary_frames: list[int] = []
+        for section in self.sections:
+            if section.start_frame is not None:
+                boundary_frames.append(section.start_frame)
+            if section.end_frame is not None:
+                boundary_frames.append(section.end_frame)
+        return boundary_frames

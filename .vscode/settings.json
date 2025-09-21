@@ -11,14 +11,6 @@
         "source.organizeImports": "explicit"
     },
     "editor.foldingImportsByDefault": false,
-    // "editor.semanticTokenColorCustomizations": {
-    //     "enabled": true,
-    //     "rules": {
-    //         "*.typeHint": {
-    //             "foreground": "#4EC9B0", // Customize this color
-    //         },
-    //     }
-    // },
     // Python/ Pylance settings
     "python.analysis.typeCheckingMode": "standard",
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
