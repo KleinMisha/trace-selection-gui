@@ -119,6 +119,22 @@ def test_do_not_move_beyond_first_section(sections: list[Section]) -> None:
     assert model.current_section_index == 0
 
 
+def test_jump_to_section(sections: list[Section]) -> None:
+    """test shifting focus to a selected section index"""
+    model = SectionsPanelModel(sections=sections, current_section_index=0)
+    number_sections = len(model.sections)
+    # happy case: jump to index within bounds
+    for target in range(1, number_sections - 1):
+        model.jump_to_section(target)
+        assert model.current_section_index == target
+
+    # edge case: index exceeds outside available range --> simply do not anything
+    expected_index = model.current_section_index
+    for target in [-1, number_sections]:
+        model.jump_to_section(target)
+        assert model.current_section_index == expected_index
+
+
 def test_assigning_new_label(
     available_labels: list[str], sections: list[Section]
 ) -> None:
@@ -285,7 +301,7 @@ def test_creating_a_new_section() -> None:
     assert model.current_section.end_frame is None
 
 
-def removing_last_added_section(sections: list[Section]) -> None:
+def test_removing_last_added_section(sections: list[Section]) -> None:
     """
     Should be trivial as simplest implementation is just some basic builtin python operations,
     but better safe then sorry. When refactoring code, you might change things unintentionally
@@ -297,7 +313,7 @@ def removing_last_added_section(sections: list[Section]) -> None:
     assert model.sections == [LeBron, jordan]
 
 
-def removing_when_no_section_yet(sections: list[Section]) -> None:
+def test_removing_when_no_section_yet(sections: list[Section]) -> None:
     """
     Should be implemented in a way such that nothing happens when you try to remove a section while not having created one first
     (or trying to remove one more than you have in total)
@@ -393,3 +409,15 @@ def test_getting_start_frame(
     assert curry_model.current_section_has_end
     assert curry_model.current_section_start_frame is None
     assert curry_model.current_section_end_frame == 30
+
+
+def test_has_labels(available_labels: list[str]) -> None:
+    """test contract for API to it's controller"""
+    model = SectionsPanelModel(available_labels=available_labels)
+    assert model.has_labels
+
+
+def test_does_not_have_labels() -> None:
+    """test contract for API to it's controller"""
+    model = SectionsPanelModel()
+    assert not model.has_labels

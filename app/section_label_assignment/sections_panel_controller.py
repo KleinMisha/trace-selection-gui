@@ -15,6 +15,10 @@ class Model(Protocol):
 
     @property
     def sections(self) -> list[Section]: ...
+
+    @property
+    def current_section_index(self) -> int: ...
+
     @property
     def current_label(self) -> str: ...
 
@@ -47,8 +51,8 @@ class Model(Protocol):
 
     def create_new_section(self) -> None: ...
     def remove_last_section(self) -> None: ...
-    def set_start_section(self, value: int) -> None: ...
-    def set_end_section(self, value: int) -> None: ...
+    def set_start_section(self, value: Optional[int]) -> None: ...
+    def set_end_section(self, value: Optional[int]) -> None: ...
     def reset_sections(
         self, section_labels: dict[tuple[int, int], list[str]]
     ) -> None: ...
@@ -58,6 +62,7 @@ class Model(Protocol):
     def move_to_previous_label(self) -> None: ...
     def move_to_next_section(self) -> None: ...
     def move_to_previous_section(self) -> None: ...
+    def jump_to_section(self, target: int) -> None: ...
     def update_available_labels(self, updated_list: list[str]) -> None: ...
     def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]: ...
     def determine_section_boundaries(self) -> list[int]: ...
@@ -164,6 +169,7 @@ class SectionsPanelController(QObject):
         self._send_open_item_list_signal()
 
     # API for the MainController:
+
     def reset_for_new_trace(
         self, sections_new_trace: dict[tuple[int, int], list[str]]
     ) -> None:
@@ -182,11 +188,11 @@ class SectionsPanelController(QObject):
         self.view.display_label(self.model.current_label)
         self.view.toggle_indicator(self._determine_light_state())
 
-    def set_start_section(self, value: int) -> None:
+    def set_start_section(self, value: Optional[int] = None) -> None:
         self.model.set_start_section(value)
         self.view.display_section_start(value)
 
-    def set_end_section(self, value: int) -> None:
+    def set_end_section(self, value: Optional[int] = None) -> None:
         self.model.set_end_section(value)
         self.view.display_section_end(value)
 
@@ -199,7 +205,36 @@ class SectionsPanelController(QObject):
         return self.model.determine_section_boundaries()
 
     def get_available_labels(self) -> list[str]:
+        """Such that the MainController can access this method on the component Model"""
         return self.model.available_labels
+
+    def current_section_has_start_frame(self) -> bool:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.current_section_has_start
+
+    def current_section_has_end_frame(self) -> bool:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.current_section_has_end
+
+    def create_new_section_current_trace(self) -> None:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.create_new_section()
+
+    def remove_last_section_from_current_trace(self) -> None:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.remove_last_section()
+
+    def jump_to_section_by_index(self, target: int) -> None:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.jump_to_section(target)
+
+    def get_number_of_sections_current_trace(self) -> int:
+        """Needed when the MainController wants to shift focus to the final section (the newly created one) of the current trace"""
+        return len(self.model.sections)
+
+    def get_current_section_index(self) -> int:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.current_section_index
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
         self._open_item_list_signal.connect(callback)

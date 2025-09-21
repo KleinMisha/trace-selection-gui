@@ -23,10 +23,10 @@ class Section:
     def has_end_frame(self) -> bool:
         return bool(self.end_frame)
 
-    def set_start_frame(self, value: int) -> None:
+    def set_start_frame(self, value: Optional[int]) -> None:
         self.start_frame = value
 
-    def set_end_frame(self, value: int) -> None:
+    def set_end_frame(self, value: Optional[int]) -> None:
         self.end_frame = value
 
     def assign_label(self, label: str) -> None:
@@ -94,11 +94,11 @@ class SectionsPanelModel:
         if len(self.sections) > 0:
             self.sections.pop()
 
-    def set_start_section(self, value: int) -> None:
+    def set_start_section(self, value: Optional[int]) -> None:
         """sets the starting frame for the current section"""
         self.current_section.set_start_frame(value)
 
-    def set_end_section(self, value: int) -> None:
+    def set_end_section(self, value: Optional[int]) -> None:
         """sets the final frame for the current section"""
         self.current_section.set_end_frame(value)
 
@@ -160,6 +160,11 @@ class SectionsPanelModel:
         """Avoid moving into negative indices. Stop when you are already at the first section"""
         if self.current_section_index > 0:
             self.current_section_index -= 1
+
+    def jump_to_section(self, target: int) -> None:
+        """convenience method needed to edit values on a newly added section dynamically"""
+        if 0 < target < len(self.sections) - 1:
+            self.current_section_index = target
 
     def update_available_labels(self, updated_list: list[str]) -> None:
         """Will be called by the MainController when done editing the ItemList"""
