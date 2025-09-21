@@ -737,3 +737,123 @@ def test_handle_error(main_controller: MainController, severity: EventSeverity) 
     cast(Mock, main_controller.view.open_message_box).assert_called_once_with(
         severity, "testing the handling"
     )
+
+
+@pytest.mark.parametrize("number_existing_sections", [n for n in range(1, 11)])
+def test_adding_start_of_new_section(
+    main_controller: MainController, number_existing_sections: int
+) -> None:
+    """test logic for `handle_line_added_to_plot` when you clicked for the start of a section (an odd number of times)"""
+
+    mock_component = main_controller.components["sections_panel"]
+    cast(Any, mock_component).current_section_has_end_frame = PropertyMock(
+        return_value=True
+    )
+    with (
+        patch.object(
+            mock_component,
+            attribute="get_current_section_index",
+            return_value=number_existing_sections - 1,
+        ) as mock_section_finder,
+        patch.object(
+            main_controller, attribute="_find_frame_number", return_value=45
+        ) as mock_frame_finder,
+        patch.object(
+            mock_component,
+            attribute="get_number_of_sections_current_trace",
+            return_value=number_existing_sections,
+        ),
+    ):
+        main_controller.handle_line_added_in_plot(time_point=23.0)
+        expected_frame_number = mock_frame_finder()
+        expected_index = mock_section_finder()
+        cast(Mock, mock_component.create_new_section_current_trace).assert_called_once()
+        cast(Mock, mock_component.set_start_section).assert_called_once_with(
+            expected_frame_number
+        )
+        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
+            [call(number_existing_sections), call(expected_index)]
+        )
+
+
+def test_adding_start_of_first_section(main_controller: MainController) -> None:
+    """test logic for `handle_line_added_to_plot` when the user clicked for the start of the first section"""
+    mock_component = main_controller.components["sections_panel"]
+    cast(Any, mock_component).current_section_has_start_frame = PropertyMock(
+        return_value=False
+    )
+    cast(Any, mock_component).current_section_has_end_frame = PropertyMock(
+        return_value=False
+    )
+    with (
+        patch.object(
+            mock_component,
+            attribute="get_current_section_index",
+            return_value=0,
+        ) as _,
+        patch.object(
+            main_controller, attribute="_find_frame_number", return_value=45
+        ) as mock_frame_finder,
+        patch.object(
+            mock_component,
+            attribute="get_number_of_sections_current_trace",
+            return_value=0,
+        ),
+    ):
+        main_controller.handle_line_added_in_plot(time_point=23.0)
+        expected_frame_number = mock_frame_finder()
+        cast(Mock, mock_component.create_new_section_current_trace).assert_called_once()
+        cast(Mock, mock_component.set_start_section).assert_called_once_with(
+            expected_frame_number
+        )
+        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
+            [call(0)] * 2
+        )
+
+
+def test_adding_end_of_section(main_controller: MainController) -> None:
+    """test logic `handle_line_added_to_plot` when user clicked to demark the end of a section"""
+    mock_component = main_controller.components["sections_panel"]
+    cast(Any, mock_component).current_section_has_start_frame = PropertyMock(
+        return_value=True
+    )
+    cast(Any, mock_component).current_section_has_end_frame = PropertyMock(
+        return_value=False
+    )
+    with patch.object(
+        main_controller, attribute="_find_frame_number", return_value=45
+    ) as mock_frame_finder:
+        main_controller.handle_line_added_in_plot(time_point=23.0)
+        expected_frame_number = mock_frame_finder()
+        cast(Mock, mock_component.set_end_section).assert_called_once_with(
+            expected_frame_number
+        )
+
+
+def test_removing_end_of_section(main_controller: MainController) -> None:
+    """test logic `handle_removed_from_plot` when the end of a section just got removed"""
+    mock_component = main_controller.components["sections_panel"]
+    cast(Any, mock_component).current_section_has_start_frame = PropertyMock(
+        return_value=True
+    )
+    cast(Any, mock_component).current_section_has_end_frame = PropertyMock(
+        return_value=True
+    )
+    main_controller.handle_removed_line_from_plot()
+    cast(Mock, mock_component.set_end_section).assert_called_once_with(None)
+
+
+def test_removing_last_section(main_controller: MainController) -> None:
+    """test logic `handle_removed_from_plot` when the start of a section just got removed"""
+    mock_component = main_controller.components["sections_panel"]
+    cast(Any, mock_component).current_section_has_start_frame = PropertyMock(
+        return_value=True
+    )
+    cast(Any, mock_component).current_section_has_end_frame = PropertyMock(
+        return_value=False
+    )
+    main_controller.handle_removed_line_from_plot()
+    cast(Mock, mock_component.set_start_section).assert_called_once_with(None)
+    cast(
+        Mock, mock_component.remove_last_section_from_current_trace
+    ).assert_called_once()

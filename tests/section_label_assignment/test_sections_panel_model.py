@@ -411,6 +411,13 @@ def test_getting_start_frame(
     assert curry_model.current_section_end_frame == 30
 
 
+def test_no_section_bounds_without_before_data():
+    """check the properties will be set to FALSE when there is no (first) section available"""
+    model = SectionsPanelModel(sections=[])
+    assert not model.current_section_has_start
+    assert not model.current_section_has_end
+
+
 def test_has_labels(available_labels: list[str]) -> None:
     """test contract for API to it's controller"""
     model = SectionsPanelModel(available_labels=available_labels)

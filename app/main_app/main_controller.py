@@ -170,6 +170,9 @@ class MainController:
         self.components["sections_panel"].connect_open_item_list(
             self.handle_open_item_list_from_sections_panel
         )
+        self.components["interactive_plot"].connect_line_added_to_plot(
+            self.handle_line_added_in_plot
+        )
 
     # main app logic
     def close_app(self) -> None:
@@ -437,11 +440,59 @@ class MainController:
         self.components["sections_panel"].update_available_labels(items)
         self.popup_window_from_sections = None
 
-    def handle_line_added_in_plot(self, location: float) -> None:
-        """Makes the InterActivePlot affect the SectionsPanel"""
+    def handle_line_added_in_plot(self, time_point: float) -> None:
+        """
+        Triggered when the interactive plot has drawn a new line to demark a section boundary
+        ----
+        NOTE: ⓘ it is assumed you always first click for the start, then for the end of a section
+        Therefore if the current section already has both a start and an endpoint, this method request the component to create a new section for which the user just selected the starting frame.
+        """
+        frame_number = self._find_frame_number(time_point)
+        start_of_section_exists = self.components[
+            "sections_panel"
+        ].current_section_has_start_frame()
+        end_of_section_exists = self.components[
+            "sections_panel"
+        ].current_section_has_end_frame()
+
+        current_index = self.components["sections_panel"].get_current_section_index()
+        number_of_sections = self.components[
+            "sections_panel"
+        ].get_number_of_sections_current_trace()
+        if (not start_of_section_exists) or (end_of_section_exists):
+            # user just added the start of the new section:
+            self.components["sections_panel"].create_new_section_current_trace()
+            # temporarily change focus to this newly created section, such that the start frame can be set
+            self.components["sections_panel"].jump_to_section_by_index(
+                number_of_sections
+            )
+            self.components["sections_panel"].set_start_section(frame_number)
+            self.components["sections_panel"].jump_to_section_by_index(current_index)
+
+        elif start_of_section_exists and not end_of_section_exists:
+            # user just added the end point of the current section.
+            self.components["sections_panel"].set_end_section(frame_number)
 
     def handle_removed_line_from_plot(self) -> None:
-        """Makes the InterActivePlot affect the SectionsPanel"""
+        """
+        Triggered when the plot signals a line has been removed from the plot
+        ----
+
+        NOTE: ⓘ It is assumed that if you remove the start of a section, you also are removing this section
+        (also to work in conjunction with `handle_line_added_in_plot()`)
+        """
+        start_of_section_exists = self.components[
+            "sections_panel"
+        ].current_section_has_start_frame()
+        end_of_section_exists = self.components[
+            "sections_panel"
+        ].current_section_has_end_frame()
+
+        if start_of_section_exists and end_of_section_exists:
+            self.components["sections_panel"].set_end_section(None)
+        elif start_of_section_exists:
+            self.components["sections_panel"].set_start_section(None)
+            self.components["sections_panel"].remove_last_section_from_current_trace()
 
     def handle_go_to_help_docs(self) -> None:
         # TODO: Implement this later when MkDocs website is running
@@ -505,6 +556,12 @@ class MainController:
         if self.model.path_to_section_labels == Path(""):
             return False
         return True
+
+    # additional helpers for internal logic
+    def _find_frame_number(self, time_point: float) -> int:
+        # ? If this turns out to be too slow, use Numpy methods instead.
+        time_as_list = list(self.model.current_trace.t)
+        return time_as_list.index(time_point)
 
     # Logic that requires accessing the component controllers
     def _update_current_trace(self) -> None:
