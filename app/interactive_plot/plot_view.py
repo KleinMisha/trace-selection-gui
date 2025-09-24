@@ -73,7 +73,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         if title is not None:
             self.ax.set_title(title)
 
-        plt.show()
+        self.canvas.draw()
 
     def adjust_t_range(self, min_value: float, max_value: float):
         self.ax.set_xlim((min_value, max_value))
