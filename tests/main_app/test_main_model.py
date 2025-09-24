@@ -7,7 +7,7 @@ NOTE: Hence, we just use unittest.mock.Mock to assert the correct functions are 
 """
 
 from typing import Any, cast
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
 import pytest
@@ -163,20 +163,45 @@ def test_calling_label_update() -> None:
     """Simple checks to see data gets updated properly (call to the correct method)"""
     model = MainModel()
     mock_experiment = cast(Experiment, Mock())
-    cast(Any, type(model)).current_trace = PropertyMock(return_value=Mock())
-    model._set_experiment(mock_experiment)
-    new_labels = ["mock", "mock-a-dee", "mock-a-doo"]
-    model.update_trace_labels(new_labels)
-    cast(Mock, model.current_trace.add_labels).assert_called_once_with(new_labels)
+    with patch.object(
+        MainModel,
+        attribute="current_trace",
+        new_callable=PropertyMock,
+    ) as _:
+        model._set_experiment(mock_experiment)
+        new_labels = ["mock", "mock-a-dee", "mock-a-doo"]
+        model.update_trace_labels(new_labels)
+        cast(Mock, model.current_trace.add_labels).assert_called_once_with(new_labels)
 
 
 def test_calling_section_labels_update() -> None:
     """Simple check to see that data gets updated properly (call to the correct method)"""
     model = MainModel()
     mock_experiment = cast(Experiment, Mock())
-    cast(Any, type(model)).current_trace = PropertyMock(return_value=Mock())
-    model._set_experiment(mock_experiment)
+    with patch.object(
+        MainModel,
+        attribute="current_trace",
+        new_callable=PropertyMock,
+    ) as _:
+        model._set_experiment(mock_experiment)
+        nicknames = {
+            (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+            (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
+            (15, None): ["The Joker"],
+            (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
+        }
+        model.update_trace_section_labels(nicknames)
+        cast(
+            Mock, model.current_trace.add_labelled_sections_from_dictionary
+        ).assert_called_once_with(nicknames)
 
+
+def test_only_updating_current_trace(experiment: Experiment) -> None:
+    """Check that when moving to a different trace, only the previous trace got the updated data"""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    # update the current trace's labels
     nicknames = {
         (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
         (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
@@ -184,9 +209,19 @@ def test_calling_section_labels_update() -> None:
         (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
     }
     model.update_trace_section_labels(nicknames)
-    cast(
-        Mock, model.current_trace.add_labelled_sections_from_dictionary
-    ).assert_called_once_with(nicknames)
+
+    for key, labels in nicknames.items():
+        assert set(model.current_trace.section_labels[key]) == set(labels)
+
+    # change focus
+    model.move_to_next_trace()
+
+    # should not have anything assigned to this trace
+    assert model.current_trace.section_labels == {}
+
+    # move back and check updates are still applied
+    model.move_to_previous_trace()
+    assert model.current_trace.section_labels == nicknames
 
 
 @pytest.mark.parametrize(
