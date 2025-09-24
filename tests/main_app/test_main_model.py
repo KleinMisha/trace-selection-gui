@@ -196,7 +196,7 @@ def test_calling_section_labels_update() -> None:
         ).assert_called_once_with(nicknames)
 
 
-def test_only_updating_current_trace(experiment: Experiment) -> None:
+def test_only_updating_current_trace_sections(experiment: Experiment) -> None:
     """Check that when moving to a different trace, only the previous trace got the updated data"""
     model = MainModel()
     model._set_experiment(experiment)
@@ -221,7 +221,31 @@ def test_only_updating_current_trace(experiment: Experiment) -> None:
 
     # move back and check updates are still applied
     model.move_to_previous_trace()
-    assert model.current_trace.section_labels == nicknames
+    for key, labels in nicknames.items():
+        assert set(model.current_trace.section_labels[key]) == set(labels)
+
+
+def test_only_updating_current_trace_labels(experiment: Experiment) -> None:
+    """Check that when moving to a different trace, only the previous trace got the updated data"""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    # update the current trace's labels
+    nicknames = ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"]
+
+    model.update_trace_labels(nicknames)
+
+    assert set(model.current_trace.labels) == set(nicknames)
+
+    # change focus
+    model.move_to_next_trace()
+
+    # should not have anything assigned to this trace
+    assert model.current_trace.labels == []
+
+    # move back and check updates are still applied
+    model.move_to_previous_trace()
+    assert set(model.current_trace.labels) == set(nicknames)
 
 
 @pytest.mark.parametrize(
