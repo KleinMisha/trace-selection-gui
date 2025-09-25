@@ -171,7 +171,7 @@ def test_calling_label_update() -> None:
         model._set_experiment(mock_experiment)
         new_labels = ["mock", "mock-a-dee", "mock-a-doo"]
         model.update_trace_labels(new_labels)
-        cast(Mock, model.current_trace.add_labels).assert_called_once_with(new_labels)
+        assert set(model.current_trace.labels) == set(new_labels)
 
 
 def test_calling_section_labels_update() -> None:
@@ -246,6 +246,44 @@ def test_only_updating_current_trace_labels(experiment: Experiment) -> None:
     # move back and check updates are still applied
     model.move_to_previous_trace()
     assert set(model.current_trace.labels) == set(nicknames)
+
+
+def test_update_only_new_labels(
+    experiment: Experiment,
+) -> None:
+    """
+    The update should only take newly added labels into account, do not keep appending already added labels
+    """
+    model = MainModel()
+    model._set_experiment(experiment)
+    # add labels to the current trace:
+    nicknames_1 = ["Shaq", "Big Diesel"]
+    nicknames_2 = nicknames_1 + ["Big Aristotle", "Superman", "Shaq-foo"]
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # calling the update a second time ("mimics a call from MainController to change focus to another trace, again with the first trace as the original focus")
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # now add more labels, the labels should now include all labels
+    model.update_trace_labels(nicknames_2)
+    assert set(model.current_trace.labels) == set(nicknames_2)
+
+
+def test_replacing_labels(experiment: Experiment) -> None:
+    """update the labels, when completely removing the old ones / replacing by new ones"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    # add labels to the current trace:
+    nicknames_1 = ["Shaq", "Big Diesel"]
+    nicknames_2 = ["Big Aristotle", "Superman", "Shaq-foo"]
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # replace the labels by a non-overlapping set
+    model.update_trace_labels(nicknames_2)
+    assert set(model.current_trace.labels) == set(nicknames_2)
 
 
 @pytest.mark.parametrize(

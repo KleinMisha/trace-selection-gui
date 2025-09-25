@@ -147,7 +147,7 @@ class MainModel:
         """
         Updates the data (on the current trace) when receiving the information from the `LabelPanelModel` (the controller).
         """
-        return self.current_trace.add_labels(new_labels)
+        self.current_trace.labels = new_labels
 
     def update_trace_section_labels(
         self, new_section_labels: dict[tuple[int, int], list[str]]
