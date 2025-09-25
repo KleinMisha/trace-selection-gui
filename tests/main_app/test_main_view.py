@@ -266,3 +266,18 @@ def test_saving_to_the_correct_file() -> None:
         mock_signal_caller.assert_called_once_with(
             Path("/mock/mocker/mockeronyNcheese/most_mockest.txt")
         )
+
+
+def test_display_trace_id_call_does_not_emit_a_signal() -> None:
+    """
+    Ensure that programmatically updating the trace ID in the view
+    does not emit the 'jump_to_trace' signal.
+
+    This prevents the controller from treating programmatic updates
+    as user-initiated actions and avoids unintended updates on the new trace.
+    """
+    mock_handler = Mock()
+    view = MainView()
+    view.connect_jump_to_trace(mock_handler)
+    view.display_trace_id("mock")
+    mock_handler.assert_not_called()

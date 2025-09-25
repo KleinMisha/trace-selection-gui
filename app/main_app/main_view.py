@@ -96,7 +96,18 @@ class MainView(QMainWindow, Ui_MainWindow):
 
     # UI-logic
     def display_trace_id(self, name: str) -> None:
+        """
+        Programmatically updates the displayed label.
+        -----
+        NOTE: To not trigger a signal being emitted that the trace ID has been changed, the signals
+        get temporarily blocked to update the displayed text.
+        Finally, signals get enabled again to allow the user to adjust it manually (in which case we do want to emit the "jump to this trace signal")
+
+        NOTE: Omitting this block made the MainController update the target trace with data, even though this shouldn't happen.
+        """
+        self.TraceIDEntry.blockSignals(True)
         self.TraceIDEntry.setText(name)
+        self.TraceIDEntry.blockSignals(False)
 
     def update_progressbar(self, value: float) -> None:
         """the Qt progressbar expects integer values. Round the input percentage."""
