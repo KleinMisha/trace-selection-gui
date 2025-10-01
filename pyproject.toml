@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-time_trace_tools = { git = 'ssh://git@gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.0"}
+time_trace_tools = { git = 'ssh://git@gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.1"}
 
 [dependency-groups]
 dev = [
