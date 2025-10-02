@@ -92,6 +92,9 @@ class Model(Protocol):
         self, new_section_labels: dict[tuple[int, int], list[str]]
     ) -> None: ...
     def find_index_from_id(self, trace_id: str) -> int: ...
+    def get_section_boundaries(self) -> list[int]: ...
+    def get_current_trace_labels(self) -> list[str]: ...
+    def get_current_trace_section_labels(self) -> dict[tuple[int, int], list[str]]: ...
 
 
 class View(Protocol):
@@ -577,9 +580,15 @@ class MainController:
         new_labels = self.components["label_panel"].get_assigned_labels()
         self.model.update_trace_labels(new_labels)
 
+        print(
+            f"[DEBUG] section labels before update: {self.model.get_current_trace_labels()}"
+        )
         # update the current trace's section labels (from the SectionsPanel)
         new_section_labels = self.components["sections_panel"].get_section_labels()
         self.model.update_trace_section_labels(new_section_labels)
+        print(
+            f"[DEBUG] section labels after update: {self.model.get_current_trace_labels()}"
+        )
 
     def _reset_components(self) -> None:
         """
@@ -591,20 +600,25 @@ class MainController:
         NOTE: The list of available labels is assumed to be shared amongst traces (for you entire experiment).Therefore, it does not have to get updated here.
         """
         # plot the new trace
-        horizontal_line_time_points = [
-            self.model.current_trace.t[frame]
-            for frame in self.components["sections_panel"].get_section_boundaries()
-        ]
+        horizontal_line_time_points = self.model.get_section_boundaries()
+        print(
+            f"[DEBUG] PlotController: adding vertical line at {horizontal_line_time_points} for trace {self.model.current_trace_id}"
+        )
+
         self.components["interactive_plot"].reset_for_new_trace(
             self.model.current_trace, horizontal_line_time_points
         )
+        print(
+            f"[DEBUG] PlotController: adding vertical line at {horizontal_line_time_points} for trace {self.model.current_trace_id}"
+        )
+
         # reset the assigned labels
         self.components["label_panel"].reset_for_new_trace(
-            self.model.current_trace.labels
+            self.model.get_current_trace_labels()
         )
         # reset the assigned section labels
         self.components["sections_panel"].reset_for_new_trace(
-            self.model.current_trace.section_labels
+            self.model.get_current_trace_section_labels()
         )
 
     @property

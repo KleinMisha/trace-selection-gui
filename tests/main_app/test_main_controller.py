@@ -378,27 +378,39 @@ def test_reset_components(
 
     with (
         patch.object(
-            components["sections_panel"],
+            main_controller.model,
             attribute="get_section_boundaries",
             return_value=expected_boundaries,
-        ) as mock_one,
+        ) as mock_boundary_getter,
+        patch.object(
+            main_controller.model,
+            attribute="get_current_trace_section_labels",
+            return_value=mock_sections,
+        ) as mock_section_getter,
+        patch.object(
+            main_controller.model,
+            attribute="get_current_trace_labels",
+            return_value=mock_labels,
+        ) as mock_label_getter,
         patch.object(
             components["interactive_plot"], attribute="reset_for_new_trace"
-        ) as mock_two,
+        ) as mock_plot_reset,
         patch.object(
             components["label_panel"], attribute="reset_for_new_trace"
-        ) as mock_three,
+        ) as mock_label_reset,
         patch.object(
             components["sections_panel"], attribute="reset_for_new_trace"
-        ) as mock_four,
+        ) as mock_sections_reset,
     ):
         main_controller._reset_components()
-        mock_one.assert_called_once()
-        mock_two.assert_called_once_with(
+        mock_boundary_getter.assert_called_once()
+        mock_plot_reset.assert_called_once_with(
             mock_trace, [float(b) for b in expected_boundaries]
         )
-        mock_three.assert_called_once_with(mock_labels)
-        mock_four.assert_called_once_with(mock_sections)
+        mock_label_getter.assert_called_once()
+        mock_label_reset.assert_called_once_with(mock_labels)
+        mock_section_getter.assert_called_once()
+        mock_sections_reset.assert_called_once_with(mock_sections)
 
 
 def test_updating_model_data_current_trace(

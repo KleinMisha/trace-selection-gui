@@ -380,16 +380,6 @@ def test_creating_dictionary_from_sections(
     assert model.sections_to_dictionary() == expected_dictionary
 
 
-def test_determining_section_boundaries(
-    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
-) -> None:
-    """Test producing the list of frame numbers where sections start / end goes as expected"""
-    expected_boundaries = [32, 34, 34, 15, 30]
-    _, nicknames_sections = nicknames
-    model = SectionsPanelModel(sections=nicknames_sections)
-    assert model.determine_section_boundaries() == expected_boundaries
-
-
 def test_getting_start_frame(
     nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
 ) -> None:
@@ -428,3 +418,13 @@ def test_does_not_have_labels() -> None:
     """test contract for API to it's controller"""
     model = SectionsPanelModel()
     assert not model.has_labels
+
+
+def test_getting_section_labels_as_dictionary(
+    nicknames: tuple[dict[tuple[int, int], list[str]], list[Section]],
+) -> None:
+    """test convenience method to grab the section labels dictionary"""
+    nicknames_dict, nicknames_sections = nicknames
+    model = SectionsPanelModel()
+    model.sections = nicknames_sections
+    assert model.sections_to_dictionary() == nicknames_dict

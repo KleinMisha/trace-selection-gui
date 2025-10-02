@@ -64,6 +64,8 @@ class Model(Protocol):
 
     def has_data(self) -> bool: ...
 
+    def get_time_point_by_index(self, index: int) -> float: ...
+
 
 class View(Protocol):
     """Protocol for the InteractivePlot View"""
@@ -113,13 +115,14 @@ class InteractivePlotController(QObject):
 
     # To be called from outside:
     def reset_for_new_trace(
-        self, trace: TraceData, section_boundaries: list[float]
+        self, trace: TraceData, section_boundaries: list[int]
     ) -> None:
         """(Re)set the data known to the model and plot the new trace + previously selected sections"""
         self.model.trace_data = trace
         self.view.clear_figure()
         self.view.show_t_vs_z_plot(trace.t, trace.z)
-        for time_point in section_boundaries:
+        for frame_nr in section_boundaries:
+            time_point = self.model.get_time_point_by_index(frame_nr)
             self.view.show_line_in_plot(time_point)
 
         self.view.update_figure()

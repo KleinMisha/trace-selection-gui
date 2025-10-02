@@ -196,14 +196,6 @@ class SectionsPanelController(QObject):
         self.model.set_end_section(value)
         self.view.display_section_end(value)
 
-    def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
-        """Such that the MainController can access this method on the component Model"""
-        return self.model.sections_to_dictionary()
-
-    def get_section_boundaries(self) -> list[int]:
-        """Such that the MainController can access this method on the component Model"""
-        return self.model.determine_section_boundaries()
-
     def get_available_labels(self) -> list[str]:
         """Such that the MainController can access this method on the component Model"""
         return self.model.available_labels
@@ -238,6 +230,14 @@ class SectionsPanelController(QObject):
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
         self._open_item_list_signal.connect(callback)
+
+    def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.sections_to_dictionary()
+
+    def get_section_boundaries(self) -> list[int]:
+        """convenience method to get all section boundaries"""
+        return self.model.determine_section_boundaries()
 
     # Used internally:
     def _send_open_item_list_signal(self) -> None:

@@ -46,3 +46,9 @@ class InteractivePlotModel:
 
     def has_data(self) -> bool:
         return True if self.trace_data else False
+
+    def get_time_point_by_index(self, index: int) -> float:
+        """convert frame number (index) to the corresponding time point"""
+        if not self.trace_data:
+            raise MissingExperimentError("get_time_point_by_frame")
+        return self.trace_data.t[index]

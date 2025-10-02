@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from time_trace_tools.data_types.magnetic_tweezers_trace import MagneticTweezersTrace
 
-from app.interactive_plot.plot_model import InteractivePlotModel
 from app.exceptions import MissingExperimentError
+from app.interactive_plot.plot_model import InteractivePlotModel
 
 
 @pytest.fixture
@@ -41,10 +41,21 @@ def test_find_nearest_data_point(
     assert y_nearest == expected_y
 
 
-def test_method_call_before_setting_data() -> None:
+def test_method_calls_before_setting_data() -> None:
     """Make sure you raise a MissingExperimentError when attempting to call this method without there being any data"""
     model = InteractivePlotModel(
         trace_data=None, t_min=0.0, t_max=0.0, z_min=0.0, z_max=0.0
     )
     with pytest.raises(MissingExperimentError):
         model.find_nearest_data_point(x_coordinate=42.0)
+
+    with pytest.raises(MissingExperimentError):
+        model.get_time_point_by_index(index=0)
+
+
+def test_get_time_point_by_frame_number(trace: MagneticTweezersTrace) -> None:
+    model = InteractivePlotModel(
+        trace_data=trace, t_min=0.0, t_max=0.0, z_min=0.0, z_max=0.0
+    )
+    for index in [0, 20, 40, 60, 80, 99]:
+        assert model.get_time_point_by_index(index) == trace.t[index]
