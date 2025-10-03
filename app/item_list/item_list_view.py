@@ -27,6 +27,9 @@ class PyQtView(QWidget, Ui_ItemListWidget):
         self.add_button.clicked.connect(self._send_add_signal)
         self.remove_button.clicked.connect(self._send_remove_signal)
 
+        # enable using ENTER key to add a new label
+        self.input_label.returnPressed.connect(self._send_add_signal)
+
     def build_ui(self) -> None:
         """Build the UI from the compiled `.ui` file (converted into Python file.)"""
         # Have the title configurable when instantiating the View to be able to re-use it for both trace labels and section labels
