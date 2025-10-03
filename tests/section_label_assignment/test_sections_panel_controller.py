@@ -162,6 +162,9 @@ def test_change_assigned_labels() -> None:
     expected_section_labels = {(23, 45): ["mock", "mocker", "most mockest"]}
     controller.reset_for_new_trace(sections_new_trace=expected_section_labels)
     cast(Mock, model.reset_sections).assert_called_once_with(expected_section_labels)
+    cast(Mock, model.jump_to_section).assert_called_once_with(
+        len(expected_section_labels.keys())
+    )
     cast(Mock, view.toggle_indicator).assert_called_once_with(LightState.ON)
 
 

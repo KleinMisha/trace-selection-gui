@@ -175,6 +175,8 @@ class SectionsPanelController(QObject):
     ) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
         self.model.reset_sections(sections_new_trace)
+        number_available_sections = len(sections_new_trace.keys())
+        self.model.jump_to_section(number_available_sections)
         self.view.display_section_start(self.model.current_section_start_frame)
         self.view.display_section_end(self.model.current_section_end_frame)
         self.view.toggle_indicator(self._determine_light_state())

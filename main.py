@@ -36,9 +36,9 @@ def main():
         "item_list": create_item_list,
     }
     controller = MainController(model, view, components=components)
+    _ = controller
 
     # start the application
-    _ = controller
     app.exec()
 
 
