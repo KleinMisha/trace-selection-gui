@@ -8,11 +8,11 @@ dependencies = [
     "matplotlib>=3.10.5",
     "numpy>=2.3.2",
     "pyqt6>=6.9.1",
-    "time_trace_tools",
+    "time_trace_tools"
 ]
 
 [tool.uv.sources]
-time_trace_tools = { git = 'ssh://git@gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.0"}
+time_trace_tools = { git = 'ssh://git@gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.1"}
 
 [dependency-groups]
 dev = [

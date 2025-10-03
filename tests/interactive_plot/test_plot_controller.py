@@ -11,7 +11,7 @@ Test that the controller correctly handles incoming signals from a mock View, up
 """
 
 from typing import cast
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 import numpy as np
 import pytest
@@ -238,14 +238,19 @@ def test_reset_for_new_trace() -> None:
             self.t = t
             self.z = z
 
-    mock_trace = MockTrace(t=np.array([1.0]), z=np.array([1.0]))
-    mock_time_points = [8.0, 23.0, 24.0, 45.0]
-    controller.reset_for_new_trace(mock_trace, mock_time_points)
-    assert model.trace_data == mock_trace
-    cast(Mock, view.show_t_vs_z_plot).assert_called_once_with(
-        mock_trace.t, mock_trace.z
+    mock_trace = MockTrace(
+        t=np.array([float(n + 1) for n in range(50)]), z=np.array([1.0] * 100)
     )
-    cast(Mock, view.show_line_in_plot).assert_has_calls(
-        [call(time_point) for time_point in mock_time_points]
-    )
-    cast(Mock, view.update_figure).assert_called_once()
+    mock_clicked_locations = [8, 23, 24, 45]
+
+    with patch.object(model, attribute="get_time_point_by_index", return_value=23):
+        controller.reset_for_new_trace(mock_trace, mock_clicked_locations)
+        assert model.trace_data == mock_trace
+        cast(Mock, view.show_t_vs_z_plot).assert_called_once_with(
+            mock_trace.t, mock_trace.z
+        )
+
+        cast(Mock, view.show_line_in_plot).assert_has_calls(
+            [call(23) for _ in range(len(mock_clicked_locations))]
+        )
+        cast(Mock, view.update_figure).assert_called_once()

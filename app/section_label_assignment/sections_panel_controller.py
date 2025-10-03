@@ -175,6 +175,8 @@ class SectionsPanelController(QObject):
     ) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
         self.model.reset_sections(sections_new_trace)
+        number_available_sections = len(sections_new_trace.keys())
+        self.model.jump_to_section(number_available_sections)
         self.view.display_section_start(self.model.current_section_start_frame)
         self.view.display_section_end(self.model.current_section_end_frame)
         self.view.toggle_indicator(self._determine_light_state())
@@ -195,14 +197,6 @@ class SectionsPanelController(QObject):
     def set_end_section(self, value: Optional[int] = None) -> None:
         self.model.set_end_section(value)
         self.view.display_section_end(value)
-
-    def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
-        """Such that the MainController can access this method on the component Model"""
-        return self.model.sections_to_dictionary()
-
-    def get_section_boundaries(self) -> list[int]:
-        """Such that the MainController can access this method on the component Model"""
-        return self.model.determine_section_boundaries()
 
     def get_available_labels(self) -> list[str]:
         """Such that the MainController can access this method on the component Model"""
@@ -238,6 +232,14 @@ class SectionsPanelController(QObject):
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
         self._open_item_list_signal.connect(callback)
+
+    def get_section_labels(self) -> dict[tuple[int, int], list[str]]:
+        """Such that the MainController can access this method on the component Model"""
+        return self.model.sections_to_dictionary()
+
+    def get_section_boundaries(self) -> list[int]:
+        """convenience method to get all section boundaries"""
+        return self.model.determine_section_boundaries()
 
     # Used internally:
     def _send_open_item_list_signal(self) -> None:

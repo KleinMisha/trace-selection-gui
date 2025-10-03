@@ -163,7 +163,7 @@ class SectionsPanelModel:
 
     def jump_to_section(self, target: int) -> None:
         """convenience method needed to edit values on a newly added section dynamically"""
-        if 0 < target < len(self.sections) - 1:
+        if 0 < target < len(self.sections):
             self.current_section_index = target
 
     def update_available_labels(self, updated_list: list[str]) -> None:
@@ -184,18 +184,3 @@ class SectionsPanelModel:
             labels = section.assigned_labels
             section_labels[(start, end)] = labels
         return section_labels
-
-    def determine_section_boundaries(self) -> list[int]:
-        """
-        Parse the Sections into the set of frames where vertical lines should be shown in the plot.
-        ---
-
-        Needed to be accessed by the MainController
-        """
-        boundary_frames: list[int] = []
-        for section in self.sections:
-            if section.start_frame is not None:
-                boundary_frames.append(section.start_frame)
-            if section.end_frame is not None:
-                boundary_frames.append(section.end_frame)
-        return boundary_frames

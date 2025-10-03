@@ -7,7 +7,7 @@ NOTE: Hence, we just use unittest.mock.Mock to assert the correct functions are 
 """
 
 from typing import Any, cast
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
 import pytest
@@ -163,20 +163,45 @@ def test_calling_label_update() -> None:
     """Simple checks to see data gets updated properly (call to the correct method)"""
     model = MainModel()
     mock_experiment = cast(Experiment, Mock())
-    cast(Any, type(model)).current_trace = PropertyMock(return_value=Mock())
-    model._set_experiment(mock_experiment)
-    new_labels = ["mock", "mock-a-dee", "mock-a-doo"]
-    model.update_trace_labels(new_labels)
-    cast(Mock, model.current_trace.add_labels).assert_called_once_with(new_labels)
+    with patch.object(
+        MainModel,
+        attribute="current_trace",
+        new_callable=PropertyMock,
+    ) as _:
+        model._set_experiment(mock_experiment)
+        new_labels = ["mock", "mock-a-dee", "mock-a-doo"]
+        model.update_trace_labels(new_labels)
+        assert set(model.current_trace.labels) == set(new_labels)
 
 
 def test_calling_section_labels_update() -> None:
     """Simple check to see that data gets updated properly (call to the correct method)"""
     model = MainModel()
     mock_experiment = cast(Experiment, Mock())
-    cast(Any, type(model)).current_trace = PropertyMock(return_value=Mock())
-    model._set_experiment(mock_experiment)
+    with patch.object(
+        MainModel,
+        attribute="current_trace",
+        new_callable=PropertyMock,
+    ) as _:
+        model._set_experiment(mock_experiment)
+        nicknames = {
+            (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
+            (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
+            (15, None): ["The Joker"],
+            (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
+        }
+        model.update_trace_section_labels(nicknames)
+        cast(
+            Mock, model.current_trace.add_labelled_sections_from_dictionary
+        ).assert_called_once_with(nicknames)
 
+
+def test_only_updating_current_trace_sections(experiment: Experiment) -> None:
+    """Check that when moving to a different trace, only the previous trace got the updated data"""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    # update the current trace's labels
     nicknames = {
         (32, 34): ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"],
         (34, None): ["Giannis", "Greek Freak", "The Alphabet"],
@@ -184,9 +209,81 @@ def test_calling_section_labels_update() -> None:
         (None, 30): ["Baby-faced assassin", "Chef Curry", "Steph"],
     }
     model.update_trace_section_labels(nicknames)
-    cast(
-        Mock, model.current_trace.add_labelled_sections_from_dictionary
-    ).assert_called_once_with(nicknames)
+
+    for key, labels in nicknames.items():
+        assert set(model.current_trace.section_labels[key]) == set(labels)
+
+    # change focus
+    model.move_to_next_trace()
+
+    # should not have anything assigned to this trace
+    assert model.current_trace.section_labels == {}
+
+    # move back and check updates are still applied
+    model.move_to_previous_trace()
+    for key, labels in nicknames.items():
+        assert set(model.current_trace.section_labels[key]) == set(labels)
+
+
+def test_only_updating_current_trace_labels(experiment: Experiment) -> None:
+    """Check that when moving to a different trace, only the previous trace got the updated data"""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    # update the current trace's labels
+    nicknames = ["Shaq", "Big Diesel", "Big Aristotle", "Superman", "Shaq-foo"]
+
+    model.update_trace_labels(nicknames)
+
+    assert set(model.current_trace.labels) == set(nicknames)
+
+    # change focus
+    model.move_to_next_trace()
+
+    # should not have anything assigned to this trace
+    assert model.current_trace.labels == []
+
+    # move back and check updates are still applied
+    model.move_to_previous_trace()
+    assert set(model.current_trace.labels) == set(nicknames)
+
+
+def test_update_only_new_labels(
+    experiment: Experiment,
+) -> None:
+    """
+    The update should only take newly added labels into account, do not keep appending already added labels
+    """
+    model = MainModel()
+    model._set_experiment(experiment)
+    # add labels to the current trace:
+    nicknames_1 = ["Shaq", "Big Diesel"]
+    nicknames_2 = nicknames_1 + ["Big Aristotle", "Superman", "Shaq-foo"]
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # calling the update a second time ("mimics a call from MainController to change focus to another trace, again with the first trace as the original focus")
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # now add more labels, the labels should now include all labels
+    model.update_trace_labels(nicknames_2)
+    assert set(model.current_trace.labels) == set(nicknames_2)
+
+
+def test_replacing_labels(experiment: Experiment) -> None:
+    """update the labels, when completely removing the old ones / replacing by new ones"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    # add labels to the current trace:
+    nicknames_1 = ["Shaq", "Big Diesel"]
+    nicknames_2 = ["Big Aristotle", "Superman", "Shaq-foo"]
+    model.update_trace_labels(nicknames_1)
+    assert set(model.current_trace.labels) == set(nicknames_1)
+
+    # replace the labels by a non-overlapping set
+    model.update_trace_labels(nicknames_2)
+    assert set(model.current_trace.labels) == set(nicknames_2)
 
 
 @pytest.mark.parametrize(

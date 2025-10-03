@@ -307,6 +307,14 @@ def test_handle_filename_selected(
     assert len(main_controller._pending_file_dialog_requests) == 1
     mock_path = Path("mock/mock/mock")
 
+    expected_percentage = 42.0
+    expected_trace_name = "mock trace"
+    cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
+        return_value=expected_trace_name
+    )
+    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
+        return_value=expected_percentage
+    )
     with (
         patch.object(
             target=main_controller.model, attribute=method_name
@@ -315,13 +323,23 @@ def test_handle_filename_selected(
             main_controller, attribute="_process_next_request"
         ) as mock_processor,
         patch.object(main_controller, attribute="_open_file") as mock_open,
-        patch.object(main_controller, attribute="_reset_components") as mock_reset,
+        patch.object(
+            main_controller, attribute="_reset_components"
+        ) as mock_component_reset,
+        patch.object(
+            main_controller.view, attribute="update_progressbar"
+        ) as mock_progressbar,
+        patch.object(
+            main_controller.view, attribute="display_trace_id"
+        ) as mock_id_display,
     ):
         main_controller.handle_file_name_selected(mock_path)
         mock_setter.assert_called_once_with(mock_path)
         mock_open.assert_called_once_with(file_type)
-        mock_reset.assert_called_once()
+        mock_component_reset.assert_called_once()
         mock_processor.assert_called_once()
+        mock_progressbar.assert_called_once_with(expected_percentage)
+        mock_id_display.assert_called_once_with(expected_trace_name)
 
     # now check that the request has been popped
     assert len(main_controller._pending_file_dialog_requests) == 0
@@ -378,27 +396,39 @@ def test_reset_components(
 
     with (
         patch.object(
-            components["sections_panel"],
+            main_controller.model,
             attribute="get_section_boundaries",
             return_value=expected_boundaries,
-        ) as mock_one,
+        ) as mock_boundary_getter,
+        patch.object(
+            main_controller.model,
+            attribute="get_current_trace_section_labels",
+            return_value=mock_sections,
+        ) as mock_section_getter,
+        patch.object(
+            main_controller.model,
+            attribute="get_current_trace_labels",
+            return_value=mock_labels,
+        ) as mock_label_getter,
         patch.object(
             components["interactive_plot"], attribute="reset_for_new_trace"
-        ) as mock_two,
+        ) as mock_plot_reset,
         patch.object(
             components["label_panel"], attribute="reset_for_new_trace"
-        ) as mock_three,
+        ) as mock_label_reset,
         patch.object(
             components["sections_panel"], attribute="reset_for_new_trace"
-        ) as mock_four,
+        ) as mock_sections_reset,
     ):
         main_controller._reset_components()
-        mock_one.assert_called_once()
-        mock_two.assert_called_once_with(
+        mock_boundary_getter.assert_called_once()
+        mock_plot_reset.assert_called_once_with(
             mock_trace, [float(b) for b in expected_boundaries]
         )
-        mock_three.assert_called_once_with(mock_labels)
-        mock_four.assert_called_once_with(mock_sections)
+        mock_label_getter.assert_called_once()
+        mock_label_reset.assert_called_once_with(mock_labels)
+        mock_section_getter.assert_called_once()
+        mock_sections_reset.assert_called_once_with(mock_sections)
 
 
 def test_updating_model_data_current_trace(
@@ -751,11 +781,6 @@ def test_adding_start_of_new_section(
     )
     with (
         patch.object(
-            mock_component,
-            attribute="get_current_section_index",
-            return_value=number_existing_sections - 1,
-        ) as mock_section_finder,
-        patch.object(
             main_controller, attribute="_find_frame_number", return_value=45
         ) as mock_frame_finder,
         patch.object(
@@ -766,13 +791,12 @@ def test_adding_start_of_new_section(
     ):
         main_controller.handle_line_added_in_plot(time_point=23.0)
         expected_frame_number = mock_frame_finder()
-        expected_index = mock_section_finder()
         cast(Mock, mock_component.create_new_section_current_trace).assert_called_once()
         cast(Mock, mock_component.set_start_section).assert_called_once_with(
             expected_frame_number
         )
-        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
-            [call(number_existing_sections), call(expected_index)]
+        cast(Mock, mock_component.jump_to_section_by_index).assert_called_once_with(
+            number_existing_sections
         )
 
 
@@ -787,11 +811,6 @@ def test_adding_start_of_first_section(main_controller: MainController) -> None:
     )
     with (
         patch.object(
-            mock_component,
-            attribute="get_current_section_index",
-            return_value=0,
-        ) as _,
-        patch.object(
             main_controller, attribute="_find_frame_number", return_value=45
         ) as mock_frame_finder,
         patch.object(
@@ -806,9 +825,7 @@ def test_adding_start_of_first_section(main_controller: MainController) -> None:
         cast(Mock, mock_component.set_start_section).assert_called_once_with(
             expected_frame_number
         )
-        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
-            [call(0)] * 2
-        )
+        cast(Mock, mock_component.jump_to_section_by_index).assert_called_once_with(0)
 
 
 def test_adding_end_of_section(main_controller: MainController) -> None:

@@ -147,7 +147,7 @@ class MainModel:
         """
         Updates the data (on the current trace) when receiving the information from the `LabelPanelModel` (the controller).
         """
-        return self.current_trace.add_labels(new_labels)
+        self.current_trace.labels = new_labels
 
     def update_trace_section_labels(
         self, new_section_labels: dict[tuple[int, int], list[str]]
@@ -195,3 +195,21 @@ class MainModel:
             raise UnsupportedFileTypeError(
                 f"File {file.name} (extension: {file.suffix}) is not one of the valid file extensions: \n{','.join(allowed_extensions)}"
             )
+
+    def get_current_trace_labels(self) -> list[str]:
+        """Hide implementation details to the MainController"""
+        if not self._experiment:
+            return []
+        return self.current_trace.get_labels()
+
+    def get_current_trace_section_labels(self) -> dict[tuple[int, int], list[str]]:
+        """Hide implementation details to the MainController"""
+        if not self._experiment:
+            return {}
+        return self.current_trace.get_section_labels()
+
+    def get_section_boundaries(self) -> list[int]:
+        """Hide implementation details to the MainController"""
+        if not self._experiment:
+            return []
+        return self.current_trace.determine_section_boundaries()
