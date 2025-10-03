@@ -124,7 +124,7 @@ def test_jump_to_section(sections: list[Section]) -> None:
     model = SectionsPanelModel(sections=sections, current_section_index=0)
     number_sections = len(model.sections)
     # happy case: jump to index within bounds
-    for target in range(1, number_sections - 1):
+    for target in range(1, number_sections):
         model.jump_to_section(target)
         assert model.current_section_index == target
 

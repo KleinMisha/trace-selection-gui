@@ -763,11 +763,6 @@ def test_adding_start_of_new_section(
     )
     with (
         patch.object(
-            mock_component,
-            attribute="get_current_section_index",
-            return_value=number_existing_sections - 1,
-        ) as mock_section_finder,
-        patch.object(
             main_controller, attribute="_find_frame_number", return_value=45
         ) as mock_frame_finder,
         patch.object(
@@ -778,13 +773,12 @@ def test_adding_start_of_new_section(
     ):
         main_controller.handle_line_added_in_plot(time_point=23.0)
         expected_frame_number = mock_frame_finder()
-        expected_index = mock_section_finder()
         cast(Mock, mock_component.create_new_section_current_trace).assert_called_once()
         cast(Mock, mock_component.set_start_section).assert_called_once_with(
             expected_frame_number
         )
-        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
-            [call(number_existing_sections), call(expected_index)]
+        cast(Mock, mock_component.jump_to_section_by_index).assert_called_once_with(
+            number_existing_sections
         )
 
 
@@ -799,11 +793,6 @@ def test_adding_start_of_first_section(main_controller: MainController) -> None:
     )
     with (
         patch.object(
-            mock_component,
-            attribute="get_current_section_index",
-            return_value=0,
-        ) as _,
-        patch.object(
             main_controller, attribute="_find_frame_number", return_value=45
         ) as mock_frame_finder,
         patch.object(
@@ -818,9 +807,7 @@ def test_adding_start_of_first_section(main_controller: MainController) -> None:
         cast(Mock, mock_component.set_start_section).assert_called_once_with(
             expected_frame_number
         )
-        cast(Mock, mock_component.jump_to_section_by_index).assert_has_calls(
-            [call(0)] * 2
-        )
+        cast(Mock, mock_component.jump_to_section_by_index).assert_called_once_with(0)
 
 
 def test_adding_end_of_section(main_controller: MainController) -> None:

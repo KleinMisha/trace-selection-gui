@@ -458,7 +458,6 @@ class MainController:
             "sections_panel"
         ].current_section_has_end_frame()
 
-        current_index = self.components["sections_panel"].get_current_section_index()
         number_of_sections = self.components[
             "sections_panel"
         ].get_number_of_sections_current_trace()
@@ -470,7 +469,6 @@ class MainController:
                 number_of_sections
             )
             self.components["sections_panel"].set_start_section(frame_number)
-            self.components["sections_panel"].jump_to_section_by_index(current_index)
 
         elif start_of_section_exists and not end_of_section_exists:
             # user just added the end point of the current section.

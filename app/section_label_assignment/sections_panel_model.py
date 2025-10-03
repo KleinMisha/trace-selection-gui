@@ -163,7 +163,7 @@ class SectionsPanelModel:
 
     def jump_to_section(self, target: int) -> None:
         """convenience method needed to edit values on a newly added section dynamically"""
-        if 0 < target < len(self.sections) - 1:
+        if 0 < target < len(self.sections):
             self.current_section_index = target
 
     def update_available_labels(self, updated_list: list[str]) -> None:
