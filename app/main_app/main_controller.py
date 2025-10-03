@@ -299,6 +299,8 @@ class MainController:
         if file_action == FileAction.OPEN:
             self._open_file(file_type)
             self._reset_components()
+            self.view.display_trace_id(self.model.current_trace_id)
+            self.view.update_progressbar(self.model.progress_percentage)
             success_message = f"\N{CHECK MARK} Successfully loaded {file_type.name.lower()} from: {file_name}"
             self.view.open_message_box(EventSeverity.INFO, success_message)
 

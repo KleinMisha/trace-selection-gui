@@ -307,6 +307,14 @@ def test_handle_filename_selected(
     assert len(main_controller._pending_file_dialog_requests) == 1
     mock_path = Path("mock/mock/mock")
 
+    expected_percentage = 42.0
+    expected_trace_name = "mock trace"
+    cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
+        return_value=expected_trace_name
+    )
+    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
+        return_value=expected_percentage
+    )
     with (
         patch.object(
             target=main_controller.model, attribute=method_name
@@ -315,13 +323,23 @@ def test_handle_filename_selected(
             main_controller, attribute="_process_next_request"
         ) as mock_processor,
         patch.object(main_controller, attribute="_open_file") as mock_open,
-        patch.object(main_controller, attribute="_reset_components") as mock_reset,
+        patch.object(
+            main_controller, attribute="_reset_components"
+        ) as mock_component_reset,
+        patch.object(
+            main_controller.view, attribute="update_progressbar"
+        ) as mock_progressbar,
+        patch.object(
+            main_controller.view, attribute="display_trace_id"
+        ) as mock_id_display,
     ):
         main_controller.handle_file_name_selected(mock_path)
         mock_setter.assert_called_once_with(mock_path)
         mock_open.assert_called_once_with(file_type)
-        mock_reset.assert_called_once()
+        mock_component_reset.assert_called_once()
         mock_processor.assert_called_once()
+        mock_progressbar.assert_called_once_with(expected_percentage)
+        mock_id_display.assert_called_once_with(expected_trace_name)
 
     # now check that the request has been popped
     assert len(main_controller._pending_file_dialog_requests) == 0
