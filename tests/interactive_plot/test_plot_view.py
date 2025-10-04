@@ -6,7 +6,6 @@ NOTE: Simulates user clicks with pyQt specific functionalities. So that part is 
 import numpy as np
 import pytest
 from PyQt6.QtCore import QPoint, Qt
-from PyQt6.QtGui import QKeySequence
 from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
