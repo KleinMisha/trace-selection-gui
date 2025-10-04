@@ -35,6 +35,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     _adjusted_z_max_signal = pyqtSignal(str)
     _adjusted_t_min_signal = pyqtSignal(str)
     _adjusted_t_max_signal = pyqtSignal(str)
+    _lock_clicks_toggled_signal = pyqtSignal(bool)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -45,7 +46,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         self.zPosMaxEdit.editingFinished.connect(self._send_z_max_adjusted_signal)
         self.timeMinEdit.editingFinished.connect(self._send_t_min_adjusted_signal)
         self.timeMaxEdit.editingFinished.connect(self._send_t_max_adjusted_signal)
-
+        self.lockToggle.toggled.connect(self._send_lock_clicks_toggled_signal)
         self.canvas.mpl_connect("button_press_event", self._send_mouse_click_signal)
 
     def build_ui(self) -> None:
@@ -153,6 +154,11 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     def connect_adjusted_t_max(self, callback: Callable[[str], None]) -> None:
         self._adjusted_t_max_signal.connect(callback)
 
+    def connect_lock_clicks_toggled_signal(
+        self, callback: Callable[[bool], None]
+    ) -> None:
+        self._lock_clicks_toggled_signal.connect(callback)
+
     # emit pyqtSignals depending on user input
     def _send_mouse_click_signal(self, event: Event) -> None:
         """
@@ -177,3 +183,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
 
     def _send_t_max_adjusted_signal(self) -> None:
         self._adjusted_t_max_signal.emit(self.timeMaxEdit.text())
+
+    def _send_lock_clicks_toggled_signal(self, is_locked: bool) -> None:
+        """Re-emit builtin signal to the controller"""
+        self._lock_clicks_toggled_signal.emit(is_locked)

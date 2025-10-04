@@ -6,6 +6,7 @@ NOTE: Simulates user clicks with pyQt specific functionalities. So that part is 
 import numpy as np
 import pytest
 from PyQt6.QtCore import QPoint, Qt
+from PyQt6.QtGui import QKeySequence
 from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
@@ -353,3 +354,26 @@ def test_do_not_remove_if_no_vertical_line(qapp: QApplication) -> None:
     view.clear_last_line_from_plot()
     assert len(view._vertical_lines) == 0
     assert len(view._all_lines) == 1
+
+
+def test_toggle_click_lock() -> None:
+    """Simple check if signals are connected properly"""
+    received_signals = []
+
+    def mock_toggle_handler(state: bool) -> None:
+        received_signals.append(state)
+
+    view = InterActivePlotView()
+    view.connect_lock_clicks_toggled_signal(mock_toggle_handler)
+
+    # turn lock on
+    view.lockToggle.toggle()
+    assert received_signals == [True]
+
+    # turn lock off
+    view.lockToggle.toggle()
+    assert received_signals == [True, False]
+
+    # turn back on for good measures
+    view.lockToggle.toggle()
+    assert received_signals == [True, False, True]
