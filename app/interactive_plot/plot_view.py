@@ -7,6 +7,7 @@ from typing import Callable, Optional, Sequence, TypeAlias, Union, cast
 import matplotlib.pylab as plt
 import numpy as np
 from matplotlib.backend_bases import Event, MouseButton, MouseEvent
+from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
@@ -55,6 +56,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         # properly connect the Matplotlib Figure into the placeholder (QVBoxLayout)
         self.fig = Figure()
         self.canvas = FigureCanvas(self.fig)
+        self.toolbar = NavigationToolbar(self.canvas, self)
         self.ax = self.fig.add_subplot(111)
 
         plot_layout = self.plotContainer.layout()
@@ -63,6 +65,7 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
             self.plotContainer.setLayout(plot_layout)
         plot_layout.setContentsMargins(0, 0, 0, 0)
         plot_layout.addWidget(self.canvas)
+        plot_layout.addWidget(self.toolbar)
 
     # logic to change the view
     def update_figure(self, title: Optional[str] = None) -> None:
