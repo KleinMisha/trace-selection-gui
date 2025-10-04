@@ -93,6 +93,9 @@ class View(Protocol):
     def connect_adjusted_z_max(self, callback: Callable[[str], None]) -> None: ...
     def connect_adjusted_t_min(self, callback: Callable[[str], None]) -> None: ...
     def connect_adjusted_t_max(self, callback: Callable[[str], None]) -> None: ...
+    def connect_lock_clicks_toggled_signal(
+        self, callback: Callable[[bool], None]
+    ) -> None: ...
 
 
 class InteractivePlotController(QObject):
@@ -112,6 +115,9 @@ class InteractivePlotController(QObject):
         self.view.connect_adjusted_z_max(self.handle_adjusted_z_max)
         self.view.connect_adjusted_t_min(self.handle_adjusted_t_min)
         self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
+
+        # click action lock toggle. NOTE: Ensure the View has it turned off at startup (is now also enforced with a unittest)
+        self._lock_clicks: bool = False
 
     # To be called from outside:
     def reset_for_new_trace(
@@ -139,6 +145,10 @@ class InteractivePlotController(QObject):
         However, we technically do not need both for now. Hence, the "_" as an argument.
         ? Should this be removed?
         """
+        # If locked, simply ignore the click
+        if self._lock_clicks:
+            return
+
         # If the user clicks before any data is loaded, simply ignore the action
         if not self.data_is_loaded():
             return
@@ -155,6 +165,11 @@ class InteractivePlotController(QObject):
         """
         triggers when the user clicks in the plot (right mouse button)
         """
+
+        # If locked, simply ignore the click
+        if self._lock_clicks:
+            return
+
         # If the user clicks before any data is loaded, simply ignore the action
         if not self.data_is_loaded():
             return
@@ -204,6 +219,10 @@ class InteractivePlotController(QObject):
             t_max = self.model.t_max
             self.view.adjust_t_range(min_value=t_min, max_value=t_max)
             self.view.update_figure()
+
+    def handle_lock_clicks_toggled(self, checked: bool) -> None:
+        """simply store the state, for it to be used in other functions"""
+        self._lock_clicks = checked
 
     # Actions that should effect cross-components. Send a signal to allow the main controller to handle things.
     # NOTE: Strictly not needed to have these methods explicitly, but makes for better readability in my opinion.
