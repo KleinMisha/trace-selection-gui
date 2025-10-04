@@ -115,6 +115,7 @@ class InteractivePlotController(QObject):
         self.view.connect_adjusted_z_max(self.handle_adjusted_z_max)
         self.view.connect_adjusted_t_min(self.handle_adjusted_t_min)
         self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
+        self.view.connect_lock_clicks_toggled_signal(self.handle_lock_clicks_toggled)
 
         # click action lock toggle. NOTE: Ensure the View has it turned off at startup (is now also enforced with a unittest)
         self._lock_clicks: bool = False
