@@ -376,3 +376,9 @@ def test_toggle_click_lock() -> None:
     # turn back on for good measures
     view.lockToggle.toggle()
     assert received_signals == [True, False, True]
+
+
+def test_toggle_is_turned_off_initially() -> None:
+    """Simple contract: Ensure the toggle is turned off at startup. The logic of the Controller depends on this test passing."""
+    view = InterActivePlotView()
+    assert not view.lockToggle.isChecked()
