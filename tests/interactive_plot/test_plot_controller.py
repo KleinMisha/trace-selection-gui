@@ -107,6 +107,48 @@ def test_handle_right_mouse_click_without_data() -> None:
     assert received_signals == []
 
 
+@pytest.mark.parametrize("location", [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0])
+def test_handle_left_mouse_click_when_locked(location: float) -> None:
+    """When the click actions are locked, ignore the click in the plot area"""
+    received_signals = []
+
+    def mock_handler(value: float) -> None:
+        received_signals.append(value)
+
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    controller = InteractivePlotController(model, view)
+    controller._lock_clicks = True
+
+    cast(Mock, model.has_data).return_value = True
+    cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
+    controller.connect_line_added_to_plot(mock_handler)
+    controller.handle_left_mouse_click(location, 42.0)
+    cast(Mock, view.show_line_in_plot).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+    assert received_signals == []
+
+
+def test_handle_right_mouse_click_when_locked() -> None:
+    """When the click actions are locked, ignore the click in the plot area"""
+    received_signals = []
+
+    def mock_handler() -> None:
+        received_signals.append("right click")
+
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    controller = InteractivePlotController(model, view)
+    controller._lock_clicks = True
+
+    controller.connect_line_removed_from_plot(mock_handler)
+    cast(Mock, model.has_data).return_value = True
+    controller.handle_right_mouse_click()
+    cast(Mock, view.clear_last_line_from_plot).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+    assert received_signals == []
+
+
 @pytest.mark.parametrize(
     "entry", [str(value) for value in [8.0, 24.0, 23.0, 45.0, 23.6]]
 )

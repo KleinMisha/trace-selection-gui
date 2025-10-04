@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2560</width>
-    <height>1298</height>
+    <width>1706</width>
+    <height>1387</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -99,6 +99,68 @@
     </item>
     <item row="3" column="1">
      <widget class="QLineEdit" name="timeMaxEdit"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>410</y>
+     <width>160</width>
+     <height>83</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="lockLayout">
+    <item>
+     <widget class="QCheckBox" name="lockToggle">
+      <property name="styleSheet">
+       <string notr="true">QCheckBox {
+    spacing: 0px;
+}
+
+QCheckBox::indicator {
+    width: 100px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: #ccc;
+    border: 2px solid black;
+    subcontrol-position: center;  /* Center the indicator */
+}
+
+QCheckBox::indicator:checked {
+    background-color: rgb(255, 207, 23);
+}
+
+QCheckBox::indicator:unchecked {
+    background-color: white;
+}
+
+QCheckBox::indicator:hover {
+    background-color: #bbb;
+}
+
+QCheckBox::indicator:checked:hover {
+    background-color:  rgb(238, 205, 90);
+}</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+L</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>       Lock clicks in plot</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
