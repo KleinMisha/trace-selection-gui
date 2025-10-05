@@ -1,0 +1,28 @@
+/* ===== Base Application Background ===== */
+QWidget {
+    background-color: #f7f7f7;       /* main window background */
+    color black;                  /* default text color */
+    font-size: 16px;
+}
+
+/* ===== Component Containers ===== */
+QGroupBox, QFrame, QTabWidget::pane {
+    background-color: #ffffff;       /* container panels */
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 4px;
+}
+
+/* ===== Labels ===== */
+QLabel {
+    color: #111111;                  /* strong readable text */
+}
+
+/* ===== Text Input Fields ===== */
+QLineEdit, QTextEdit {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    selection-background-color: #0078d7;
+}

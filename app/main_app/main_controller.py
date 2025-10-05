@@ -18,6 +18,7 @@ from app.main_app.component_controller_protocols import (
     ItemListController,
     LabelPanelController,
     SectionsPanelController,
+    ThemeController,
 )
 from app.main_app.main_model import Trace
 from app.state_variables import EventSeverity, LightState
@@ -38,6 +39,7 @@ class ComponentControllers(TypedDict):
     interactive_plot: InteractivePlotController
     label_panel: LabelPanelController
     sections_panel: SectionsPanelController
+    theme_manager: ThemeController
 
 
 class FileType(Enum):

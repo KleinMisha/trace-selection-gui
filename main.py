@@ -16,6 +16,7 @@ from app.main_app.main_controller import ComponentControllers, MainController
 from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
 from app.section_label_assignment.sections_panel_factory import create_sections_panel
+from app.theme_manager.theme_factory import create_theme_controller
 
 
 def main():
@@ -34,6 +35,7 @@ def main():
         "label_panel": create_label_panel(placeholder=view.LabelPanelView),
         "sections_panel": create_sections_panel(placeholder=view.SectionsPanelView),
         "item_list": create_item_list,
+        "theme_manager": create_theme_controller(placeholder=view.ThemeView),
     }
     controller = MainController(model, view, components=components)
     _ = controller

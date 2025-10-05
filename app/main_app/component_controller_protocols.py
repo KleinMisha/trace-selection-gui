@@ -75,3 +75,10 @@ class SectionsPanelController(Protocol):
     def get_current_section_index(self) -> int: ...
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
+
+
+@runtime_checkable
+class ThemeController(Protocol):
+    """First implementation: MainController never needs to access any method on the theme manager, so simple API"""
+
+    pass
