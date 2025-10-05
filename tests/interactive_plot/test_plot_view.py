@@ -48,8 +48,8 @@ def test_left_mouse_click_in_plot(qtbot: QtBot, fraction: float) -> None:
     expected_x, expected_y = view.ax.transData.inverted().transform([x_pixel, y_pixel])
     assert isinstance(received_signals[0], float)
     assert isinstance(received_signals[1], float)
-    assert pytest.approx(received_signals[0], rel=1e-2) == expected_x
-    assert pytest.approx(received_signals[1], rel=1e-2) == expected_y
+    assert expected_x == pytest.approx(received_signals[0], abs=1e-2)
+    assert expected_y == pytest.approx(received_signals[1], abs=1e-2)
 
 
 def test_right_mouse_click_in_plot(qtbot: QtBot) -> None:
