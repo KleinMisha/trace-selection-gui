@@ -1,9 +1,15 @@
+from pathlib import Path
+
 from PyQt6.QtWidgets import QWidget
 
 from app.component_factory_helpers import fill_component_to_placeholder
+from app.state_variables import Theme
 from app.theme_manager.theme_controller import ThemeController
 from app.theme_manager.theme_model import ThemeModel
 from app.theme_manager.theme_view import ThemeView
+
+# todo: move into configuration file / object
+BASE_QSS_FILE = Path(__file__).parent / "themes" / "base.qss"
 
 
 def create_theme_controller(placeholder: QWidget | None) -> ThemeController:
@@ -12,7 +18,9 @@ def create_theme_controller(placeholder: QWidget | None) -> ThemeController:
 
     ?TODO: Initial configuration can be set here via a configuration setting ?
     """
-    model = ThemeModel()
+    model = ThemeModel(
+        current_theme=Theme.LIGHT, stylesheet_template=Path(BASE_QSS_FILE)
+    )
     view = ThemeView()
     controller = ThemeController(model, view)
     if placeholder:

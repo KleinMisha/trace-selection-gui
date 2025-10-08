@@ -1,0 +1,12 @@
+{
+    "primary": "#2980B9",
+    "primary_variant": "#1F639B",
+    "secondary": "#00C2CB",
+    "secondary_variant": "#009AA2",
+    "tertiary": "#F1C40F",
+    "tertiary_variant": "#D4AC0D",
+    "background": "#121212",
+    "surface": "#1E1E1E",
+    "text": "#FFFFFF",
+    "borders": "#2C2C2C"
+  }

@@ -9,6 +9,6 @@
         "tamasfe.even-better-toml",
         "aaron-bond.better-comments",
         "streetsidesoftware.code-spell-checker",
-        "seanwu.vscode-qt-for-python"
+        "seanwu.vscode-qt-for-python",
     ]
 }

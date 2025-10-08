@@ -18,7 +18,11 @@ class Model(Protocol):
     """API for the ThemeModel"""
 
     current_theme: Theme
-    stylesheet_file: Path | None
+    color_palette: dict[str, str] | None
+    stylesheet_template: Path
+
+    def load_palette(self) -> None: ...
+    def construct_stylesheet(self) -> str: ...
 
 
 class View(Protocol):
@@ -42,10 +46,7 @@ class ThemeController(QObject):
     def handle_dark_mode_toggle(self, turn_on: bool) -> None:
         """update the theme/stylesheet in the model. The view will already change appearance (using checkbox widget)"""
         new_theme = Theme.DARK if turn_on else Theme.LIGHT
-        qss_file = THEMES_DIR / f"{new_theme.value}.qss"
-
         self.model.current_theme = new_theme
-        self.model.stylesheet_file = qss_file
         self._apply_theme()
 
     # internal logic
@@ -56,13 +57,9 @@ class ThemeController(QObject):
         Stylesheets assigned to individual widgets will overwrite these global stylings
         """
 
-        # todo: Check what to do: This should intentionally break the app? This should never be called if no style sheet is known. This is similar to the MissingExperimentError
-        # ? or raise some kind of file warning if the file is not known?
-        if self.model.stylesheet_file is None:
-            return
-
         # if the app is running, read the "Qt style sheet (QSS)" and apply it at the top level
         app = QApplication.instance()
         if isinstance(app, QApplication):
-            qss_contents = self.model.stylesheet_file.read_text()
+            self.model.load_palette()
+            qss_contents = self.model.construct_stylesheet()
             app.setStyleSheet(qss_contents)
