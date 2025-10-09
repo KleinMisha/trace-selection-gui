@@ -25,8 +25,7 @@ class ThemeModel:
         palette_file = (
             Path(__file__).parent / "themes" / f"{self.current_theme.value}.json"
         )
-        print(palette_file)
-        with palette_file.open("r", encoding="utf-8") as palette_json:
+        with open(palette_file, "r", encoding="utf-8") as palette_json:
             self.color_palette = json.load(palette_json)
 
     def construct_stylesheet(self) -> str:
