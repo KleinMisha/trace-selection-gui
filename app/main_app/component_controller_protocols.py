@@ -79,6 +79,4 @@ class SectionsPanelController(Protocol):
 
 @runtime_checkable
 class ThemeController(Protocol):
-    """First implementation: MainController never needs to access any method on the theme manager, so simple API"""
-
-    pass
+    def apply_theme(self) -> None: ...

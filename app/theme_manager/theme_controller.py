@@ -47,10 +47,10 @@ class ThemeController(QObject):
         """update the theme/stylesheet in the model. The view will already change appearance (using checkbox widget)"""
         new_theme = Theme.DARK if turn_on else Theme.LIGHT
         self.model.current_theme = new_theme
-        self._apply_theme()
+        self.apply_theme()
 
     # internal logic
-    def _apply_theme(self) -> None:
+    def apply_theme(self) -> None:
         """
         Change theme on the QApplication level
         ----
