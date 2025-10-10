@@ -5,7 +5,6 @@ NOTE: Tests are simple, but there as a safety valve when refactoring the code
 
 from typing import cast
 
-import pytest
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from app.label_assignment.label_panel_factory import create_label_panel
