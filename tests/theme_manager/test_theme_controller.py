@@ -20,7 +20,7 @@ def test_toggle_dark_mode(use_dark_mode: bool) -> None:
     view = cast(View, Mock(spec=View))
     controller = ThemeController(model, view)
 
-    with patch.object(controller, attribute="_apply_theme") as mock_apply:
+    with patch.object(controller, attribute="apply_theme") as mock_apply:
         controller.handle_dark_mode_toggle(use_dark_mode)
         expected_theme = Theme.DARK if use_dark_mode else Theme.LIGHT
         assert controller.model.current_theme == expected_theme
@@ -50,7 +50,7 @@ def test_applying_qss_stylesheet() -> None:
                 return_value=mock_stylesheet,
             ) as mock_stylesheet_builder,
         ):
-            controller._apply_theme()
+            controller.apply_theme()
             mock_stylesheet_builder.assert_called_once()
             cast(Mock, mock_app.setStyleSheet).assert_called_once_with(mock_stylesheet)
 
@@ -64,5 +64,5 @@ def test_do_not_apply_theme_without_running_app() -> None:
 
     with patch("PyQt6.QtWidgets.QApplication.instance", return_value=mock_app):
         controller.model.stylesheet_template = Path("")
-        controller._apply_theme()
+        controller.apply_theme()
         cast(Mock, mock_app.setStyleSheet).assert_not_called()

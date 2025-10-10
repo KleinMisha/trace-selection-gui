@@ -25,7 +25,7 @@ def create_theme_controller(placeholder: QWidget | None) -> ThemeController:
     controller = ThemeController(model, view)
 
     # apply initial theme:
-    controller._apply_theme()
+    controller.apply_theme()
 
     if placeholder:
         fill_component_to_placeholder(view, placeholder, force_layout=True)
