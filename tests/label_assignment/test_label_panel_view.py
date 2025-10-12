@@ -134,8 +134,8 @@ def test_switching_indicator_on() -> None:
     view.toggle_indicator(LightState.ON)
     new_styling = view.IndicatorAdded.styleSheet()
 
-    color_on = view._toggle_on_color
-    color_off = view._toggle_off_color
+    color_on = view._light_on_color
+    color_off = view._light_off_color
     pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
@@ -148,8 +148,8 @@ def test_switching_indicator_off() -> None:
     view.toggle_indicator(LightState.OFF)
     new_styling = view.IndicatorAdded.styleSheet()
 
-    color_on = view._toggle_on_color
-    color_off = view._toggle_off_color
+    color_on = view._light_on_color
+    color_off = view._light_off_color
     pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
