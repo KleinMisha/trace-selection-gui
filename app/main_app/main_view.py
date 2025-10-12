@@ -8,15 +8,7 @@ from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
 from app.main_app.main_view_ui import Ui_MainWindow
 from app.state_variables import EventSeverity, LightState
-
-# TODO: Move this into a configuration file
-KEYBOARD_SHORTCUTS = {
-    "actionOpen": ("Open...", "Ctrl+O"),
-    "actionSave": ("Save...", "Ctrl+S"),
-    "actionSaveAs": ("Save as...", "Ctrl+Shift+S"),
-}
-COLOR_ON = "coral"
-COLOR_OFF = "white"
+from app.type_definitions import Color
 
 
 class MainView(QMainWindow, Ui_MainWindow):
@@ -35,9 +27,9 @@ class MainView(QMainWindow, Ui_MainWindow):
     # Emitted only after the Controller calls the View to display a QFileDialog:
     _file_path_selected_signal = pyqtSignal(Path)
 
-    def __init__(self) -> None:
+    def __init__(self, keyboard_shortcuts: dict[str, tuple[str, str]]) -> None:
         super().__init__()
-        self.build_ui()
+        self.build_ui(keyboard_shortcuts)
 
         # connect listening to user input:
         self.NextTraceButton.clicked.connect(self._send_next_trace_signal)
@@ -58,25 +50,30 @@ class MainView(QMainWindow, Ui_MainWindow):
         )
         self.helpDocsButton.clicked.connect(self._send_go_to_help_docs_signal)
 
-    def build_ui(self) -> None:
+        # store the colors to toggle the indicator light (allows responding to theme adjustments / configuration value changes)
+        # NOTE: These defaults are purely here for testing the View by itself (now does not require a config to work)
+        self._unsaved_changes_on_color: Color = "white"
+        self._unsaved_changes_off_color: Color = "coral"
+
+    def build_ui(self, keyboard_shortcuts: dict[str, tuple[str, str]]) -> None:
         """Only build the parts specific to the mainView. Placing the components will be done in the mainController"""
         self.setupUi(self)
 
         # setting operating-system agnostic keyboard shortcuts / appropriate label in the MenuBar
         self._assign_keyboard_shortcut(
             self.actionOpen,
-            action_in_words=KEYBOARD_SHORTCUTS["actionOpen"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionOpen"][1],
+            action_in_words=keyboard_shortcuts["actionOpen"][0],
+            shortcut=keyboard_shortcuts["actionOpen"][1],
         )
         self._assign_keyboard_shortcut(
             self.actionSave,
-            action_in_words=KEYBOARD_SHORTCUTS["actionSave"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionSave"][1],
+            action_in_words=keyboard_shortcuts["actionSave"][0],
+            shortcut=keyboard_shortcuts["actionSave"][1],
         )
         self._assign_keyboard_shortcut(
             self.actionSaveAs,
-            action_in_words=KEYBOARD_SHORTCUTS["actionSaveAs"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionSaveAs"][1],
+            action_in_words=keyboard_shortcuts["actionSaveAs"][0],
+            shortcut=keyboard_shortcuts["actionSaveAs"][1],
         )
 
         # global title of the window
@@ -113,15 +110,22 @@ class MainView(QMainWindow, Ui_MainWindow):
         """the Qt progressbar expects integer values. Round the input percentage."""
         self.progressBar.setValue(round(value))
 
+    def set_indicator_saved_changes_colors(
+        self, color_on: Color, color_off: Color
+    ) -> None:
+        """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
+        self._unsaved_changes_on_color = color_on
+        self._unsaved_changes_off_color = color_off
+
     def toggle_indicator_saved_changes(self, state: LightState) -> None:
         """
         Adjust the part in the stylesheet that determines the background color of the label.
         NOTE: This 'light' is simply 'a text label without any text displayed'
         """
         if state == LightState.ON:
-            color = COLOR_ON
+            color = self._unsaved_changes_on_color
         elif state == LightState.OFF:
-            color = COLOR_OFF
+            color = self._unsaved_changes_off_color
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.UnsavedChangesIndicator.styleSheet()

@@ -10,7 +10,7 @@ Hence, the MainController knows of:
 
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Concatenate, Protocol, TypedDict
+from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.exceptions import with_error_handling
 from app.main_app.component_controller_protocols import (
@@ -19,8 +19,10 @@ from app.main_app.component_controller_protocols import (
     LabelPanelController,
     SectionsPanelController,
 )
+from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
 from app.state_variables import EventSeverity, LightState
+from app.type_definitions import Color
 
 
 class ComponentControllers(TypedDict):
@@ -120,6 +122,9 @@ class View(Protocol):
     ) -> None: ...
     def connect_file_name_selected(self, callback: Callable[[Path], None]) -> None: ...
     def connect_go_to_help_docs(self, callback: Callable[[], None]) -> None: ...
+    def set_indicator_saved_changes_colors(
+        self, color_on: Color, color_off: Color
+    ) -> None: ...
 
 
 class MainController:
@@ -139,14 +144,19 @@ class MainController:
         model: Model,
         view: View,
         components: ComponentControllers,
+        config: MainConfig,
     ) -> None:
         self.model = model
         self.view = view
+        self.config = config
         # a dictionary mapping the name of the available component (see Enum above) to the corresponding controller
         self.components = components
 
         # Keep track of a first-in-first-out (FIFO) queue of opening/saving actions to be performed
         self._pending_file_dialog_requests: list[tuple[FileType, FileAction]] = []
+
+        # apply initial settings:
+        self.apply_config()
 
         # Connect (listen) to incoming signals from the MainView:
         self.view.connect_next_trace(self.handle_move_to_next_trace)
@@ -178,6 +188,26 @@ class MainController:
         )
 
     # main app logic
+    def apply_config(self) -> None:
+        """apply settings to model(s) and view(s)"""
+
+        # default file paths: NOTE that below helper function will guard against / check for empty paths.
+        self.model.set_file_path_to_labels(self.config.default_path_to_labels)
+        self.model.set_file_path_to_section_labels(
+            self.config.default_path_to_section_labels
+        )
+
+        # colors for indicator lights
+        self.view.set_indicator_saved_changes_colors(
+            color_on=self.config.unsaved_changes_on_color,
+            color_off=self.config.unsaved_changes_off_color,
+        )
+
+    def update_config(self, new_config_values: dict[str, Any]) -> None:
+        """update the main configurations"""
+        for key, value in new_config_values.items():
+            setattr(self.config, key, value)
+
     def close_app(self) -> None:
         """Checks for untracked changes"""
 
