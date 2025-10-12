@@ -5,15 +5,8 @@ The main entry point will register this at the ConfigManager
 """
 
 from dataclasses import dataclass
-from typing import Sequence, TypeAlias, Union
 
-# Type hint for anything that is a proper color input.
-Color: TypeAlias = Union[
-    str,  # "red", "#FF00FF", "0.5", "C0"
-    tuple[float, float, float],  # RGB
-    tuple[float, float, float, float],  # RGBA
-    Sequence[float],  # list/array of floats
-]
+from app.type_definitions import Color
 
 
 @dataclass
