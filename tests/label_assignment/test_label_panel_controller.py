@@ -16,6 +16,7 @@ from unittest.mock import Mock, PropertyMock
 import pytest
 
 from app.label_assignment.label_panel_controller import (
+    LabelPanelConfig,
     LabelPanelController,
     LightState,
     Model,
@@ -27,7 +28,8 @@ def test_assign_label() -> None:
     """adding a label"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
     cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
@@ -40,7 +42,8 @@ def test_assign_non_existing_label() -> None:
     """Calling the add label before there is any label available"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
     controller.handle_assign_label()
     cast(Mock, model.assign_current_label).assert_not_called()
@@ -51,7 +54,8 @@ def test_unassign_label() -> None:
     """removing a label. NOTE: Model and View already tested, so no need to worry about first assigning a label then removing it. Model already handles this case correctly"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
     cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.handle_unassign_label()
@@ -63,7 +67,8 @@ def test_unassign_non_existing_label() -> None:
     """Calling the remove label before there is any label available"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
     controller.handle_unassign_label()
     cast(Mock, model.unassign_current_label).assert_not_called()
@@ -78,7 +83,8 @@ def test_move_to_next() -> None:
     """
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
@@ -92,7 +98,8 @@ def test_move_to_next_no_available_labels() -> None:
     """test moving before there is a label available"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
     controller.handle_move_to_next()
@@ -110,7 +117,8 @@ def test_move_to_previous() -> None:
 
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     cast(Any, type(model)).current_label = PropertyMock(return_value="mock")
     controller.handle_move_to_previous()
@@ -123,7 +131,8 @@ def test_move_to_previous_no_available_labels() -> None:
     """test moving before there is a label available"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
     controller.handle_move_to_previous()
@@ -139,7 +148,8 @@ def test_change_assigned_labels() -> None:
     """
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     controller.reset_for_new_trace(labels_new_trace=["mock", "mocker", "most mockest"])
     cast(Mock, model.reset_assigned_labels).assert_called_once_with(
         ["mock", "mocker", "most mockest"]
@@ -155,7 +165,8 @@ def test_change_available_labels() -> None:
     """
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     cast(Any, type(model)).has_labels = PropertyMock(return_value=True)
     controller.update_available_labels(updated_list=["mock", "mocker", "most mockest"])
     cast(Mock, model.update_available_labels).assert_called_once_with(
@@ -168,7 +179,8 @@ def test_change_without_available_labels() -> None:
     """Mimic calling the update when there are no available labels"""
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
     cast(Any, type(model)).has_labels = PropertyMock(return_value=False)
     controller.update_available_labels(updated_list=["mock", "mocker", "most mockest"])
     cast(Mock, model.update_available_labels).assert_not_called()
@@ -185,7 +197,8 @@ def test_correct_light_state(is_assigned: bool) -> None:
     """
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
-    controller = LabelPanelController(model, view)
+    config = LabelPanelConfig()
+    controller = LabelPanelController(model, view, config)
 
     expected_state = LightState.ON
     if not is_assigned:

@@ -5,7 +5,7 @@ Protocols for the Controllers of individual components that define everything ne
 NOTE: Here you define stripped-down versions of the controllers with only those methods strictly needed for the MainController.
 """
 
-from typing import Callable, Optional, Protocol, runtime_checkable
+from typing import Any, Callable, Optional, Protocol, runtime_checkable
 
 from app.main_app.main_model import Trace
 
@@ -43,6 +43,8 @@ class LabelPanelController(Protocol):
     def get_available_labels(self) -> list[str]: ...
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
+
+    def update_config(self, new_config_values: dict[str, Any]) -> None: ...
 
 
 @runtime_checkable

@@ -2,11 +2,20 @@
 Controller: Handle communication with its own View and Model as well as with the MainController
 """
 
-from typing import Callable, Protocol
+from typing import Any, Callable, Protocol, Sequence, TypeAlias, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.label_assignment.label_panel_config import LabelPanelConfig
 from app.state_variables import LightState
+
+# Type hint for anything that is a proper color input.
+Color: TypeAlias = Union[
+    str,  # "red", "#FF00FF", "0.5", "C0"
+    tuple[float, float, float],  # RGB
+    tuple[float, float, float, float],  # RGBA
+    Sequence[float],  # list/array of floats
+]
 
 
 class Model(Protocol):
@@ -45,15 +54,22 @@ class View(Protocol):
     def connect_next_label(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_label(self, callback: Callable[[], None]) -> None: ...
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
+    def set_toggle_colors(self, color_on: Color, color_off: Color) -> None: ...
 
 
 class LabelPanelController(QObject):
     _open_item_list_signal = pyqtSignal()
 
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: Model, view: View, config: LabelPanelConfig) -> None:
         super().__init__()
         self.model = model
         self.view = view
+        self.config = config
+
+        # set initial colors for light indicator:
+        self.view.set_toggle_colors(
+            color_on=self.config.light_on_color, color_off=self.config.light_off_color
+        )
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_assign_label(self.handle_assign_label)
@@ -124,6 +140,11 @@ class LabelPanelController(QObject):
 
     def connect_open_item_list(self, callback: Callable[[], None]) -> None:
         self._open_item_list_signal.connect(callback)
+
+    def update_config(self, new_config_values: dict[str, Any]) -> None:
+        """Change configuration/settings using the provided dictionary of values the user wants to alter."""
+        for key, value in new_config_values.items():
+            setattr(self.config, key, value)
 
     # Used internally:
     def _send_open_item_list_signal(self) -> None:

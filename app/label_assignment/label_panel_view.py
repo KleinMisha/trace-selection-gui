@@ -4,7 +4,7 @@ toggle on/off indicator showing if current label is included, listen to user's r
 """
 
 import re
-from typing import Callable
+from typing import Callable, Sequence, TypeAlias, Union
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
@@ -12,9 +12,13 @@ from PyQt6.QtWidgets import QWidget
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
 from app.state_variables import LightState
 
-# TODO: Move into configuration file!!
-COLOR_OFF = "white"
-COLOR_ON = "green"
+# Type hint for anything that is a proper color input.
+Color: TypeAlias = Union[
+    str,  # "red", "#FF00FF", "0.5", "C0"
+    tuple[float, float, float],  # RGB
+    tuple[float, float, float, float],  # RGBA
+    Sequence[float],  # list/array of floats
+]
 
 
 class LabelPanelView(QWidget, Ui_LabelAssignment):
@@ -35,6 +39,11 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
         self.previousButton.clicked.connect(self._send_prev_label_signal)
         self.itemlistButton.clicked.connect(self._send_open_item_list_signal)
 
+        # store the colors to toggle the indicator light (allows responding to theme adjustments / configuration value changes)
+        # NOTE: These defaults are purely here for testing the View by itself (now does not require a config to work)
+        self._toggle_on_color: Color = "white"
+        self._toggle_off_color: Color = "green"
+
     # UI-logic
     def build_ui(self) -> None:
         self.setupUi(self)
@@ -42,15 +51,21 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
 
+    def set_toggle_colors(self, color_on: Color, color_off: Color) -> None:
+        """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
+        self._toggle_on_color = color_on
+        self._toggle_off_color = color_off
+
     def toggle_indicator(self, state: LightState) -> None:
         """
         Adjust the part in the stylesheet that determines the background color of the label.
         NOTE: This 'light' is simply 'a text label without any text displayed'
         """
+
         if state == LightState.ON:
-            color = COLOR_ON
+            color = self._toggle_on_color
         elif state == LightState.OFF:
-            color = COLOR_OFF
+            color = self._toggle_off_color
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.IndicatorAdded.styleSheet()
