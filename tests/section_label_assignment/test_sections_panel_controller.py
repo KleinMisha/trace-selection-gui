@@ -11,7 +11,7 @@ Test that the controller correctly handles incoming signals from a mock View, up
 """
 
 from typing import Any, cast
-from unittest.mock import Mock, PropertyMock, patch
+from unittest.mock import Mock, PropertyMock
 
 import pytest
 
