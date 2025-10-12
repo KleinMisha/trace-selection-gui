@@ -8,14 +8,8 @@ import numpy as np
 from numpy.typing import NDArray
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.interactive_plot.plot_config import InterActivePlotConfig
 from app.interactive_plot.plot_model import TraceData
-
-# TODO: Move the following stuff into some configuration file
-DEFAULT_Z_MIN = -1.0
-DEFAULT_Z_MAX = 1.0
-DEFAULT_T_MIN = 0.0
-DEFAULT_T_MIN = 3600.0
-
 
 # Type hint for anything that is a proper color input.
 Color: TypeAlias = Union[
@@ -75,11 +69,9 @@ class View(Protocol):
     def adjust_t_range(self, min_value: float, max_value: float): ...
     def adjust_z_range(self, min_value: float, max_value: float): ...
     def show_t_vs_z_plot(
-        self, t: NDArray[np.floating], z: NDArray[np.floating]
+        self, t: NDArray[np.floating], z: NDArray[np.floating], color: Color
     ) -> None: ...
-    def show_line_in_plot(
-        self, time_point: float, color: Optional[Color] = None
-    ) -> None: ...
+    def show_line_in_plot(self, time_point: float, color: Color) -> None: ...
     def clear_last_line_from_plot(self) -> None: ...
     def clear_all_lines_from_plot(self) -> None: ...
     def clear_figure(self) -> None: ...
@@ -103,10 +95,11 @@ class InteractivePlotController(QObject):
     _line_added_to_plot_signal = pyqtSignal(float)
     _line_removed_from_plot_signal = pyqtSignal()
 
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: Model, view: View, config: InterActivePlotConfig) -> None:
         super().__init__()
         self.model = model
         self.view = view
+        self.config = config
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_left_mouse_click(self.handle_left_mouse_click)
@@ -125,12 +118,18 @@ class InteractivePlotController(QObject):
         self, trace: TraceData, section_boundaries: list[int]
     ) -> None:
         """(Re)set the data known to the model and plot the new trace + previously selected sections"""
+
+        # unpack config:
+        data_color = self.config.data_line_color
+        vert_line_color = self.config.vertical_line_color
+
         self.model.trace_data = trace
         self.view.clear_figure()
-        self.view.show_t_vs_z_plot(trace.t, trace.z)
+
+        self.view.show_t_vs_z_plot(trace.t, trace.z, data_color)
         for frame_nr in section_boundaries:
             time_point = self.model.get_time_point_by_index(frame_nr)
-            self.view.show_line_in_plot(time_point)
+            self.view.show_line_in_plot(time_point, vert_line_color)
 
         self.view.update_figure()
 
@@ -155,8 +154,8 @@ class InteractivePlotController(QObject):
             return
 
         t_data_point, _ = self.model.find_nearest_data_point(x_click)
-        # TODO: use the main controller to pass the appropriate color
-        self.view.show_line_in_plot(t_data_point)
+        vert_line_color = self.config.vertical_line_color
+        self.view.show_line_in_plot(t_data_point, vert_line_color)
         self.view.update_figure()
 
         # inform the main Controller

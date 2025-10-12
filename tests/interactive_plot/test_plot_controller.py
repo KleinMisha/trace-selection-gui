@@ -18,6 +18,7 @@ import pytest
 from numpy.typing import NDArray
 
 from app.interactive_plot.plot_controller import (
+    InterActivePlotConfig,
     InteractivePlotController,
     Model,
     View,
@@ -36,12 +37,15 @@ def test_handle_left_mouse_click(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     cast(Mock, model.has_data).return_value = True
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
     controller.handle_left_mouse_click(location, 42.0)
-    cast(Mock, view.show_line_in_plot).assert_called_once_with(location)
+    cast(Mock, view.show_line_in_plot).assert_called_once_with(
+        location, config.vertical_line_color
+    )
     cast(Mock, view.update_figure).assert_called_once()
 
     assert received_signals[0] == location
@@ -58,7 +62,8 @@ def test_handle_right_mouse_click() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.connect_line_removed_from_plot(mock_handler)
     cast(Mock, model.has_data).return_value = True
     controller.handle_right_mouse_click()
@@ -79,7 +84,8 @@ def test_handle_left_mouse_click_without_data(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     cast(Mock, model.has_data).return_value = False
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
@@ -98,7 +104,8 @@ def test_handle_right_mouse_click_without_data() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.connect_line_removed_from_plot(mock_handler)
     cast(Mock, model.has_data).return_value = False
     controller.handle_right_mouse_click()
@@ -117,7 +124,8 @@ def test_handle_left_mouse_click_when_locked(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller._lock_clicks = True
 
     cast(Mock, model.has_data).return_value = True
@@ -138,7 +146,8 @@ def test_handle_right_mouse_click_when_locked() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller._lock_clicks = True
 
     controller.connect_line_removed_from_plot(mock_handler)
@@ -157,7 +166,8 @@ def test_adjusting_zmin_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
@@ -173,7 +183,8 @@ def test_adjusting_zmin_invalid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -187,7 +198,8 @@ def test_adjusting_zmax_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_min = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
@@ -203,7 +215,8 @@ def test_adjusting_zmax_invalid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_min = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -217,7 +230,8 @@ def test_adjusting_tmin_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.t_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
@@ -233,7 +247,8 @@ def test_adjusting_tmin_invalid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -247,7 +262,8 @@ def test_adjusting_tmax_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.t_min = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
@@ -263,7 +279,8 @@ def test_adjusting_tmax_invalid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -273,7 +290,8 @@ def test_reset_for_new_trace() -> None:
     """Test resetting the plot with a new dataset with potentially section labels assigned"""
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
 
     class MockTrace:
         def __init__(self, t: NDArray[np.floating], z: NDArray[np.floating]) -> None:
@@ -289,10 +307,13 @@ def test_reset_for_new_trace() -> None:
         controller.reset_for_new_trace(mock_trace, mock_clicked_locations)
         assert model.trace_data == mock_trace
         cast(Mock, view.show_t_vs_z_plot).assert_called_once_with(
-            mock_trace.t, mock_trace.z
+            mock_trace.t, mock_trace.z, config.data_line_color
         )
 
         cast(Mock, view.show_line_in_plot).assert_has_calls(
-            [call(23) for _ in range(len(mock_clicked_locations))]
+            [
+                call(23, config.vertical_line_color)
+                for _ in range(len(mock_clicked_locations))
+            ]
         )
         cast(Mock, view.update_figure).assert_called_once()
