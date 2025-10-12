@@ -2,12 +2,14 @@
 Controller: Listens to the View and handles communicating back to the Model and View. Communicates to the MainController and listens to the MainController.
 """
 
-from typing import Callable, Optional, Protocol
+from typing import Any, Callable, Optional, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.section_label_assignment.sections_panel_config import SectionsPanelConfig
 from app.section_label_assignment.sections_panel_model import Section
 from app.state_variables import LightState
+from app.type_definitions import Color
 
 
 class Model(Protocol):
@@ -65,7 +67,6 @@ class Model(Protocol):
     def jump_to_section(self, target: int) -> None: ...
     def update_available_labels(self, updated_list: list[str]) -> None: ...
     def sections_to_dictionary(self) -> dict[tuple[int, int], list[str]]: ...
-    def determine_section_boundaries(self) -> list[int]: ...
 
 
 class View(Protocol):
@@ -83,15 +84,22 @@ class View(Protocol):
     def connect_next_section(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_section(self, callback: Callable[[], None]) -> None: ...
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
+    def set_light_colors(self, color_on: Color, color_off: Color) -> None: ...
 
 
 class SectionsPanelController(QObject):
     _open_item_list_signal = pyqtSignal()
 
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: Model, view: View, config: SectionsPanelConfig) -> None:
         super().__init__()
         self.model = model
         self.view = view
+        self.config = config
+
+        # set initial colors for light indicator:
+        self.view.set_light_colors(
+            color_on=self.config.light_on_color, color_off=self.config.light_off_color
+        )
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_assign_label(self.handle_assign_label)
@@ -237,9 +245,10 @@ class SectionsPanelController(QObject):
         """Such that the MainController can access this method on the component Model"""
         return self.model.sections_to_dictionary()
 
-    def get_section_boundaries(self) -> list[int]:
-        """convenience method to get all section boundaries"""
-        return self.model.determine_section_boundaries()
+    def update_config(self, new_config_values: dict[str, Any]) -> None:
+        """Change configuration/settings using the provided dictionary of values the user wants to alter."""
+        for key, value in new_config_values.items():
+            setattr(self.config, key, value)
 
     # Used internally:
     def _send_open_item_list_signal(self) -> None:

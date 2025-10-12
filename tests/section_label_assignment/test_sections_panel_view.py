@@ -11,8 +11,6 @@ from PyQt6.QtCore import Qt
 from pytestqt.qtbot import QtBot
 
 from app.section_label_assignment.sections_panel_view import (
-    COLOR_OFF,
-    COLOR_ON,
     LightState,
     SectionsPanelView,
 )
@@ -93,12 +91,12 @@ def test_switching_indicator_on() -> None:
     view.toggle_indicator(LightState.ON)
     new_styling = view.IndicatorAdded.styleSheet()
 
-    # TODO: use the configuration file ?
-    # ? Check what is best-practice when doing this, as we actually do not care about the precise color, just that it sets it accordingly
-    pattern_to_find = rf"background-color\s*: ({COLOR_ON}|{COLOR_OFF});"
+    color_on = view._light_on_color
+    color_off = view._light_off_color
+    pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
-    assert match.group(1) == COLOR_ON
+    assert match.group(1) == color_on
 
 
 def test_switching_indicator_off() -> None:
@@ -107,12 +105,12 @@ def test_switching_indicator_off() -> None:
     view.toggle_indicator(LightState.OFF)
     new_styling = view.IndicatorAdded.styleSheet()
 
-    # TODO: use the configuration file ?
-    # ? Check what is best-practice when doing this, as we actually do not care about the precise color, just that it sets it accordingly
-    pattern_to_find = rf"background-color\s*: ({COLOR_ON}|{COLOR_OFF});"
+    color_on = view._light_on_color
+    color_off = view._light_off_color
+    pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
-    assert match.group(1) == COLOR_OFF
+    assert match.group(1) == color_off
 
 
 def test_next_section_button(qtbot: QtBot) -> None:
