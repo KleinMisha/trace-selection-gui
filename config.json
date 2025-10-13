@@ -1,0 +1,31 @@
+{
+    "main": {
+
+        "unsaved_changes_on_color": "coral",
+        "unsaved_changes_off_color": "white",
+
+        "keyboard_shortcuts": {
+                "actionOpen": ["Open...", "Ctrl+O"],
+                "actionSave": ["Save...", "Ctrl+S"],
+                "actionSaveAs": ["Save as...", "Ctrl+Shift+S"]
+            },
+        "default_path_to_labels": "",
+        "default_path_to_section_labels":""
+    },
+    "plot": {    
+        "min_time": 0.0,
+        "max_time": 3600.0,
+        "min_height": -1.0,
+        "max_height": 1.0,
+        "vertical_line_color": "skyblue",
+        "data_line_color": "black"
+    },
+    "label_assignment": {
+        "light_off_color": "white",
+        "light_on_color": "green"
+    },
+    "section_assignment": {
+        "light_off_color": "white",
+        "light_on_color": "green"
+    }
+}
