@@ -22,7 +22,7 @@ def compile_ui_to_py(ui_file: Path, py_file: Path) -> bool:
     """
     try:
         subprocess.run(
-            ["python", "-m", "PyQt6.uic.pyuic", str(ui_file), "-o", str(py_file)],
+            ["uv", "run", "python", "-m", "PyQt6.uic.pyuic", str(ui_file), "-o", str(py_file)],
             check=True,
             capture_output=True,
             text=True,
