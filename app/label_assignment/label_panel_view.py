@@ -9,7 +9,11 @@ from typing import Callable
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
+from app.keyboard_shortcuts import AcceptsShortCut
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
+from app.label_assignment.label_panel_shortcut_items import (
+    LabelPanelShortcutID as ShortcutID,
+)
 from app.state_variables import LightState
 from app.type_definitions import Color
 
@@ -44,7 +48,7 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
 
-    def set_light_colors(self, color_on: Color, color_off: Color) -> None:
+    def set_indicator_colors(self, color_on: Color, color_off: Color) -> None:
         """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
         self._light_on_color = color_on
         self._light_off_color = color_off
@@ -69,6 +73,15 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
             string=current_styling,
         )
         self.IndicatorAdded.setStyleSheet(new_styling)
+
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]:
+        """Dictionary with all Qt Actions and Widgets to which a shortcut should get assigned."""
+        return {
+            ShortcutID.ASSIGN: self.assignButton,
+            ShortcutID.UNASSIGN: self.unassignButton,
+            ShortcutID.NEXT: self.NextButton,
+            ShortcutID.PREVIOUS: self.previousButton,
+        }
 
     # Connect callbacks of controller to emitted signals
     def connect_assign_label(self, callback: Callable[[], None]) -> None:

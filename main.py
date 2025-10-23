@@ -48,7 +48,7 @@ def main():
 
     # Start setting up the main controller
     model = MainModel()
-    view = MainView(main_config.keyboard_shortcuts)
+    view = MainView()
     view.show()
 
     components: ComponentControllers = {

@@ -1,4 +1,4 @@
-{ //Main Application panel
+{
     "main": {
         "colors": {
             "unsaved_changes": "coral",
@@ -16,7 +16,6 @@
             "section_labels": ""
         }
     },
-    // The Interactive Plot  
     "plot": {
         "min_time": 0.0,
         "max_time": 3600.0,
@@ -25,7 +24,6 @@
         "vertical_line_color": "skyblue",
         "data_line_color": "black"
     },
-    // Label panel 
     "label_assignment": {
         "colors": {
             "assigned": "green",
@@ -38,7 +36,6 @@
             "previous_label": "Ctrl+Down"
         }
     },
-    // Sections panel 
     "section_assignment": {
         "colors": {
             "assigned": "green",

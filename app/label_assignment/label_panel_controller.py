@@ -6,7 +6,11 @@ from typing import Any, Callable, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.label_assignment.label_panel_config import LabelPanelConfig
+from app.label_assignment.label_panel_shortcut_items import (
+    LabelPanelShortcutID as ShortcutID,
+)
 from app.state_variables import LightState
 from app.type_definitions import Color
 
@@ -47,7 +51,8 @@ class View(Protocol):
     def connect_next_label(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_label(self, callback: Callable[[], None]) -> None: ...
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
-    def set_light_colors(self, color_on: Color, color_off: Color) -> None: ...
+    def set_indicator_colors(self, color_on: Color, color_off: Color) -> None: ...
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]: ...
 
 
 class LabelPanelController(QObject):
@@ -59,13 +64,10 @@ class LabelPanelController(QObject):
         self.view = view
         self.config = config
 
-        # set initial colors for light indicator:
-        self.view.set_light_colors(
-            color_on=self.config.color_indicator_on,
-            color_off=self.config.color_indicator_off,
-        )
+        # apply initial settings:
+        self.apply_config()
 
-        # connect callbacks :: Listening to the View's signals
+        # connect callbacks : Listening to the View's signals
         self.view.connect_assign_label(self.handle_assign_label)
         self.view.connect_unassign_label(self.handle_unassign_label)
         self.view.connect_next_label(self.handle_move_to_next)
@@ -112,6 +114,21 @@ class LabelPanelController(QObject):
         self._send_open_item_list_signal()
 
     # API for the MainController:
+    def apply_config(self) -> None:
+        """apply settings to model and view"""
+
+        # set colors for light indicator:
+        self.view.set_indicator_colors(
+            color_on=self.config.color_indicator_on,
+            color_off=self.config.color_indicator_off,
+        )
+
+        # setup shortcuts
+        shortcuts = self.config.get_shortcuts()
+        shortcut_targets = self.view.get_shortcut_targets()
+        for key in ShortcutID:
+            assign_shortcut(shortcut_targets[key], shortcuts[key])
+
     def reset_for_new_trace(self, labels_new_trace: list[str]) -> None:
         """Will be triggered from MainController: Reset the model's assigned labels when you change focus to a new trace"""
         self.model.reset_assigned_labels(labels_new_trace)
