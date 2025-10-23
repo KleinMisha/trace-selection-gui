@@ -1,18 +1,23 @@
-{
+{ //Main Application panel
     "main": {
-
-        "unsaved_changes_on_color": "coral",
-        "unsaved_changes_off_color": "white",
-
+        "colors": {
+            "unsaved_changes": "coral",
+            "no_unsaved_changes": "white"
+        },
         "keyboard_shortcuts": {
-                "actionOpen": ["Open...", "Ctrl+O"],
-                "actionSave": ["Save...", "Ctrl+S"],
-                "actionSaveAs": ["Save as...", "Ctrl+Shift+S"]
-            },
-        "default_path_to_labels": "",
-        "default_path_to_section_labels":""
+            "menu.file.open": "Ctrl+O",
+            "menu.file.save": "Ctrl+S",
+            "menu.file.save_as": "Ctrl+Shift+S",
+            "next_trace": "Ctrl+Right",
+            "previous_trace": "Ctrl+Left"
+        },
+        "default_file_paths": {
+            "labels": "",
+            "section_labels": ""
+        }
     },
-    "plot": {    
+    // The Interactive Plot  
+    "plot": {
         "min_time": 0.0,
         "max_time": 3600.0,
         "min_height": -1.0,
@@ -20,12 +25,32 @@
         "vertical_line_color": "skyblue",
         "data_line_color": "black"
     },
+    // Label panel 
     "label_assignment": {
-        "light_off_color": "white",
-        "light_on_color": "green"
+        "colors": {
+            "assigned": "green",
+            "unassigned": "white"
+        },
+        "keyboard_shortcuts": {
+            "assign_label": "Ctrl++",
+            "unassign_label": "Ctrl+-",
+            "next_label": "Ctrl+Up",
+            "previous_label": "Ctrl+Down"
+        }
     },
+    // Sections panel 
     "section_assignment": {
-        "light_off_color": "white",
-        "light_on_color": "green"
+        "colors": {
+            "assigned": "green",
+            "unassigned": "white"
+        },
+        "keyboard_shortcuts": {
+            "assign_label": "Alt++",
+            "unassign_label": "Alt+-",
+            "next_section": "Alt+Shift+Up",
+            "previous_section": "Alt+Shift+Down",
+            "next_label": "Alt+Up",
+            "previous_label": "Alt+Down"
+        }
     }
 }

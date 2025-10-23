@@ -3,9 +3,10 @@ from pathlib import Path
 from typing import Callable
 
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
+from app.keyboard_shortcuts import AcceptsShortCut
+from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.main_app.main_view_ui import Ui_MainWindow
 from app.state_variables import EventSeverity, LightState
 from app.type_definitions import Color
@@ -27,9 +28,9 @@ class MainView(QMainWindow, Ui_MainWindow):
     # Emitted only after the Controller calls the View to display a QFileDialog:
     _file_path_selected_signal = pyqtSignal(Path)
 
-    def __init__(self, keyboard_shortcuts: dict[str, tuple[str, str]]) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.build_ui(keyboard_shortcuts)
+        self.build_ui()
 
         # connect listening to user input:
         self.NextTraceButton.clicked.connect(self._send_next_trace_signal)
@@ -55,43 +56,13 @@ class MainView(QMainWindow, Ui_MainWindow):
         self._unsaved_changes_on_color: Color = "white"
         self._unsaved_changes_off_color: Color = "coral"
 
-    def build_ui(self, keyboard_shortcuts: dict[str, tuple[str, str]]) -> None:
+    def build_ui(self) -> None:
         """Only build the parts specific to the mainView. Placing the components will be done in the mainController"""
         self.setupUi(self)
-
-        # setting operating-system agnostic keyboard shortcuts / appropriate label in the MenuBar
-        self._assign_keyboard_shortcut(
-            self.actionOpen,
-            action_in_words=keyboard_shortcuts["actionOpen"][0],
-            shortcut=keyboard_shortcuts["actionOpen"][1],
-        )
-        self._assign_keyboard_shortcut(
-            self.actionSave,
-            action_in_words=keyboard_shortcuts["actionSave"][0],
-            shortcut=keyboard_shortcuts["actionSave"][1],
-        )
-        self._assign_keyboard_shortcut(
-            self.actionSaveAs,
-            action_in_words=keyboard_shortcuts["actionSaveAs"][0],
-            shortcut=keyboard_shortcuts["actionSaveAs"][1],
-        )
-
         # global title of the window
         self.setWindowTitle("Trace Selection")
 
-    @staticmethod
-    def _assign_keyboard_shortcut(action: QAction, shortcut: str, action_in_words: str):
-        """
-        Convert the keyboard shortcut into a OS-agnostic version using builtin Qt methods
-        ?Define this as a regular function at the top of this file? I thought this is still best as it will never be called outside this class anyways
-        """
-        key_sequence = QKeySequence(shortcut)
-        action.setShortcut(key_sequence)
-        key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
-        display_text = f"{action_in_words}\t{key_icons}"
-        action.setText(display_text)
-
-    # UI-logic
+    # UI-logic / exposed to controller
     def display_trace_id(self, name: str) -> None:
         """
         Programmatically updates the displayed label.
@@ -189,6 +160,16 @@ class MainView(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Warning", message)
         elif msg_type == EventSeverity.ERROR:
             QMessageBox.critical(self, "Error", message)
+
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]:
+        """Dictionary with all Qt Actions and Widgets to which a shortcut should get assigned."""
+        return {
+            ShortcutID.MENU_FILE_OPEN: self.actionOpen,
+            ShortcutID.MENU_FILE_SAVE: self.actionSave,
+            ShortcutID.MENU_FILE_SAVE_AS: self.actionSaveAs,
+            ShortcutID.NEXT_TRACE: self.NextTraceButton,
+            ShortcutID.PREVIOUS_TRACE: self.previousTraceButton,
+        }
 
     # Connect callbacks of controller to emitted signals
     def connect_next_trace(self, callback: Callable[[], None]) -> None:

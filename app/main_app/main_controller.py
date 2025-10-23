@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.exceptions import with_error_handling
+from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
@@ -21,6 +22,7 @@ from app.main_app.component_controller_protocols import (
 )
 from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
+from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.state_variables import EventSeverity, LightState
 from app.type_definitions import Color
 
@@ -125,6 +127,7 @@ class View(Protocol):
     def set_indicator_saved_changes_colors(
         self, color_on: Color, color_off: Color
     ) -> None: ...
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]: ...
 
 
 class MainController:
@@ -199,12 +202,18 @@ class MainController:
 
         # colors for indicator lights
         self.view.set_indicator_saved_changes_colors(
-            color_on=self.config.unsaved_changes_on_color,
-            color_off=self.config.unsaved_changes_off_color,
+            color_on=self.config.color_unsaved_changes,
+            color_off=self.config.color_no_unsaved_changes,
         )
 
+        # setup shortcuts
+        shortcuts = self.config.get_shortcuts()
+        shortcut_targets = self.view.get_shortcut_targets()
+        for key in ShortcutID:
+            assign_shortcut(shortcut_targets[key], shortcuts[key])
+
     def update_config(self, new_config_values: dict[str, Any]) -> None:
-        """update the main configurations"""
+        """update the main configurations (to be used after user makes adjustments in settings window)"""
         for key, value in new_config_values.items():
             setattr(self.config, key, value)
 

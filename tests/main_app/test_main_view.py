@@ -13,7 +13,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
@@ -22,18 +21,7 @@ from app.main_app.main_view import QFileDialog as ViewFileDialog
 from app.main_app.main_view import QMessageBox as ViewMessageBox
 
 
-@pytest.fixture
-def keyboard_shortcuts() -> dict[str, tuple[str, str]]:
-    return {
-        "actionOpen": ("Open...", "Ctrl+O"),
-        "actionSave": ("Save...", "Ctrl+S"),
-        "actionSaveAs": ("Save as...", "Ctrl+Shift+S"),
-    }
-
-
-def test_trigger_file_open_signal(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_trigger_file_open_signal(qtbot: QtBot) -> None:
     """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
     received_signals = []
 
@@ -44,7 +32,7 @@ def test_trigger_file_open_signal(
     _ = QApplication.instance() or QApplication([])
 
     # Create and register the view
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
         view.show()
@@ -54,9 +42,7 @@ def test_trigger_file_open_signal(
     assert received_signals == ["Open..."]
 
 
-def test_trigger_file_save_signal(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_trigger_file_save_signal(qtbot: QtBot) -> None:
     """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
     received_signals = []
 
@@ -67,7 +53,7 @@ def test_trigger_file_save_signal(
     _ = QApplication.instance() or QApplication([])
 
     # Create and register the view
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
@@ -78,9 +64,7 @@ def test_trigger_file_save_signal(
     assert received_signals == ["Save..."]
 
 
-def test_trigger_file_save_as_signal(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_trigger_file_save_as_signal(qtbot: QtBot) -> None:
     """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
     received_signals = []
 
@@ -91,7 +75,7 @@ def test_trigger_file_save_as_signal(
     _ = QApplication.instance() or QApplication([])
 
     # Create and register the view
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
@@ -101,9 +85,7 @@ def test_trigger_file_save_as_signal(
     assert received_signals == ["Save as..."]
 
 
-def test_trigger_file_import_labels_signal(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_trigger_file_import_labels_signal(qtbot: QtBot) -> None:
     """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
     received_signals = []
 
@@ -114,7 +96,7 @@ def test_trigger_file_import_labels_signal(
     _ = QApplication.instance() or QApplication([])
 
     # Create and register the view
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
@@ -124,9 +106,7 @@ def test_trigger_file_import_labels_signal(
     assert received_signals == ["Import labels..."]
 
 
-def test_trigger_file_import_sections_signal(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_trigger_file_import_sections_signal(qtbot: QtBot) -> None:
     """Simple check to ensure the View emits a signal when you trigger a menu bar item"""
     received_signals = []
 
@@ -137,7 +117,7 @@ def test_trigger_file_import_sections_signal(
     _ = QApplication.instance() or QApplication([])
 
     # Create and register the view
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
@@ -147,48 +127,13 @@ def test_trigger_file_import_sections_signal(
     assert received_signals == ["Import sections..."]
 
 
-def test_keyboard_shortcuts(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
-    """Simulate using keyboard shortcuts"""
-    # Ensure a QApplication exists
-    _ = QApplication.instance() or QApplication([])
-
-    view = MainView(keyboard_shortcuts)
-
-    qtbot.addWidget(view)
-    with qtbot.wait_exposed(view):
-        view.show()
-
-    for action_name, (action_in_words, expected_shortcut) in keyboard_shortcuts.items():
-        # get the correct QAction
-        action: QAction = getattr(view, action_name)
-
-        # Simple tests: Check that the display text and shortcuts are assigned as intended
-        key_sequence = QKeySequence(expected_shortcut)
-        key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
-        expected_display_text = f"{action_in_words}\t{key_icons}"
-        assert action.shortcut().toString() == expected_shortcut
-        assert action.text() == expected_display_text
-
-        # Now connect a mock signal handler to the action and simulate sending the shortcut user input
-        primary_key = key_sequence[0].key()
-        mod_keys = key_sequence[0].keyboardModifiers()
-        mock_handler = Mock()
-        action.triggered.connect(mock_handler)
-        qtbot.keyClick(view.window(), primary_key, modifier=mod_keys)
-        mock_handler.assert_called_once()
-
-
-def test_next_trace_button(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_next_trace_button(qtbot: QtBot) -> None:
     received_signals = []
 
     def mock_handler() -> None:
         received_signals.append("next trace")
 
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     view.connect_next_trace(mock_handler)
     qtbot.add_widget(view)
@@ -196,26 +141,22 @@ def test_next_trace_button(
     assert received_signals == ["next trace"]
 
 
-def test_prev_trace_button(
-    qtbot: QtBot, keyboard_shortcuts: dict[str, tuple[str, str]]
-) -> None:
+def test_prev_trace_button(qtbot: QtBot) -> None:
     received_signals = []
 
     def mock_handler() -> None:
         received_signals.append("previous trace")
 
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     view.connect_prev_trace(mock_handler)
     qtbot.mouseClick(view.previousTraceButton, Qt.MouseButton.LeftButton)
     assert received_signals == ["previous trace"]
 
 
-def test_indicator_untracked_changes_on(
-    keyboard_shortcuts: dict[str, tuple[str, str]],
-) -> None:
+def test_indicator_untracked_changes_on() -> None:
     """check the output stylesheet's content"""
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     view.toggle_indicator_saved_changes(LightState.ON)
     new_styling = view.UnsavedChangesIndicator.styleSheet()
@@ -228,11 +169,9 @@ def test_indicator_untracked_changes_on(
     assert match.group(1) == color_on
 
 
-def test_indicator_untracked_changes_off(
-    keyboard_shortcuts: dict[str, tuple[str, str]],
-) -> None:
+def test_indicator_untracked_changes_off() -> None:
     """check the output stylesheet's content"""
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     view.toggle_indicator_saved_changes(LightState.OFF)
     new_styling = view.UnsavedChangesIndicator.styleSheet()
@@ -258,20 +197,17 @@ def test_opening_the_correct_message_box(
     message: str,
     title: str,
     expected_method: str,
-    keyboard_shortcuts: dict[str, tuple[str, str]],
 ) -> None:
     """Use unittest.mock.patch to mock the correct method depending on the input"""
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
 
     with patch.object(target=ViewMessageBox, attribute=expected_method) as mock_msg_box:
         view.open_message_box(message_box, message)
         mock_msg_box.assert_called_once_with(view, title, message)
 
 
-def test_opening_the_correct_file(
-    keyboard_shortcuts: dict[str, tuple[str, str]],
-) -> None:
-    view = MainView(keyboard_shortcuts)
+def test_opening_the_correct_file() -> None:
+    view = MainView()
 
     with (
         patch.object(
@@ -289,10 +225,8 @@ def test_opening_the_correct_file(
         )
 
 
-def test_saving_to_the_correct_file(
-    keyboard_shortcuts: dict[str, tuple[str, str]],
-) -> None:
-    view = MainView(keyboard_shortcuts)
+def test_saving_to_the_correct_file() -> None:
+    view = MainView()
 
     with (
         patch.object(
@@ -310,9 +244,7 @@ def test_saving_to_the_correct_file(
         )
 
 
-def test_display_trace_id_call_does_not_emit_a_signal(
-    keyboard_shortcuts: dict[str, tuple[str, str]],
-) -> None:
+def test_display_trace_id_call_does_not_emit_a_signal() -> None:
     """
     Ensure that programmatically updating the trace ID in the view
     does not emit the 'jump_to_trace' signal.
@@ -321,7 +253,7 @@ def test_display_trace_id_call_does_not_emit_a_signal(
     as user-initiated actions and avoids unintended updates on the new trace.
     """
     mock_handler = Mock()
-    view = MainView(keyboard_shortcuts)
+    view = MainView()
     view.connect_jump_to_trace(mock_handler)
     view.display_trace_id("mock")
     mock_handler.assert_not_called()

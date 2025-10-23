@@ -6,7 +6,7 @@ import json
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Self, Type, cast
 
 import pytest
 
@@ -24,6 +24,11 @@ class User:
     email: str
     height: float
 
+    @classmethod
+    def from_raw(cls: Type[Self], settings: dict[str, Any]) -> Self:
+        """specify how to parse the dictionary of JSON / TOML data supplied. Allows the user to provide values in a more user-friendly manner."""
+        return cls(**settings)
+
 
 @dataclass
 class Country:
@@ -33,6 +38,11 @@ class Country:
 
     name: str
     language: str
+
+    @classmethod
+    def from_raw(cls: Type[Self], settings: dict[str, Any]) -> Self:
+        """specify how to parse the dictionary of JSON / TOML data supplied. Allows the user to provide values in a more user-friendly manner."""
+        return cls(**settings)
 
 
 @pytest.fixture
