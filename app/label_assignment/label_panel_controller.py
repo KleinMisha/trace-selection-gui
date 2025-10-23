@@ -61,7 +61,8 @@ class LabelPanelController(QObject):
 
         # set initial colors for light indicator:
         self.view.set_light_colors(
-            color_on=self.config.light_on_color, color_off=self.config.light_off_color
+            color_on=self.config.color_indicator_on,
+            color_off=self.config.color_indicator_off,
         )
 
         # connect callbacks :: Listening to the View's signals

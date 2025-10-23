@@ -8,14 +8,39 @@ This class solves this cross-application concern.
 
 import json
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
-from typing import Protocol, Type
+from typing import Any, Protocol, Self, Type
 
 
 class Config(Protocol):
-    """Configuration settings are simply dataclasses with some variables"""
+    """
+    Configuration settings are simply dataclasses with some variables
 
-    # NOTE: this is purely for type hinting. There is no way in Python to enforce the individual Config objects have no methods implemented.
+    #TODO: move into something like app/core/interfaces.py where developers can see all basic contracts needed to add new components
+    """
+
+    @classmethod
+    def from_raw(cls, settings: dict[str, Any]) -> Self:
+        """specify how to parse the dictionary of JSON / TOML data supplied. Allows the user to provide values in a more user-friendly manner.
+
+        NOTE: If the way things are entered in the config file matches exactly the fields of the dataclass, simply return cls(**settings)
+        """
+        ...
+
+
+class ConfigWithShortcuts(Config, Protocol):
+    """If configurations include keyboard shortcuts
+
+    * implement the following API
+    * only important for wiring things within the component's controller
+
+    #TODO: move into something like app/core/interfaces.py where developers can see all basic contracts needed to add new components
+    """
+
+    def get_shortcuts(self) -> dict[Enum, str]:
+        """dictionary of all keyboard shortcuts for this component"""
+        ...
 
 
 @dataclass
@@ -50,7 +75,7 @@ class ConfigManager:
 
         # build the config objects: This is "all that other parts of the code need / want to know"
         for name, config in self._registry.items():
-            new_entry = {name: config(**config_values[name])}
+            new_entry = {name: config.from_raw(config_values[name])}
             self._instances.update(new_entry)
 
     def write(self, file_name: Path) -> None:

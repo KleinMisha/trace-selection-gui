@@ -5,6 +5,7 @@ The main entry point will register this at the ConfigManager
 """
 
 from dataclasses import dataclass
+from typing import Any, Self, Type
 
 from app.type_definitions import Color
 
@@ -18,3 +19,8 @@ class InterActivePlotConfig:
 
     vertical_line_color: Color = "skyblue"
     data_line_color: Color = "black"
+
+    @classmethod
+    def from_raw(cls: Type[Self], settings: dict[str, Any]) -> Self:
+        """In this case the entries in the config file directly match the signature of this class"""
+        return cls(**settings)
