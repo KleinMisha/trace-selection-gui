@@ -6,8 +6,12 @@ from typing import Any, Callable, Optional, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.section_label_assignment.sections_panel_config import SectionsPanelConfig
 from app.section_label_assignment.sections_panel_model import Section
+from app.section_label_assignment.sections_panel_shortcut_items import (
+    SectionsPanelShortcutID as ShortcutID,
+)
 from app.state_variables import LightState
 from app.type_definitions import Color
 
@@ -84,7 +88,8 @@ class View(Protocol):
     def connect_next_section(self, callback: Callable[[], None]) -> None: ...
     def connect_prev_section(self, callback: Callable[[], None]) -> None: ...
     def connect_open_item_list(self, callback: Callable[[], None]) -> None: ...
-    def set_light_colors(self, color_on: Color, color_off: Color) -> None: ...
+    def set_indicator_colors(self, color_on: Color, color_off: Color) -> None: ...
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]: ...
 
 
 class SectionsPanelController(QObject):
@@ -96,11 +101,8 @@ class SectionsPanelController(QObject):
         self.view = view
         self.config = config
 
-        # set initial colors for light indicator:
-        self.view.set_light_colors(
-            color_on=self.config.color_indicator_on,
-            color_off=self.config.color_indicator_off,
-        )
+        # apply initial settings:
+        self.apply_config()
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_assign_label(self.handle_assign_label)
@@ -178,6 +180,20 @@ class SectionsPanelController(QObject):
         self._send_open_item_list_signal()
 
     # API for the MainController:
+    def apply_config(self) -> None:
+        """apply settings to model and view"""
+
+        # set colors for light indicator:
+        self.view.set_indicator_colors(
+            color_on=self.config.color_indicator_on,
+            color_off=self.config.color_indicator_off,
+        )
+
+        # setup shortcuts
+        shortcuts = self.config.get_shortcuts()
+        shortcut_targets = self.view.get_shortcut_targets()
+        for key in ShortcutID:
+            assign_shortcut(shortcut_targets[key], shortcuts[key])
 
     def reset_for_new_trace(
         self, sections_new_trace: dict[tuple[int, int], list[str]]

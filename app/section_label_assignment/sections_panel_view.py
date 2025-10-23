@@ -8,6 +8,10 @@ from typing import Callable, Optional
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
+from app.keyboard_shortcuts import AcceptsShortCut
+from app.section_label_assignment.sections_panel_shortcut_items import (
+    SectionsPanelShortcutID as ShortcutID,
+)
 from app.section_label_assignment.sections_panel_view_ui import Ui_SectionsPanel
 from app.state_variables import LightState
 from app.type_definitions import Color
@@ -47,7 +51,7 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
 
-    def set_light_colors(self, color_on: Color, color_off: Color) -> None:
+    def set_indicator_colors(self, color_on: Color, color_off: Color) -> None:
         """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
         self._light_on_color = color_on
         self._light_off_color = color_off
@@ -77,6 +81,17 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
 
     def display_section_end(self, frame: Optional[int]) -> None:
         self.EndOfSection.setText(self._format_frame(frame))
+
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]:
+        """Dictionary with all Qt Actions and Widgets to which a shortcut should get assigned."""
+        return {
+            ShortcutID.ASSIGN: self.assignButton,
+            ShortcutID.UNASSIGN: self.unassignButton,
+            ShortcutID.NEXT_LABEL: self.NextLabelButton,
+            ShortcutID.PREVIOUS_LABEL: self.previousLabelButton,
+            ShortcutID.NEXT_SECTION: self.NextSectionButton,
+            ShortcutID.PREVIOUS_SECTION: self.previousSectionButton,
+        }
 
     # Connect callbacks of controller to emitted signals
     def connect_assign_label(self, callback: Callable[[], None]) -> None:
