@@ -30,7 +30,7 @@
             "unassigned": "white"
         },
         "keyboard_shortcuts": {
-            "assign_label": "Ctrl++",
+            "assign_label": "Ctrl+=",
             "unassign_label": "Ctrl+-",
             "next_label": "Ctrl+Up",
             "previous_label": "Ctrl+Down"
@@ -42,7 +42,7 @@
             "unassigned": "white"
         },
         "keyboard_shortcuts": {
-            "assign_label": "Alt++",
+            "assign_label": "Alt+=",
             "unassign_label": "Alt+-",
             "next_section": "Alt+Shift+Up",
             "previous_section": "Alt+Shift+Down",
