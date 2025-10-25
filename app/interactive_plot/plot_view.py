@@ -25,9 +25,6 @@ Color: TypeAlias = Union[
     np.ndarray,  # numpy array
 ]
 
-# TODO: Move this into a configuration file
-DEFAULT_COLOR = "skyblue"
-
 
 class InterActivePlotView(QWidget, Ui_InteractivePlot):
     _left_mouse_button_signal = pyqtSignal(float, float)
@@ -86,15 +83,11 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         self.ax.set_ylim((min_value, max_value))
 
     def show_t_vs_z_plot(
-        self, t: NDArray[np.floating], z: NDArray[np.floating]
+        self, t: NDArray[np.floating], z: NDArray[np.floating], color: Color
     ) -> None:
-        self.ax.plot(t, z)
+        self.ax.plot(t, z, color=color)
 
-    def show_line_in_plot(
-        self, time_point: float, color: Optional[Color] = None
-    ) -> None:
-        if color is None:
-            color = DEFAULT_COLOR
+    def show_line_in_plot(self, time_point: float, color: Color) -> None:
         self.ax.axvline(time_point, linestyle="dashed", color=color)
 
     def clear_last_line_from_plot(self) -> None:

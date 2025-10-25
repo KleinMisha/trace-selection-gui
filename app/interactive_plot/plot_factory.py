@@ -8,24 +8,25 @@ NOTE: It also takes care of placing the component in its respective placeholder 
 from PyQt6.QtWidgets import QWidget
 
 from app.component_factory_helpers import fill_component_to_placeholder
+from app.interactive_plot.plot_config import InterActivePlotConfig
 from app.interactive_plot.plot_controller import InteractivePlotController
 from app.interactive_plot.plot_model import InteractivePlotModel
 from app.interactive_plot.plot_view import InterActivePlotView
 
-# TODO: Add these things to a configuration file
-MIN_TIME = 0.0
-MAX_TIME = 3600.0
-MIN_HEIGHT = -1.0
-MAX_HEIGHT = 1.0
 
-
-def create_plot_controller(placeholder: QWidget | None) -> InteractivePlotController:
+def create_plot_controller(
+    placeholder: QWidget | None, config: InterActivePlotConfig
+) -> InteractivePlotController:
     """To be called by the main.py when setting up the entire app"""
+    MIN_TIME = config.min_time
+    MAX_TIME = config.max_time
+    MIN_HEIGHT = config.min_height
+    MAX_HEIGHT = config.max_height
     model = InteractivePlotModel(
         t_min=MIN_TIME, t_max=MAX_TIME, z_min=MIN_HEIGHT, z_max=MAX_HEIGHT
     )
     view = InterActivePlotView(parent=placeholder)
-    controller = InteractivePlotController(model, view)
+    controller = InteractivePlotController(model, view, config)
     if placeholder:
         fill_component_to_placeholder(view, placeholder, force_layout=False)
     return controller
