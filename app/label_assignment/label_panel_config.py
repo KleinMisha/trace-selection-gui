@@ -11,7 +11,7 @@ from app.keyboard_shortcuts import clean_shortcut
 from app.label_assignment.label_panel_shortcut_items import (
     LabelPanelShortcutID as ShortcutID,
 )
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 @dataclass

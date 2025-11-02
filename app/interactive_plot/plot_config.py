@@ -7,7 +7,7 @@ The main entry point will register this at the ConfigManager
 from dataclasses import dataclass
 from typing import Any, Self, Type
 
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 @dataclass

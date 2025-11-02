@@ -14,7 +14,7 @@ from app.section_label_assignment.sections_panel_shortcut_items import (
 )
 from app.section_label_assignment.sections_panel_view_ui import Ui_SectionsPanel
 from app.state_variables import LightState
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 class SectionsPanelView(QWidget, Ui_SectionsPanel):

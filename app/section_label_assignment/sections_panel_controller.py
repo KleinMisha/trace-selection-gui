@@ -13,7 +13,7 @@ from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )
 from app.state_variables import LightState
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 class Model(Protocol):

@@ -18,10 +18,3 @@ class EventSeverity(Enum):
     INFO = auto()
     WARNING = auto()
     ERROR = auto()
-
-
-class Theme(Enum):
-    """Appearance of the app"""
-
-    LIGHT = "light"
-    DARK = "dark"

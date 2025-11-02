@@ -11,7 +11,7 @@ from app.keyboard_shortcuts import clean_shortcut
 from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 @dataclass
