@@ -4,8 +4,7 @@ Helper methods to deal with keyboard shortcuts
 
 from string import ascii_lowercase
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence, QShortcut
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QAbstractButton
 
 # Type Alias for Qt elements that accept shortcuts
