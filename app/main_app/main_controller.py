@@ -641,15 +641,9 @@ class MainController:
         new_labels = self.components["label_panel"].get_assigned_labels()
         self.model.update_trace_labels(new_labels)
 
-        print(
-            f"[DEBUG] section labels before update: {self.model.get_current_trace_section_labels()}"
-        )
         # update the current trace's section labels (from the SectionsPanel)
         new_section_labels = self.components["sections_panel"].get_section_labels()
         self.model.update_trace_section_labels(new_section_labels)
-        print(
-            f"[DEBUG] section labels after update: {self.model.get_current_trace_section_labels()}"
-        )
 
     def _reset_components(self) -> None:
         """
@@ -664,9 +658,6 @@ class MainController:
         horizontal_line_time_points = self.model.get_section_boundaries()
         self.components["interactive_plot"].reset_for_new_trace(
             self.model.current_trace, horizontal_line_time_points
-        )
-        print(
-            f"[DEBUG] PlotController: adding vertical line at {horizontal_line_time_points} for trace {self.model.current_trace_id}"
         )
 
         # reset the assigned labels
