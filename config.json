@@ -47,5 +47,10 @@
             "next_label": "Alt+Up",
             "previous_label": "Alt+Down"
         }
+    },
+    "theme": {
+        "default_theme" : "dark",
+        "themes_dir": "./app/theme_manager/themes" ,
+        "template_stylesheet": "./app/theme_manager/themes/base.qss"  
     }
 }

@@ -23,6 +23,7 @@ from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
 from app.section_label_assignment.sections_panel_config import SectionsPanelConfig
 from app.section_label_assignment.sections_panel_factory import create_sections_panel
+from app.theme_manager.theme_config import ThemeConfig
 from app.theme_manager.theme_factory import create_theme_controller
 
 CONFIG_FILE = Path(__file__).parent / "config.json"
@@ -38,6 +39,7 @@ def main():
     config_manger.register("label_assignment", LabelPanelConfig)
     config_manger.register("section_assignment", SectionsPanelConfig)
     config_manger.register("plot", InterActivePlotConfig)
+    config_manger.register("theme", ThemeConfig)
     config_manger.load(CONFIG_FILE)
 
     main_config = cast(MainConfig, config_manger.get_config("main"))
@@ -46,7 +48,7 @@ def main():
         SectionsPanelConfig, config_manger.get_config("section_assignment")
     )
     plot_config = cast(InterActivePlotConfig, config_manger.get_config("plot"))
-
+    theme_config = cast(ThemeConfig, config_manger.get_config("theme"))
     # Start setting up the main controller
     model = MainModel()
     view = MainView()
@@ -63,7 +65,9 @@ def main():
             placeholder=view.SectionsPanelView, config=sections_config
         ),
         "item_list": create_item_list,
-        "theme_manager": create_theme_controller(placeholder=view.ThemeView),
+        "theme_manager": create_theme_controller(
+            placeholder=view.ThemeView, config=theme_config
+        ),
     }
     controller = MainController(model, view, components=components, config=main_config)
     _ = controller

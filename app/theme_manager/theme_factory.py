@@ -3,6 +3,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import QWidget
 
 from app.component_factory_helpers import fill_component_to_placeholder
+from app.theme_manager.theme_config import ThemeConfig
 from app.theme_manager.theme_controller import ThemeController
 from app.theme_manager.theme_model import ThemeModel
 from app.theme_manager.theme_view import ThemeView
@@ -12,7 +13,9 @@ from app.theme_types import ThemeMode
 BASE_QSS_FILE = Path(__file__).parent / "themes" / "base.qss"
 
 
-def create_theme_controller(placeholder: QWidget | None) -> ThemeController:
+def create_theme_controller(
+    placeholder: QWidget | None, config: ThemeConfig
+) -> ThemeController:
     """
     To be called by the main.py when setting up the entire app
 
@@ -22,10 +25,7 @@ def create_theme_controller(placeholder: QWidget | None) -> ThemeController:
         current_theme=ThemeMode.LIGHT, stylesheet_template=Path(BASE_QSS_FILE)
     )
     view = ThemeView()
-    controller = ThemeController(model, view)
-
-    # apply initial theme:
-    controller._apply_theme()
+    controller = ThemeController(model, view, config)
 
     if placeholder:
         fill_component_to_placeholder(view, placeholder, force_layout=True)

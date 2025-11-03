@@ -8,6 +8,7 @@ from typing import Callable, Protocol
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
+from app.theme_manager.theme_config import ThemeConfig
 from app.theme_types import Color, Theme, ThemeMode
 
 # Todo: Move constants into a configuration file
@@ -37,10 +38,14 @@ class ThemeController(QObject):
 
     _selected_theme_signal = pyqtSignal(Theme)
 
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: Model, view: View, config: ThemeConfig) -> None:
         super().__init__()
         self.model = model
         self.view = view
+        self.config = config
+
+        # apply initial settings:
+        self._apply_config()
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_dark_mode(self.handle_dark_mode_toggle)
@@ -61,6 +66,16 @@ class ThemeController(QObject):
         self._selected_theme_signal.connect(callback)
 
     # internal logic
+    def _apply_config(self) -> None:
+        """apply settings to model and view"""
+        self.model.stylesheet_template = self.config.template_stylesheet
+
+        # now `manually trigger the toggle` to apply the initial theme & tell main controller to apply it to all components.
+        turn_on_dark_mode = (
+            True if self.config.default_mode == ThemeMode.DARK else False
+        )
+        self.handle_dark_mode_toggle(turn_on_dark_mode)
+
     def _apply_theme(self) -> None:
         """
         Change theme on the QApplication level
