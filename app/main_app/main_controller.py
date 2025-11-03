@@ -162,6 +162,7 @@ class MainController:
 
         # apply initial settings:
         self.apply_config()
+        self.apply_default_theme()
 
         # Connect (listen) to incoming signals from the MainView:
         self.view.connect_next_trace(self.handle_move_to_next_trace)
