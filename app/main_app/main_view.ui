@@ -460,13 +460,10 @@ border:                 2px solid black;</string>
         <enum>Qt::LeftToRight</enum>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(128, 170, 255);
-padding: 5;
-color:  white; 
+        <string notr="true">padding: 5;
 width: 100 px;
 height: 40px;
-border: none;
-border-radius: 12px; 
+
 </string>
        </property>
        <property name="text">
@@ -603,7 +600,7 @@ height: 40px;</string>
      <x>0</x>
      <y>0</y>
      <width>2560</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

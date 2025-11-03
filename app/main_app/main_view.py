@@ -62,6 +62,11 @@ class MainView(QMainWindow, Ui_MainWindow):
         # global title of the window
         self.setWindowTitle("Trace Selection")
 
+        # Design according to theme:
+        self.NextTraceButton.setProperty("role", "apply")
+        self.previousTraceButton.setProperty("role", "undo")
+        self.helpDocsButton.setProperty("role", "accent")
+
     # UI-logic / exposed to controller
     def display_trace_id(self, name: str) -> None:
         """
