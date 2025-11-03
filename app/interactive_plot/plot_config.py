@@ -12,10 +12,10 @@ from app.theme_types import Color
 
 @dataclass
 class InterActivePlotConfig:
-    min_time: float = 0.0
-    max_time: float = 3600.0
-    min_height: float = -1.0
-    max_height: float = 1.0
+    max_time: float | None = 3600.0
+    min_time: float | None = 0.0
+    min_height: float | None = -1.0
+    max_height: float | None = 1.0
 
     vertical_line_color: Color | None = None
     data_line_color: Color | None = None

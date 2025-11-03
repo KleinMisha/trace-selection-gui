@@ -180,40 +180,43 @@ class InteractivePlotController(QObject):
         self._send_line_removed_from_plot_signal()
 
     def handle_adjusted_z_min(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.z_min = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.min_height)
+        if new_value is not None:
+            self.model.z_min = new_value
             z_min = self.model.z_min
             z_max = self.model.z_max
             self.view.adjust_z_range(min_value=z_min, max_value=z_max)
             self.view.update_figure()
 
     def handle_adjusted_z_max(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.z_max = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.max_height)
+        if new_value is not None:
+            self.model.z_max = new_value
             z_min = self.model.z_min
             z_max = self.model.z_max
             self.view.adjust_z_range(min_value=z_min, max_value=z_max)
             self.view.update_figure()
 
     def handle_adjusted_t_min(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
-
-        if self._is_valid_number(entry):
-            self.model.t_min = float(entry)
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+        new_value = self._get_value_or_default(entry, default=self.config.min_time)
+        if new_value is not None:
+            self.model.t_min = new_value
             t_min = self.model.t_min
             t_max = self.model.t_max
             self.view.adjust_t_range(min_value=t_min, max_value=t_max)
             self.view.update_figure()
 
     def handle_adjusted_t_max(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.t_max = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.max_time)
+        if new_value is not None:
+            self.model.t_max = new_value
             t_min = self.model.t_min
             t_max = self.model.t_max
             self.view.adjust_t_range(min_value=t_min, max_value=t_max)
@@ -236,6 +239,11 @@ class InteractivePlotController(QObject):
 
     def connect_line_removed_from_plot(self, callback: Callable[[], None]) -> None:
         self._line_removed_from_plot_signal.connect(callback)
+
+    # used internally
+    def _get_value_or_default(self, entry: str, default: float | None) -> float | None:
+        """Get float from entry if valid, otherwise return default."""
+        return float(entry) if self._is_valid_number(entry) else default
 
     @staticmethod
     def _is_valid_number(entry: str) -> bool:
