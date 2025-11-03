@@ -7,7 +7,7 @@ The main entry point will register this at the ConfigManager
 from dataclasses import dataclass
 from typing import Any, Self, Type
 
-from app.keyboard_shortcuts import clean_shortcut
+from app.core.keyboard_shortcuts import clean_shortcut
 from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )

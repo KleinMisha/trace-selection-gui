@@ -5,7 +5,7 @@ from typing import Callable
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
-from app.keyboard_shortcuts import AcceptsShortCut
+from app.core.keyboard_shortcuts import AcceptsShortCut
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.main_app.main_view_ui import Ui_MainWindow
 from app.state_variables import EventSeverity, LightState

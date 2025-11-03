@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.core.exceptions import with_error_handling
-from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
+from app.core.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,

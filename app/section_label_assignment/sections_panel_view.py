@@ -8,7 +8,7 @@ from typing import Callable, Optional
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
-from app.keyboard_shortcuts import AcceptsShortCut
+from app.core.keyboard_shortcuts import AcceptsShortCut
 from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )

@@ -6,7 +6,7 @@ from typing import Any, Callable, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
+from app.core.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.label_assignment.label_panel_config import LabelPanelConfig
 from app.label_assignment.label_panel_shortcut_items import (
     LabelPanelShortcutID as ShortcutID,
