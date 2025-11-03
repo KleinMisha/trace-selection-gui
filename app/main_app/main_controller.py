@@ -560,9 +560,9 @@ class MainController:
         -----
         Tells the other components to apply the current theme when applicable
         """
-        for component in self.components:
-            if isinstance(component, SupportsThemeChanges):
-                component.apply_theme(theme)
+        for component, controller in self.components.items():
+            if isinstance(controller, SupportsThemeChanges):
+                controller.apply_theme(theme)
 
     # file-handling logic
     def _process_next_request(self) -> None:

@@ -17,8 +17,8 @@ class InterActivePlotConfig:
     min_height: float = -1.0
     max_height: float = 1.0
 
-    vertical_line_color: Color = "skyblue"
-    data_line_color: Color = "black"
+    vertical_line_color: Color | None = None
+    data_line_color: Color | None = None
 
     @classmethod
     def from_raw(cls: Type[Self], settings: dict[str, Any]) -> Self:

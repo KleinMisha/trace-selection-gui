@@ -20,9 +20,7 @@
         "min_time": 0.0,
         "max_time": 3600.0,
         "min_height": -1.0,
-        "max_height": 1.0,
-        "vertical_line_color": "skyblue",
-        "data_line_color": "black"
+        "max_height": 1.0
     },
     "label_assignment": {
         "colors": {
