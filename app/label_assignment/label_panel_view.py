@@ -45,6 +45,13 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
     def build_ui(self) -> None:
         self.setupUi(self)
 
+        # Design according to theme:
+        self.assignButton.setProperty("role", "apply")
+        self.unassignButton.setProperty("role", "undo")
+        self.NextButton.setProperty("role", "neutral")
+        self.previousButton.setProperty("role", "neutral")
+        self.itemlistButton.setProperty("role", "neutral")
+
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
 

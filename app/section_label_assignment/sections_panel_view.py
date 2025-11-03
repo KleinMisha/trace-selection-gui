@@ -48,6 +48,15 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
     def build_ui(self) -> None:
         self.setupUi(self)
 
+        # Design according to theme:
+        self.assignButton.setProperty("role", "apply")
+        self.unassignButton.setProperty("role", "undo")
+        self.NextLabelButton.setProperty("role", "neutral")
+        self.previousLabelButton.setProperty("role", "neutral")
+        self.NextSectionButton.setProperty("role", "neutral")
+        self.previousSectionButton.setProperty("role", "neutral")
+        self.itemlistButton.setProperty("role", "neutral")
+
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
 

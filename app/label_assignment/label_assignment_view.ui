@@ -139,7 +139,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QToolButton" name="itemlistButton">
+       <widget class="QPushButton" name="itemlistButton">
         <property name="enabled">
          <bool>true</bool>
         </property>
