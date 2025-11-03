@@ -12,7 +12,7 @@ from app.theme_types import ThemeMode
 @dataclass
 class ThemeConfig:
     themes_dir: Path = Path(__file__).parent / "themes"
-    template_stylesheet: Path = Path(__file__) / "themes" / "base.qss"
+    template_stylesheet: Path = Path(__file__).parent / "themes" / "base.qss"
     default_mode: ThemeMode = ThemeMode.LIGHT
 
     @classmethod

@@ -71,10 +71,10 @@ class ThemeController(QObject):
         self.model.stylesheet_template = self.config.template_stylesheet
 
         # now `manually trigger the toggle` to apply the initial theme & tell main controller to apply it to all components.
-        turn_on_dark_mode = (
+        start_in_dark_mode = (
             True if self.config.default_mode == ThemeMode.DARK else False
         )
-        self.handle_dark_mode_toggle(turn_on_dark_mode)
+        self.handle_dark_mode_toggle(start_in_dark_mode)
 
     def _apply_theme(self) -> None:
         """
