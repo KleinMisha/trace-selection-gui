@@ -17,7 +17,6 @@ class Config(Protocol):
     """
     Configuration settings are simply dataclasses with some variables
 
-    #TODO: move into something like app/core/interfaces.py where developers can see all basic contracts needed to add new components
     """
 
     @classmethod
@@ -35,7 +34,6 @@ class ConfigWithShortcuts(Config, Protocol):
     * implement the following API
     * only important for wiring things within the component's controller
 
-    #TODO: move into something like app/core/interfaces.py where developers can see all basic contracts needed to add new components
     """
 
     def get_shortcuts(self) -> dict[Enum, str]:
