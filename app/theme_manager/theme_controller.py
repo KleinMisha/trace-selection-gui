@@ -44,9 +44,6 @@ class ThemeController(QObject):
         self.view = view
         self.config = config
 
-        # apply initial settings:
-        self._apply_config()
-
         # connect callbacks :: Listening to the View's signals
         self.view.connect_dark_mode(self.handle_dark_mode_toggle)
 
@@ -61,21 +58,17 @@ class ThemeController(QObject):
         new_theme = self.model.create_theme()
         self._send_selected_theme_signal(new_theme)
 
-    # allow the main controller to listen
+    # known to the main controller:
     def connect_selected_theme_signal(self, callback: Callable[[Theme], None]) -> None:
         self._selected_theme_signal.connect(callback)
 
+    def get_and_apply_default_theme(self) -> Theme:
+        """use theme specified in configuration file"""
+        self.model.current_theme = self.config.default_mode
+        self._apply_theme()
+        return self.model.create_theme()
+
     # internal logic
-    def _apply_config(self) -> None:
-        """apply settings to model and view"""
-        self.model.stylesheet_template = self.config.template_stylesheet
-
-        # now `manually trigger the toggle` to apply the initial theme & tell main controller to apply it to all components.
-        start_in_dark_mode = (
-            True if self.config.default_mode == ThemeMode.DARK else False
-        )
-        self.handle_dark_mode_toggle(start_in_dark_mode)
-
     def _apply_theme(self) -> None:
         """
         Change theme on the QApplication level

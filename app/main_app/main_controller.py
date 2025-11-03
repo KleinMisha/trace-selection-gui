@@ -195,6 +195,12 @@ class MainController:
             self.handle_theme_selection
         )
 
+    def apply_default_theme(self) -> None:
+        """Apply the default theme specified in the configuration file and relay this information to the components"""
+        default_theme = self.components["theme_manager"].get_and_apply_default_theme()
+        self.apply_theme(default_theme)
+        self.handle_theme_selection(default_theme)
+
     # main app logic
     def apply_theme(self, theme: Theme) -> None:
         """let main view adjust colors according to selected theme"""
@@ -560,7 +566,7 @@ class MainController:
         -----
         Tells the other components to apply the current theme when applicable
         """
-        for component, controller in self.components.items():
+        for _, controller in self.components.items():
             if isinstance(controller, SupportsThemeChanges):
                 controller.apply_theme(theme)
 
