@@ -10,47 +10,114 @@ QWidget {
     font-size: 16px;
 }
 
-/* ===== Component Containers ===== */
-QFrame {
-    background-color: $surface;       
-    border: 1px solid $primary;
+/* ===== Component Containers ===== 
+    Different categories: 
+    - regular containers
+    - 'accented containers' shown with background color. 
+
+*/
+QWidget[role="standard"] {
+    background-color: $neutral_accent;
+    border: 1px solid $neutral_accent;
     border-radius: 6px;
-    padding: 4px;
+    padding: 5px 10px;
 }
 
+QWidget[role="accent"] {
+    border: 2px solid $primary;
+    border-radius: 6px;
+    padding: 5px 15px;
+}
 /* ===== Labels ===== */
 QLabel {
     color: $text;              
 }
 
-/* ===== Buttons ==== */
-QPushButton {
+/* ===== Buttons ==== 
+    Different categories: 
+    - buttons that apply an action ('add', 'apply', etc.)
+    - buttons that undo an action ('remove', 'undo', ...)
+    - neutral buttons (no special color wanted here / will be given a neutral color)
+    - accent buttons (an alternative color will be given here). 
+*/
+QPushButton[role="apply"] {
     background-color: $primary;
     color: #FFFFFF; 
     border: 1px solid $primary;
-    border-radius: 6px;
-    padding: 6px 12px; 
  }
 
-QPushButton:hover{
-    background-color: $primary_variant;
+QPushButton[role="undo"] {
+    background-color: $secondary;
+    color: #FFFFFF; 
+    border: 1px solid $secondary;
+ }  
+
+QPushButton[role="neutral"] {
+    background-color: $neutral_accent;
+    color: #FFFFFF; 
+    border: 1px solid $neutral_accent;
+ }  
+
+
+
+QPushButton[role="accent"] {
+    background-color: $accent;
+    color: #FFFFFF; 
+    border: 1px solid $accent;
+ }  
+
+
+
+/*==== Indicators / Checkboxes =====*/ 
+QCheckBox {
+    spacing: 0px;
 }
 
-QPushButton:pressed{
-    background-color: $primary_variant;
+QCheckBox::indicator:unchecked {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.448276 $neutral_accent, stop:0.517241 rgba(255, 255, 255, 255));
+    border: 2px solid white;
 }
 
-/*==== Menu Bar ===== */ 
+QCheckBox::indicator:checked {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.482759 rgba(255, 255, 255, 255), stop:0.492611 $secondary);
+    border: 2px solid white;
+
+}
+
+QCheckBox::indicator:unchecked:hover {
+    border: 2px solid $secondary;
+}
+
+QCheckBox::indicator:checked:hover {
+    border: 2px solid $secondary;
+}
+
+QRadioButton::indicator {
+	background-color: $primary;
+}
+
+
+
+
+
+
+
+/*==== Menu Bar (limited effect on MacOS) ===== */ 
 QMenuBar { 
     background-color: $primary;
-    color: #FFFFFF;
-    spacing: 4px; 
+    color: #FFFFFF; 
 }
 
 QMenuBar::item:selected {
-    background-color: $primary_variant;
+    background-color: $primary;
 }
 
 QMenuBar::item:pressed {
-    background-color: $primary_variant;
+    background-color: $primary;
+}
+
+/*==== Text entry ===== */ 
+QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
+    color: $text;
+    background-color:  #FFFFFF; 
 }

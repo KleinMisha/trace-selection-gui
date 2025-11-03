@@ -10,21 +10,33 @@ from unittest.mock import Mock, patch
 import pytest
 from PyQt6.QtWidgets import QApplication
 
-from app.theme_manager.theme_controller import Model, Theme, ThemeController, View
+from app.theme_manager.theme_controller import (
+    Model,
+    ThemeController,
+    ThemeMode,
+    View,
+)
 
 
 @pytest.mark.parametrize("use_dark_mode", [True, False])
 def test_toggle_dark_mode(use_dark_mode: bool) -> None:
     """check logic after user changed to dark/light mode"""
+
     model = cast(Model, Mock(spec=Model))
     view = cast(View, Mock(spec=View))
     controller = ThemeController(model, view)
 
-    with patch.object(controller, attribute="apply_theme") as mock_apply:
+    with (
+        patch.object(controller, attribute="_apply_theme") as mock_apply,
+        patch.object(
+            controller, attribute="_send_selected_theme_signal"
+        ) as mock_signal_emit,
+    ):
         controller.handle_dark_mode_toggle(use_dark_mode)
-        expected_theme = Theme.DARK if use_dark_mode else Theme.LIGHT
-        assert controller.model.current_theme == expected_theme
+        expected_mode = ThemeMode.DARK if use_dark_mode else ThemeMode.LIGHT
         mock_apply.assert_called_once()
+        assert controller.model.current_theme == expected_mode
+        mock_signal_emit.assert_called_once()
 
 
 def test_applying_qss_stylesheet() -> None:
@@ -50,7 +62,7 @@ def test_applying_qss_stylesheet() -> None:
                 return_value=mock_stylesheet,
             ) as mock_stylesheet_builder,
         ):
-            controller.apply_theme()
+            controller._apply_theme()
             mock_stylesheet_builder.assert_called_once()
             cast(Mock, mock_app.setStyleSheet).assert_called_once_with(mock_stylesheet)
 
@@ -64,5 +76,5 @@ def test_do_not_apply_theme_without_running_app() -> None:
 
     with patch("PyQt6.QtWidgets.QApplication.instance", return_value=mock_app):
         controller.model.stylesheet_template = Path("")
-        controller.apply_theme()
+        controller._apply_theme()
         cast(Mock, mock_app.setStyleSheet).assert_not_called()

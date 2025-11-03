@@ -376,7 +376,6 @@ border:                 2px solid black;</string>
     height:                 40px;
     border-radius:          20px;
 	border: 2px solid black; 
-	background-color: lightgreen;
 }
 
 
@@ -501,8 +500,7 @@ border-radius: 12px;
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(161, 192, 255);
-width: 300 px;
+        <string notr="true">width: 300 px;
 height: 40px;</string>
        </property>
        <property name="text">
@@ -574,7 +572,7 @@ height: 40px;</string>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color:rgb(128, 170, 255);
+        <string notr="true">/*background-color:rgb(128, 170, 255);*/
 width: 300 px;
 height: 40px;</string>
        </property>
@@ -605,7 +603,7 @@ height: 40px;</string>
      <x>0</x>
      <y>0</y>
      <width>2560</width>
-     <height>37</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -5,10 +5,10 @@ Controller: Handles toggling between styles / loading them from files, etc.
 from pathlib import Path
 from typing import Callable, Protocol
 
-from PyQt6.QtCore import QObject
+from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
-from app.state_variables import Theme
+from app.theme_types import Color, Theme, ThemeMode
 
 # Todo: Move constants into a configuration file
 THEMES_DIR = Path(__file__).parent / "themes"
@@ -17,12 +17,13 @@ THEMES_DIR = Path(__file__).parent / "themes"
 class Model(Protocol):
     """API for the ThemeModel"""
 
-    current_theme: Theme
-    color_palette: dict[str, str] | None
+    current_theme: ThemeMode
+    color_palette: dict[str, Color]
     stylesheet_template: Path
 
     def load_palette(self) -> None: ...
     def construct_stylesheet(self) -> str: ...
+    def create_theme(self) -> Theme: ...
 
 
 class View(Protocol):
@@ -33,6 +34,8 @@ class View(Protocol):
 
 class ThemeController(QObject):
     """Adds 'global' appearance selection to the application"""
+
+    _selected_theme_signal = pyqtSignal(Theme)
 
     def __init__(self, model: Model, view: View) -> None:
         super().__init__()
@@ -45,16 +48,24 @@ class ThemeController(QObject):
     # handling signals from the View
     def handle_dark_mode_toggle(self, turn_on: bool) -> None:
         """update the theme/stylesheet in the model. The view will already change appearance (using checkbox widget)"""
-        new_theme = Theme.DARK if turn_on else Theme.LIGHT
-        self.model.current_theme = new_theme
-        self.apply_theme()
+        new_theme_mode = ThemeMode.DARK if turn_on else ThemeMode.LIGHT
+        self.model.current_theme = new_theme_mode
+        self._apply_theme()
+
+        # pass on information to main application:
+        new_theme = self.model.create_theme()
+        self._send_selected_theme_signal(new_theme)
+
+    # allow the main controller to listen
+    def connect_selected_theme_signal(self, callback: Callable[[Theme], None]) -> None:
+        self._selected_theme_signal.connect(callback)
 
     # internal logic
-    def apply_theme(self) -> None:
+    def _apply_theme(self) -> None:
         """
         Change theme on the QApplication level
         ----
-        Stylesheets assigned to individual widgets will overwrite these global stylings
+        Individual Views will be responsible for additional colors to be set in accordance with a theme.
         """
 
         # if the app is running, read the "Qt style sheet (QSS)" and apply it at the top level
@@ -63,3 +74,7 @@ class ThemeController(QObject):
             self.model.load_palette()
             qss_contents = self.model.construct_stylesheet()
             app.setStyleSheet(qss_contents)
+
+    # send signals to MainController
+    def _send_selected_theme_signal(self, theme: Theme) -> None:
+        self._selected_theme_signal.emit(theme)

@@ -4,7 +4,6 @@ NOTE: Tests are simple, but there as a safety valve when refactoring the code
 """
 
 from typing import cast
-from unittest.mock import patch
 
 from PyQt6.QtWidgets import QApplication, QWidget
 
@@ -36,12 +35,3 @@ def test_view_is_placed_in_desired_placeholder(qapp: QApplication) -> None:
     mock_placeholder = QWidget()
     controller = create_label_panel(mock_placeholder, LabelPanelConfig())
     assert cast(QWidget, controller.view).parent() == mock_placeholder
-
-
-def test_initialization_logic(qapp: QApplication) -> None:
-    """test the theme is applied when first building the app (in main.py, via the factory)"""
-    with patch.object(
-        "app.theme_manager.theme_controller.ThemeController", attribute="apply_theme"
-    ) as mock_apply_theme:
-        _ = create_label_panel(None)
-        mock_apply_theme.assert_called_once()

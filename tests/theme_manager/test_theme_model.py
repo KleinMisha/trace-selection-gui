@@ -9,7 +9,7 @@ from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
-from app.theme_manager.theme_model import Theme, ThemeModel
+from app.theme_manager.theme_model import Color, ThemeMode, ThemeModel
 
 
 @pytest.fixture
@@ -18,8 +18,8 @@ def stylesheet() -> str:
     return "QWidget {color: $primary, background: $secondary}"
 
 
-@pytest.mark.parametrize("theme", [theme for theme in Theme])
-def test_loading_palette(theme: Theme, stylesheet: str) -> None:
+@pytest.mark.parametrize("theme", [theme for theme in ThemeMode])
+def test_loading_palette(theme: ThemeMode, stylesheet: str) -> None:
     """Check that the path used to load the palette contains the chosen theme"""
     with tempfile.NamedTemporaryFile(mode="w+", suffix=".qss") as temp_qss:
         temp_qss.write(stylesheet)
@@ -46,13 +46,13 @@ def test_loading_palette(theme: Theme, stylesheet: str) -> None:
 def test_constructing_stylesheet(stylesheet: str) -> None:
     """Check the template is correctly replaced by the actual values"""
 
-    mock_palette = {"primary": "#FFFFFF", "secondary": "#000000"}
+    mock_palette: dict[str, Color] = {"primary": "#FFFFFF", "secondary": "#000000"}
     expected_stylesheet = "QWidget {color: #FFFFFF, background: #000000}"
     with tempfile.NamedTemporaryFile(mode="w+", suffix=".qss") as temp_qss:
         temp_qss.write(stylesheet)
         temp_qss.flush()
         model = ThemeModel(
-            current_theme=Theme.LIGHT,
+            current_theme=ThemeMode.LIGHT,
             stylesheet_template=Path(temp_qss.name),
             color_palette=mock_palette,
         )

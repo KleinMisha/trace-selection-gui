@@ -10,7 +10,7 @@ from typing import Any, Self, Type
 
 from app.keyboard_shortcuts import clean_shortcut
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
-from app.type_definitions import Color
+from app.theme_types import Color
 
 
 @dataclass

@@ -25,7 +25,7 @@ from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.state_variables import EventSeverity, LightState
-from app.type_definitions import Color
+from app.theme_types import Color, SupportsThemeChanges, Theme
 
 
 class ComponentControllers(TypedDict):
@@ -191,8 +191,18 @@ class MainController:
         self.components["interactive_plot"].connect_line_added_to_plot(
             self.handle_line_added_in_plot
         )
+        self.components["theme_manager"].connect_selected_theme_signal(
+            self.handle_theme_selection
+        )
 
     # main app logic
+    def apply_theme(self, theme: Theme) -> None:
+        """let main view adjust colors according to selected theme"""
+        # NOTE: The 'OR' operator allows you to take the first value if it exists, otherwise will default to the one from the theme
+        color_on = self.config.color_unsaved_changes or theme.accent
+        color_off = self.config.color_no_unsaved_changes or "#FFFFFF"
+        self.view.set_indicator_saved_changes_colors(color_on, color_off)
+
     def apply_config(self) -> None:
         """apply settings to model(s) and view(s)"""
 
@@ -543,6 +553,16 @@ class MainController:
         self.view.open_message_box(
             EventSeverity.INFO, "Coming soon... (not implemented yet)"
         )
+
+    def handle_theme_selection(self, theme: Theme) -> None:
+        """
+        Triggered when toggle is used to switch between dark/light modes
+        -----
+        Tells the other components to apply the current theme when applicable
+        """
+        for component in self.components:
+            if isinstance(component, SupportsThemeChanges):
+                component.apply_theme(theme)
 
     # file-handling logic
     def _process_next_request(self) -> None:

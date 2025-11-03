@@ -13,6 +13,7 @@ from app.main_app.component_controller_protocols import (
     ItemListController,
     LabelPanelController,
     SectionsPanelController,
+    ThemeController,
 )
 from app.main_app.main_controller import (
     ComponentControllers,
@@ -44,6 +45,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
     mock_plot_ctrl = create_autospec(InteractivePlotController, instance=True)
     mock_label_ctrl = create_autospec(LabelPanelController, instance=True)
     mock_sections_ctrl = create_autospec(SectionsPanelController, instance=True)
+    mock_theme_ctrl = create_autospec(ThemeController, instance=True)
 
     # mock the item list factory
     def mock_factory(item_list: list[str]) -> ItemListController:
@@ -62,6 +64,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
         "label_panel": mock_label_ctrl,
         "sections_panel": mock_sections_ctrl,
         "item_list": mock_item_list_factory,
+        "theme_manager": mock_theme_ctrl,
     }
 
 

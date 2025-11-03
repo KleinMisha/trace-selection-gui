@@ -1,12 +1,10 @@
 {
-    "primary": "#2980B9",
-    "primary_variant": "#1F639B",
-    "secondary": "#00C2CB",
-    "secondary_variant":"#009AA2",
-    "tertiary": "#F1C40F",
-    "tertiary_variant": "#D4AC0D", 
-    "background": "#FFFFFF",
-    "surface": "#F5F5F5",
-    "text": "#000000",
-    "borders":"#E0E0E0"
-}
+    "primary": "#03DAC5",
+    "secondary": "#00ACC1",
+    "neutral_accent": "#546E7A",
+    "background": "#ECECEC",
+    "accent": "#FFCF17",
+    "accent_dark": "#EECD5A",  
+    "text": "#000000"
+  }
+

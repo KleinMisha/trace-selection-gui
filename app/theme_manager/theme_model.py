@@ -3,20 +3,24 @@ Model knows of the available themes and style sheets
 """
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
-from app.state_variables import Theme
+from app.theme_types import Color, Theme, ThemeMode
 
 
 @dataclass
 class ThemeModel:
     """Handles theme selection"""
 
-    current_theme: Theme
+    current_theme: ThemeMode
     stylesheet_template: Path
-    color_palette: dict[str, str] | None = None
+    color_palette: dict[str, Color] = field(default_factory=dict)
+
+    def create_theme(self) -> Theme:
+        """use the palette information to create the Theme object (the information send by the Controller to other parts of App, via MainApp)"""
+        return Theme(name=self.current_theme.value, **self.color_palette)
 
     def load_palette(self) -> None:
         """Load the color palette from the JSON file"""
@@ -32,9 +36,5 @@ class ThemeModel:
         """Add the colors from the selected palette into the base style sheet"""
         if not self.color_palette:
             self.load_palette()
-
-        # tell typechecker (and developers) that color palette will be set by the load_palette() method.
-        assert self.color_palette is not None
-
         template = Template(self.stylesheet_template.read_text())
         return template.substitute(self.color_palette)
