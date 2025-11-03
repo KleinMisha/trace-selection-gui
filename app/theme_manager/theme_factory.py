@@ -3,11 +3,11 @@ from pathlib import Path
 from PyQt6.QtWidgets import QWidget
 
 from app.core.component_factory_helpers import fill_component_to_placeholder
+from app.core.theme_types import ThemeMode
 from app.theme_manager.theme_config import ThemeConfig
 from app.theme_manager.theme_controller import ThemeController
 from app.theme_manager.theme_model import ThemeModel
 from app.theme_manager.theme_view import ThemeView
-from app.theme_types import ThemeMode
 
 # todo: move into configuration file / object
 BASE_QSS_FILE = Path(__file__).parent / "themes" / "base.qss"

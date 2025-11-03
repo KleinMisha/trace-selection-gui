@@ -14,6 +14,8 @@ from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.core.exceptions import with_error_handling
 from app.core.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
+from app.core.state_variables import EventSeverity, LightState
+from app.core.theme_types import Color, SupportsThemeChanges, Theme
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
@@ -24,8 +26,6 @@ from app.main_app.component_controller_protocols import (
 from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
-from app.core.state_variables import EventSeverity, LightState
-from app.theme_types import Color, SupportsThemeChanges, Theme
 
 
 class ComponentControllers(TypedDict):

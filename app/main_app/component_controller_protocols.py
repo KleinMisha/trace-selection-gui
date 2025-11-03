@@ -7,8 +7,8 @@ NOTE: Here you define stripped-down versions of the controllers with only those 
 
 from typing import Any, Callable, Optional, Protocol, runtime_checkable
 
+from app.core.theme_types import SupportsThemeChanges, Theme
 from app.main_app.main_model import Trace
-from app.theme_types import SupportsThemeChanges, Theme
 
 
 @runtime_checkable

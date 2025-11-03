@@ -8,8 +8,8 @@ from typing import Callable, Protocol
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
+from app.core.theme_types import Color, Theme, ThemeMode
 from app.theme_manager.theme_config import ThemeConfig
-from app.theme_types import Color, Theme, ThemeMode
 
 # Todo: Move constants into a configuration file
 THEMES_DIR = Path(__file__).parent / "themes"

@@ -11,11 +11,11 @@ from PyQt6.QtWidgets import QWidget
 
 from app.core.keyboard_shortcuts import AcceptsShortCut
 from app.core.state_variables import LightState
+from app.core.theme_types import Color
 from app.label_assignment.label_assignment_view_ui import Ui_LabelAssignment
 from app.label_assignment.label_panel_shortcut_items import (
     LabelPanelShortcutID as ShortcutID,
 )
-from app.theme_types import Color
 
 
 class LabelPanelView(QWidget, Ui_LabelAssignment):

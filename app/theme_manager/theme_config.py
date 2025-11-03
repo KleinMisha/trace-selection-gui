@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self, Type
 
-from app.theme_types import ThemeMode
+from app.core.theme_types import ThemeMode
 
 
 @dataclass
