@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from time_trace_tools.data_types.magnetic_tweezers_trace import MagneticTweezersTrace
 
-from app.exceptions import MissingExperimentError
+from app.core.exceptions import MissingExperimentError
 from app.interactive_plot.plot_model import InteractivePlotModel
 
 

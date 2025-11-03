@@ -7,7 +7,7 @@ from unittest.mock import Mock, create_autospec
 
 import pytest
 
-from app.exceptions import (
+from app.core.exceptions import (
     ApplicationError,
     ErrorController,
     FileHandlingError,
