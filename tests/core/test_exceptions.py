@@ -15,7 +15,7 @@ from app.core.exceptions import (
     UnsupportedFileTypeError,
     with_error_handling,
 )
-from app.state_variables import EventSeverity
+from app.core.state_variables import EventSeverity
 
 exception_types = [
     ApplicationError,

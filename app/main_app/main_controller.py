@@ -24,7 +24,7 @@ from app.main_app.component_controller_protocols import (
 from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
-from app.state_variables import EventSeverity, LightState
+from app.core.state_variables import EventSeverity, LightState
 from app.theme_types import Color, SupportsThemeChanges, Theme
 
 

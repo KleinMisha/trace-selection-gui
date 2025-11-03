@@ -8,6 +8,7 @@ from unittest.mock import Mock, PropertyMock, call, create_autospec, patch
 
 import pytest
 
+from app.core.state_variables import EventSeverity
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
@@ -24,7 +25,6 @@ from app.main_app.main_controller import (
 )
 from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
-from app.state_variables import EventSeverity
 
 
 @pytest.fixture

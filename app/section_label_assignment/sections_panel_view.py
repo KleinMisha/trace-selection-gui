@@ -9,11 +9,11 @@ from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from app.core.keyboard_shortcuts import AcceptsShortCut
+from app.core.state_variables import LightState
 from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )
 from app.section_label_assignment.sections_panel_view_ui import Ui_SectionsPanel
-from app.state_variables import LightState
 from app.theme_types import Color
 
 
