@@ -47,22 +47,28 @@ QLabel {
     - neutral buttons (no special color wanted here / will be given a neutral color)
     - accent buttons (an alternative color will be given here). 
 */
+QPushButton{
+    border-right: 3px $neutral_accent;
+    border-bottom: 3px $neutral_accent;
+
+}
+QPushButton:pressed{
+    margin-top: 5px;
+}
+
 QPushButton[role="apply"] {
     background-color: $primary;
     color: #FFFFFF; 
-    border: 1px solid $primary;
  }
 
 QPushButton[role="undo"] {
     background-color: $secondary;
     color: #FFFFFF; 
-    border: 1px solid $secondary;
  }  
 
 QPushButton[role="neutral"] {
     background-color: $neutral_accent;
     color: #FFFFFF; 
-    border: 1px solid $neutral_accent;
  }  
 
 
@@ -70,7 +76,6 @@ QPushButton[role="neutral"] {
 QPushButton[role="accent"] {
     background-color: $accent;
     color: #FFFFFF; 
-    border: 1px solid $accent;
  }  
 
 
