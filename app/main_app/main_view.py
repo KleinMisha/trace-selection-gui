@@ -3,20 +3,13 @@ from pathlib import Path
 from typing import Callable
 
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
+from app.keyboard_shortcuts import AcceptsShortCut
+from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.main_app.main_view_ui import Ui_MainWindow
 from app.state_variables import EventSeverity, LightState
-
-# TODO: Move this into a configuration file
-KEYBOARD_SHORTCUTS = {
-    "actionOpen": ("Open...", "Ctrl+O"),
-    "actionSave": ("Save...", "Ctrl+S"),
-    "actionSaveAs": ("Save as...", "Ctrl+Shift+S"),
-}
-COLOR_ON = "coral"
-COLOR_OFF = "white"
+from app.theme_types import Color
 
 
 class MainView(QMainWindow, Ui_MainWindow):
@@ -58,43 +51,23 @@ class MainView(QMainWindow, Ui_MainWindow):
         )
         self.helpDocsButton.clicked.connect(self._send_go_to_help_docs_signal)
 
+        # store the colors to toggle the indicator light (allows responding to theme adjustments / configuration value changes)
+        # NOTE: These defaults are purely here for testing the View by itself (now does not require a config to work)
+        self._unsaved_changes_on_color: Color = "white"
+        self._unsaved_changes_off_color: Color = "coral"
+
     def build_ui(self) -> None:
         """Only build the parts specific to the mainView. Placing the components will be done in the mainController"""
         self.setupUi(self)
-
-        # setting operating-system agnostic keyboard shortcuts / appropriate label in the MenuBar
-        self._assign_keyboard_shortcut(
-            self.actionOpen,
-            action_in_words=KEYBOARD_SHORTCUTS["actionOpen"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionOpen"][1],
-        )
-        self._assign_keyboard_shortcut(
-            self.actionSave,
-            action_in_words=KEYBOARD_SHORTCUTS["actionSave"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionSave"][1],
-        )
-        self._assign_keyboard_shortcut(
-            self.actionSaveAs,
-            action_in_words=KEYBOARD_SHORTCUTS["actionSaveAs"][0],
-            shortcut=KEYBOARD_SHORTCUTS["actionSaveAs"][1],
-        )
-
         # global title of the window
         self.setWindowTitle("Trace Selection")
 
-    @staticmethod
-    def _assign_keyboard_shortcut(action: QAction, shortcut: str, action_in_words: str):
-        """
-        Convert the keyboard shortcut into a OS-agnostic version using builtin Qt methods
-        ?Define this as a regular function at the top of this file? I thought this is still best as it will never be called outside this class anyways
-        """
-        key_sequence = QKeySequence(shortcut)
-        action.setShortcut(key_sequence)
-        key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
-        display_text = f"{action_in_words}\t{key_icons}"
-        action.setText(display_text)
+        # Design according to theme:
+        self.NextTraceButton.setProperty("role", "apply")
+        self.previousTraceButton.setProperty("role", "undo")
+        self.helpDocsButton.setProperty("role", "accent")
 
-    # UI-logic
+    # UI-logic / exposed to controller
     def display_trace_id(self, name: str) -> None:
         """
         Programmatically updates the displayed label.
@@ -113,15 +86,22 @@ class MainView(QMainWindow, Ui_MainWindow):
         """the Qt progressbar expects integer values. Round the input percentage."""
         self.progressBar.setValue(round(value))
 
+    def set_indicator_saved_changes_colors(
+        self, color_on: Color, color_off: Color
+    ) -> None:
+        """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
+        self._unsaved_changes_on_color = color_on
+        self._unsaved_changes_off_color = color_off
+
     def toggle_indicator_saved_changes(self, state: LightState) -> None:
         """
         Adjust the part in the stylesheet that determines the background color of the label.
         NOTE: This 'light' is simply 'a text label without any text displayed'
         """
         if state == LightState.ON:
-            color = COLOR_ON
+            color = self._unsaved_changes_on_color
         elif state == LightState.OFF:
-            color = COLOR_OFF
+            color = self._unsaved_changes_off_color
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.UnsavedChangesIndicator.styleSheet()
@@ -185,6 +165,16 @@ class MainView(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Warning", message)
         elif msg_type == EventSeverity.ERROR:
             QMessageBox.critical(self, "Error", message)
+
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]:
+        """Dictionary with all Qt Actions and Widgets to which a shortcut should get assigned."""
+        return {
+            ShortcutID.MENU_FILE_OPEN: self.actionOpen,
+            ShortcutID.MENU_FILE_SAVE: self.actionSave,
+            ShortcutID.MENU_FILE_SAVE_AS: self.actionSaveAs,
+            ShortcutID.NEXT_TRACE: self.NextTraceButton,
+            ShortcutID.PREVIOUS_TRACE: self.previousTraceButton,
+        }
 
     # Connect callbacks of controller to emitted signals
     def connect_next_trace(self, callback: Callable[[], None]) -> None:

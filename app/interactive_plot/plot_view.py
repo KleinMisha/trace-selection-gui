@@ -25,9 +25,6 @@ Color: TypeAlias = Union[
     np.ndarray,  # numpy array
 ]
 
-# TODO: Move this into a configuration file
-DEFAULT_COLOR = "skyblue"
-
 
 class InterActivePlotView(QWidget, Ui_InteractivePlot):
     _left_mouse_button_signal = pyqtSignal(float, float)
@@ -50,6 +47,11 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         self.lockToggle.toggled.connect(self._send_lock_clicks_toggled_signal)
         self.canvas.mpl_connect("button_press_event", self._send_mouse_click_signal)
 
+        # store configurable colors internally, to make this View independent of the configuration existing and working.
+        # NOTE: These defaults are purely here for testing the View by itself (now does not require a config to work)
+        self._data_line_color: Color = "black"
+        self._vertical_line_color: Color = "coral"
+
     def build_ui(self) -> None:
         """use the (compiled) UI file to build things, such that this code knows about the variable names in VSCode"""
         self.setupUi(self)
@@ -68,6 +70,11 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
         plot_layout.addWidget(self.toolbar)
 
     # logic to change the view
+    def set_plot_colors(self, color_data: Color, color_vert_line: Color) -> None:
+        """set the colors for the indicator when the light is turned on/off. Will be eventually called upon theme changes"""
+        self._data_line_color = color_data
+        self._vertical_line_color = color_vert_line
+
     def update_figure(self, title: Optional[str] = None) -> None:
         """(re)-draw
         #todo: make font sizes adjustable and have it inside a configuration file?
@@ -88,14 +95,10 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
     def show_t_vs_z_plot(
         self, t: NDArray[np.floating], z: NDArray[np.floating]
     ) -> None:
-        self.ax.plot(t, z)
+        self.ax.plot(t, z, color=self._data_line_color)
 
-    def show_line_in_plot(
-        self, time_point: float, color: Optional[Color] = None
-    ) -> None:
-        if color is None:
-            color = DEFAULT_COLOR
-        self.ax.axvline(time_point, linestyle="dashed", color=color)
+    def show_line_in_plot(self, time_point: float) -> None:
+        self.ax.axvline(time_point, linestyle="dashed", color=self._vertical_line_color)
 
     def clear_last_line_from_plot(self) -> None:
         """use the _axesvline property in matplotlib to tell if the added line is a plt.axvline() vs the regular plt.plot() call"""

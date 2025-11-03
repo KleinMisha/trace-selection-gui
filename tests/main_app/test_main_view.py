@@ -13,18 +13,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QApplication
 from pytestqt.qtbot import QtBot
 
-from app.main_app.main_view import (
-    COLOR_OFF,
-    COLOR_ON,
-    KEYBOARD_SHORTCUTS,
-    EventSeverity,
-    LightState,
-    MainView,
-)
+from app.main_app.main_view import EventSeverity, LightState, MainView
 from app.main_app.main_view import QFileDialog as ViewFileDialog
 from app.main_app.main_view import QMessageBox as ViewMessageBox
 
@@ -62,6 +54,7 @@ def test_trigger_file_save_signal(qtbot: QtBot) -> None:
 
     # Create and register the view
     view = MainView()
+
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
         view.show()
@@ -83,6 +76,7 @@ def test_trigger_file_save_as_signal(qtbot: QtBot) -> None:
 
     # Create and register the view
     view = MainView()
+
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
         view.show()
@@ -103,6 +97,7 @@ def test_trigger_file_import_labels_signal(qtbot: QtBot) -> None:
 
     # Create and register the view
     view = MainView()
+
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
         view.show()
@@ -123,42 +118,13 @@ def test_trigger_file_import_sections_signal(qtbot: QtBot) -> None:
 
     # Create and register the view
     view = MainView()
+
     qtbot.addWidget(view)
     with qtbot.wait_exposed(view):
         view.show()
     view.connect_menu_file_import_sections(mock_handler)
     view.actionImportSectionLabels.trigger()
     assert received_signals == ["Import sections..."]
-
-
-def test_keyboard_shortcuts(qtbot: QtBot) -> None:
-    """Simulate using keyboard shortcuts"""
-    # Ensure a QApplication exists
-    _ = QApplication.instance() or QApplication([])
-
-    view = MainView()
-    qtbot.addWidget(view)
-    with qtbot.wait_exposed(view):
-        view.show()
-
-    for action_name, (action_in_words, expected_shortcut) in KEYBOARD_SHORTCUTS.items():
-        # get the correct QAction
-        action: QAction = getattr(view, action_name)
-
-        # Simple tests: Check that the display text and shortcuts are assigned as intended
-        key_sequence = QKeySequence(expected_shortcut)
-        key_icons = key_sequence.toString(QKeySequence.SequenceFormat.NativeText)
-        expected_display_text = f"{action_in_words}\t{key_icons}"
-        assert action.shortcut().toString() == expected_shortcut
-        assert action.text() == expected_display_text
-
-        # Now connect a mock signal handler to the action and simulate sending the shortcut user input
-        primary_key = key_sequence[0].key()
-        mod_keys = key_sequence[0].keyboardModifiers()
-        mock_handler = Mock()
-        action.triggered.connect(mock_handler)
-        qtbot.keyClick(view.window(), primary_key, modifier=mod_keys)
-        mock_handler.assert_called_once()
 
 
 def test_next_trace_button(qtbot: QtBot) -> None:
@@ -168,6 +134,7 @@ def test_next_trace_button(qtbot: QtBot) -> None:
         received_signals.append("next trace")
 
     view = MainView()
+
     view.connect_next_trace(mock_handler)
     qtbot.add_widget(view)
     qtbot.mouseClick(view.NextTraceButton, Qt.MouseButton.LeftButton)
@@ -181,6 +148,7 @@ def test_prev_trace_button(qtbot: QtBot) -> None:
         received_signals.append("previous trace")
 
     view = MainView()
+
     view.connect_prev_trace(mock_handler)
     qtbot.mouseClick(view.previousTraceButton, Qt.MouseButton.LeftButton)
     assert received_signals == ["previous trace"]
@@ -189,29 +157,31 @@ def test_prev_trace_button(qtbot: QtBot) -> None:
 def test_indicator_untracked_changes_on() -> None:
     """check the output stylesheet's content"""
     view = MainView()
+
     view.toggle_indicator_saved_changes(LightState.ON)
     new_styling = view.UnsavedChangesIndicator.styleSheet()
 
-    # TODO: use the configuration file ?
-    # ? Check what is best-practice when doing this, as we actually do not care about the precise color, just that it sets it accordingly
-    pattern_to_find = rf"background-color\s*: ({COLOR_ON}|{COLOR_OFF});"
+    color_on = view._unsaved_changes_on_color
+    color_off = view._unsaved_changes_off_color
+    pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
-    assert match.group(1) == COLOR_ON
+    assert match.group(1) == color_on
 
 
 def test_indicator_untracked_changes_off() -> None:
     """check the output stylesheet's content"""
     view = MainView()
+
     view.toggle_indicator_saved_changes(LightState.OFF)
     new_styling = view.UnsavedChangesIndicator.styleSheet()
 
-    # TODO: use the configuration file ?
-    # ? Check what is best-practice when doing this, as we actually do not care about the precise color, just that it sets it accordingly
-    pattern_to_find = rf"background-color\s*: ({COLOR_ON}|{COLOR_OFF});"
+    color_on = view._unsaved_changes_on_color
+    color_off = view._unsaved_changes_off_color
+    pattern_to_find = rf"background-color\s*: ({color_on}|{color_off});"
     match = re.search(pattern_to_find, new_styling)
     assert match is not None
-    assert match.group(1) == COLOR_OFF
+    assert match.group(1) == color_off
 
 
 @pytest.mark.parametrize(
@@ -223,10 +193,14 @@ def test_indicator_untracked_changes_off() -> None:
     ],
 )
 def test_opening_the_correct_message_box(
-    message_box: EventSeverity, message: str, title: str, expected_method: str
+    message_box: EventSeverity,
+    message: str,
+    title: str,
+    expected_method: str,
 ) -> None:
     """Use unittest.mock.patch to mock the correct method depending on the input"""
     view = MainView()
+
     with patch.object(target=ViewMessageBox, attribute=expected_method) as mock_msg_box:
         view.open_message_box(message_box, message)
         mock_msg_box.assert_called_once_with(view, title, message)
@@ -234,6 +208,7 @@ def test_opening_the_correct_message_box(
 
 def test_opening_the_correct_file() -> None:
     view = MainView()
+
     with (
         patch.object(
             target=ViewFileDialog,
@@ -252,6 +227,7 @@ def test_opening_the_correct_file() -> None:
 
 def test_saving_to_the_correct_file() -> None:
     view = MainView()
+
     with (
         patch.object(
             target=ViewFileDialog,

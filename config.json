@@ -1,0 +1,56 @@
+{
+    "main": {
+        "colors": {
+            "unsaved_changes": "coral",
+            "no_unsaved_changes": "white"
+        },
+        "keyboard_shortcuts": {
+            "menu.file.open": "Ctrl+O",
+            "menu.file.save": "Ctrl+S",
+            "menu.file.save_as": "Ctrl+Shift+S",
+            "next_trace": "Ctrl+Right",
+            "previous_trace": "Ctrl+Left"
+        },
+        "default_file_paths": {
+            "labels": "",
+            "section_labels": ""
+        }
+    },
+    "plot": {
+        "min_time": 0.0,
+        "max_time": 3600.0,
+        "min_height": -1.0,
+        "max_height": 1.0
+    },
+    "label_assignment": {
+        "colors": {
+            "assigned": "green",
+            "unassigned": "white"
+        },
+        "keyboard_shortcuts": {
+            "assign_label": "Ctrl+=",
+            "unassign_label": "Ctrl+-",
+            "next_label": "Ctrl+Up",
+            "previous_label": "Ctrl+Down"
+        }
+    },
+    "section_assignment": {
+        "colors": {
+            "assigned": "green",
+            "unassigned": "white"
+        },
+        "keyboard_shortcuts": {
+            "assign_label": "Alt+=",
+            "unassign_label": "Alt+-",
+            "next_section": "Alt+Shift+Up",
+            "previous_section": "Alt+Shift+Down",
+            "next_label": "Alt+Up",
+            "previous_label": "Alt+Down"
+        }
+    },
+    "theme": {
+        "default_theme" : "dark",
+        "themes_dir": "./app/theme_manager/themes" ,
+        "template_stylesheet": "./app/theme_manager/themes/base.qss"  
+    }
+}

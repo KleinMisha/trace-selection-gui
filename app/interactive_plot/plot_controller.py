@@ -2,29 +2,15 @@
 Controller: handle user interaction events (signals received from the View) and pass the View the appropriate data from the Model to then be shown in the View
 """
 
-from typing import Callable, Optional, Protocol, Sequence, TypeAlias, Union
+from typing import Callable, Optional, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.interactive_plot.plot_config import InterActivePlotConfig
 from app.interactive_plot.plot_model import TraceData
-
-# TODO: Move the following stuff into some configuration file
-DEFAULT_Z_MIN = -1.0
-DEFAULT_Z_MAX = 1.0
-DEFAULT_T_MIN = 0.0
-DEFAULT_T_MIN = 3600.0
-
-
-# Type hint for anything that is a proper color input.
-Color: TypeAlias = Union[
-    str,  # "red", "#FF00FF", "0.5", "C0"
-    tuple[float, float, float],  # RGB
-    tuple[float, float, float, float],  # RGBA
-    Sequence[float],  # list/array of floats
-    np.ndarray,  # numpy array
-]
+from app.theme_types import Color, Theme
 
 
 class Model(Protocol):
@@ -71,15 +57,14 @@ class View(Protocol):
     """Protocol for the InteractivePlot View"""
 
     # logic to change the view
+    def set_plot_colors(self, color_data: Color, color_vert_line: Color) -> None: ...
     def update_figure(self, title: Optional[str] = None) -> None: ...
     def adjust_t_range(self, min_value: float, max_value: float): ...
     def adjust_z_range(self, min_value: float, max_value: float): ...
     def show_t_vs_z_plot(
         self, t: NDArray[np.floating], z: NDArray[np.floating]
     ) -> None: ...
-    def show_line_in_plot(
-        self, time_point: float, color: Optional[Color] = None
-    ) -> None: ...
+    def show_line_in_plot(self, time_point: float) -> None: ...
     def clear_last_line_from_plot(self) -> None: ...
     def clear_all_lines_from_plot(self) -> None: ...
     def clear_figure(self) -> None: ...
@@ -103,10 +88,11 @@ class InteractivePlotController(QObject):
     _line_added_to_plot_signal = pyqtSignal(float)
     _line_removed_from_plot_signal = pyqtSignal()
 
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: Model, view: View, config: InterActivePlotConfig) -> None:
         super().__init__()
         self.model = model
         self.view = view
+        self.config = config
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_left_mouse_click(self.handle_left_mouse_click)
@@ -125,8 +111,10 @@ class InteractivePlotController(QObject):
         self, trace: TraceData, section_boundaries: list[int]
     ) -> None:
         """(Re)set the data known to the model and plot the new trace + previously selected sections"""
+
         self.model.trace_data = trace
         self.view.clear_figure()
+
         self.view.show_t_vs_z_plot(trace.t, trace.z)
         for frame_nr in section_boundaries:
             time_point = self.model.get_time_point_by_index(frame_nr)
@@ -137,6 +125,17 @@ class InteractivePlotController(QObject):
     def data_is_loaded(self) -> bool:
         """Convenience method used both in this controller + the main controller to guard against actions at startup"""
         return self.model.has_data()
+
+    def apply_theme(self, theme: Theme) -> None:
+        """
+        Sets appropriate colors: Defaults will come from the theme.
+        """
+        # NOTE: for the time trace itself, having this color depend on the theme makes less sense I think: just default to black
+        vert_line_color = self.config.vertical_line_color or theme.accent
+        data_color = self.config.data_line_color or "black"
+        self.view.set_plot_colors(
+            color_data=data_color, color_vert_line=vert_line_color
+        )
 
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:
@@ -155,7 +154,6 @@ class InteractivePlotController(QObject):
             return
 
         t_data_point, _ = self.model.find_nearest_data_point(x_click)
-        # TODO: use the main controller to pass the appropriate color
         self.view.show_line_in_plot(t_data_point)
         self.view.update_figure()
 
@@ -182,40 +180,43 @@ class InteractivePlotController(QObject):
         self._send_line_removed_from_plot_signal()
 
     def handle_adjusted_z_min(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.z_min = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.min_height)
+        if new_value is not None:
+            self.model.z_min = new_value
             z_min = self.model.z_min
             z_max = self.model.z_max
             self.view.adjust_z_range(min_value=z_min, max_value=z_max)
             self.view.update_figure()
 
     def handle_adjusted_z_max(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.z_max = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.max_height)
+        if new_value is not None:
+            self.model.z_max = new_value
             z_min = self.model.z_min
             z_max = self.model.z_max
             self.view.adjust_z_range(min_value=z_min, max_value=z_max)
             self.view.update_figure()
 
     def handle_adjusted_t_min(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
-
-        if self._is_valid_number(entry):
-            self.model.t_min = float(entry)
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+        new_value = self._get_value_or_default(entry, default=self.config.min_time)
+        if new_value is not None:
+            self.model.t_min = new_value
             t_min = self.model.t_min
             t_max = self.model.t_max
             self.view.adjust_t_range(min_value=t_min, max_value=t_max)
             self.view.update_figure()
 
     def handle_adjusted_t_max(self, entry: str) -> None:
-        """triggers when done adjusting. For a smooth working UI, do nothing unless the entered value is valid"""
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
 
-        if self._is_valid_number(entry):
-            self.model.t_max = float(entry)
+        new_value = self._get_value_or_default(entry, default=self.config.max_time)
+        if new_value is not None:
+            self.model.t_max = new_value
             t_min = self.model.t_min
             t_max = self.model.t_max
             self.view.adjust_t_range(min_value=t_min, max_value=t_max)
@@ -238,6 +239,11 @@ class InteractivePlotController(QObject):
 
     def connect_line_removed_from_plot(self, callback: Callable[[], None]) -> None:
         self._line_removed_from_plot_signal.connect(callback)
+
+    # used internally
+    def _get_value_or_default(self, entry: str, default: float | None) -> float | None:
+        """Get float from entry if valid, otherwise return default."""
+        return float(entry) if self._is_valid_number(entry) else default
 
     @staticmethod
     def _is_valid_number(entry: str) -> bool:

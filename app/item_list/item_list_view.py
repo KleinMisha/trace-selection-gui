@@ -36,6 +36,10 @@ class PyQtView(QWidget, Ui_ItemListWidget):
         self.setWindowTitle(self._title)
         self.setupUi(self)
 
+        # button design according to theme:
+        self.add_button.setProperty("role", "apply")
+        self.remove_button.setProperty("role", "undo")
+
     def display_list(self, labels: list[str]) -> None:
         """Updates the displayed list of items"""
         self.list_box.clear()

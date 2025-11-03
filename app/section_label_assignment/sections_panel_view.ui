@@ -56,7 +56,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -145,7 +144,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QToolButton" name="itemlistButton">
+       <widget class="QPushButton" name="itemlistButton">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -175,7 +174,6 @@
       <property name="font">
        <font>
         <pointsize>15</pointsize>
-        <weight>75</weight>
         <bold>true</bold>
         <underline>false</underline>
        </font>
@@ -198,7 +196,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
           <underline>false</underline>
          </font>
@@ -245,7 +242,6 @@
         <property name="font">
          <font>
           <pointsize>15</pointsize>
-          <weight>75</weight>
           <bold>true</bold>
          </font>
         </property>
@@ -342,9 +338,10 @@
          </font>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(168, 226, 125);
+         <string notr="true">/*background-color: rgb(168, 226, 125);
 padding: 5;
-color:  black; </string>
+color:  black; 
+*/</string>
         </property>
         <property name="text">
          <string>add</string>
@@ -371,9 +368,10 @@ color:  black; </string>
          </font>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(238, 0, 68);
+         <string notr="true">/*background-color: rgb(238, 0, 68);
 padding: 5;
-color:  white; </string>
+color:  white; */
+</string>
         </property>
         <property name="text">
          <string>remove</string>

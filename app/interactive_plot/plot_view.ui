@@ -30,7 +30,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Century Gothic</family>
+     <family>.AppleSystemUIFont</family>
     </font>
    </property>
    <property name="styleSheet">
@@ -123,26 +123,11 @@ QCheckBox::indicator {
     width: 100px;
     height: 50px;
     border-radius: 25px;
-    background-color: #ccc;
     border: 2px solid black;
-    subcontrol-position: center;  /* Center the indicator */
+    subcontrol-position: center; 
 }
 
-QCheckBox::indicator:checked {
-    background-color: rgb(255, 207, 23);
-}
-
-QCheckBox::indicator:unchecked {
-    background-color: white;
-}
-
-QCheckBox::indicator:hover {
-    background-color: #bbb;
-}
-
-QCheckBox::indicator:checked:hover {
-    background-color:  rgb(238, 205, 90);
-}</string>
+</string>
       </property>
       <property name="text">
        <string/>
@@ -163,6 +148,8 @@ QCheckBox::indicator:checked:hover {
      </widget>
     </item>
    </layout>
+   <zorder>label_5</zorder>
+   <zorder>lockToggle</zorder>
   </widget>
  </widget>
  <resources/>

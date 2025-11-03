@@ -2,24 +2,24 @@
 Tests main controller's logic: Are signals correctly passed between controllers?
 """
 
-from enum import Enum
 from pathlib import Path
 from typing import Any, cast
 from unittest.mock import Mock, PropertyMock, call, create_autospec, patch
 
 import pytest
 
-from app.item_list.item_list_factory import create_item_list
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
     LabelPanelController,
     SectionsPanelController,
+    ThemeController,
 )
 from app.main_app.main_controller import (
     ComponentControllers,
     FileAction,
     FileType,
+    MainConfig,
     MainController,
 )
 from app.main_app.main_model import MainModel
@@ -45,6 +45,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
     mock_plot_ctrl = create_autospec(InteractivePlotController, instance=True)
     mock_label_ctrl = create_autospec(LabelPanelController, instance=True)
     mock_sections_ctrl = create_autospec(SectionsPanelController, instance=True)
+    mock_theme_ctrl = create_autospec(ThemeController, instance=True)
 
     # mock the item list factory
     def mock_factory(item_list: list[str]) -> ItemListController:
@@ -63,6 +64,7 @@ def components(monkeypatch: pytest.MonkeyPatch) -> ComponentControllers:
         "label_panel": mock_label_ctrl,
         "sections_panel": mock_sections_ctrl,
         "item_list": mock_item_list_factory,
+        "theme_manager": mock_theme_ctrl,
     }
 
 
@@ -71,7 +73,7 @@ def main_controller(
     model: MainModel, view: MainView, components: ComponentControllers
 ) -> MainController:
     """Moved the creation of the MainController into this fixture to avoid passing an entire grocery list of arguments into all the test functions"""
-    return MainController(model, view, components=components)
+    return MainController(model, view, components=components, config=MainConfig())
 
 
 def test_close_app() -> None: ...

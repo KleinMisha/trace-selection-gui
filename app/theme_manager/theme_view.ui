@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ThemeView</class>
+ <widget class="QWidget" name="ThemeView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>177</width>
+    <height>97</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>160</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="5,0">
+    <item>
+     <widget class="QLabel" name="themeName">
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Appearance</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="themeToggle">
+      <property name="styleSheet">
+       <string notr="true">QCheckBox {
+    spacing: 0px;
+}
+
+QCheckBox::indicator {
+    width: 50px;
+    height: 24px;
+    border-radius: 12px;
+    subcontrol-position: left;
+}
+
+QCheckBox::indicator:unchecked {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.448276 rgba(123, 254, 183, 255), stop:0.517241 rgba(255, 255, 255, 255));
+    border: 2px solid white;
+}
+
+QCheckBox::indicator:checked {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0.482759 rgba(255, 255, 255, 255), stop:0.492611 rgba(152, 119, 184, 255));
+    border: 2px solid white;
+
+}
+
+QCheckBox::indicator:unchecked:hover {
+    border: 2px solid rgba(123, 254, 183, 255);
+}
+
+QCheckBox::indicator:checked:hover {
+    border: 2px solid rgba(152, 119, 184, 255);
+}</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

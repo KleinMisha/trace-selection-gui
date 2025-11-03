@@ -376,7 +376,6 @@ border:                 2px solid black;</string>
     height:                 40px;
     border-radius:          20px;
 	border: 2px solid black; 
-	background-color: lightgreen;
 }
 
 
@@ -443,7 +442,7 @@ border:                 2px solid black;</string>
        </property>
       </spacer>
      </item>
-     <item alignment="Qt::AlignHCenter">
+     <item>
       <widget class="QPushButton" name="helpDocsButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -451,25 +450,13 @@ border:                 2px solid black;</string>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>18</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(128, 170, 255);
-padding: 5;
-color:  white; 
-width: 100 px;
-height: 40px;
-border: none;
-border-radius: 12px; 
-</string>
+        <string notr="true">padding: 5;
+width: 100px;
+height: 50px;</string>
        </property>
        <property name="text">
         <string>Help</string>
@@ -502,8 +489,7 @@ border-radius: 12px;
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(161, 192, 255);
-width: 300 px;
+        <string notr="true">width: 300 px;
 height: 40px;</string>
        </property>
        <property name="text">
@@ -575,7 +561,7 @@ height: 40px;</string>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">background-color:rgb(128, 170, 255);
+        <string notr="true">/*background-color:rgb(128, 170, 255);*/
 width: 300 px;
 height: 40px;</string>
        </property>
@@ -586,6 +572,19 @@ height: 40px;</string>
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="ThemeView" native="true">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>10</y>
+      <width>181</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 219, 151);</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -593,7 +592,7 @@ height: 40px;</string>
      <x>0</x>
      <y>0</y>
      <width>2560</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -10,17 +10,22 @@ Hence, the MainController knows of:
 
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Concatenate, Protocol, TypedDict
+from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.exceptions import with_error_handling
+from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.main_app.component_controller_protocols import (
     InteractivePlotController,
     ItemListController,
     LabelPanelController,
     SectionsPanelController,
+    ThemeController,
 )
+from app.main_app.main_config import MainConfig
 from app.main_app.main_model import Trace
+from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
 from app.state_variables import EventSeverity, LightState
+from app.theme_types import Color, SupportsThemeChanges, Theme
 
 
 class ComponentControllers(TypedDict):
@@ -38,6 +43,7 @@ class ComponentControllers(TypedDict):
     interactive_plot: InteractivePlotController
     label_panel: LabelPanelController
     sections_panel: SectionsPanelController
+    theme_manager: ThemeController
 
 
 class FileType(Enum):
@@ -120,6 +126,10 @@ class View(Protocol):
     ) -> None: ...
     def connect_file_name_selected(self, callback: Callable[[Path], None]) -> None: ...
     def connect_go_to_help_docs(self, callback: Callable[[], None]) -> None: ...
+    def set_indicator_saved_changes_colors(
+        self, color_on: Color, color_off: Color
+    ) -> None: ...
+    def get_shortcut_targets(self) -> dict[ShortcutID, AcceptsShortCut]: ...
 
 
 class MainController:
@@ -139,14 +149,19 @@ class MainController:
         model: Model,
         view: View,
         components: ComponentControllers,
+        config: MainConfig,
     ) -> None:
         self.model = model
         self.view = view
+        self.config = config
         # a dictionary mapping the name of the available component (see Enum above) to the corresponding controller
         self.components = components
 
         # Keep track of a first-in-first-out (FIFO) queue of opening/saving actions to be performed
         self._pending_file_dialog_requests: list[tuple[FileType, FileAction]] = []
+
+        # apply initial settings:
+        self.apply_config()
 
         # Connect (listen) to incoming signals from the MainView:
         self.view.connect_next_trace(self.handle_move_to_next_trace)
@@ -176,8 +191,44 @@ class MainController:
         self.components["interactive_plot"].connect_line_added_to_plot(
             self.handle_line_added_in_plot
         )
+        self.components["theme_manager"].connect_selected_theme_signal(
+            self.handle_theme_selection
+        )
 
     # main app logic
+    def apply_theme(self, theme: Theme) -> None:
+        """let main view adjust colors according to selected theme"""
+        # NOTE: The 'OR' operator allows you to take the first value if it exists, otherwise will default to the one from the theme
+        color_on = self.config.color_unsaved_changes or theme.accent
+        color_off = self.config.color_no_unsaved_changes or "#FFFFFF"
+        self.view.set_indicator_saved_changes_colors(color_on, color_off)
+
+    def apply_config(self) -> None:
+        """apply settings to model(s) and view(s)"""
+
+        # default file paths: NOTE that below helper function will guard against / check for empty paths.
+        self.model.set_file_path_to_labels(self.config.default_path_to_labels)
+        self.model.set_file_path_to_section_labels(
+            self.config.default_path_to_section_labels
+        )
+
+        # colors for indicator lights
+        self.view.set_indicator_saved_changes_colors(
+            color_on=self.config.color_unsaved_changes,
+            color_off=self.config.color_no_unsaved_changes,
+        )
+
+        # setup shortcuts
+        shortcuts = self.config.get_shortcuts()
+        shortcut_targets = self.view.get_shortcut_targets()
+        for key in ShortcutID:
+            assign_shortcut(shortcut_targets[key], shortcuts[key])
+
+    def update_config(self, new_config_values: dict[str, Any]) -> None:
+        """update the main configurations (to be used after user makes adjustments in settings window)"""
+        for key, value in new_config_values.items():
+            setattr(self.config, key, value)
+
     def close_app(self) -> None:
         """Checks for untracked changes"""
 
@@ -503,6 +554,16 @@ class MainController:
             EventSeverity.INFO, "Coming soon... (not implemented yet)"
         )
 
+    def handle_theme_selection(self, theme: Theme) -> None:
+        """
+        Triggered when toggle is used to switch between dark/light modes
+        -----
+        Tells the other components to apply the current theme when applicable
+        """
+        for component, controller in self.components.items():
+            if isinstance(controller, SupportsThemeChanges):
+                controller.apply_theme(theme)
+
     # file-handling logic
     def _process_next_request(self) -> None:
         """Checks the next job in the queue and triggers the View to open the corresponding FileDialog"""
@@ -580,15 +641,9 @@ class MainController:
         new_labels = self.components["label_panel"].get_assigned_labels()
         self.model.update_trace_labels(new_labels)
 
-        print(
-            f"[DEBUG] section labels before update: {self.model.get_current_trace_section_labels()}"
-        )
         # update the current trace's section labels (from the SectionsPanel)
         new_section_labels = self.components["sections_panel"].get_section_labels()
         self.model.update_trace_section_labels(new_section_labels)
-        print(
-            f"[DEBUG] section labels after update: {self.model.get_current_trace_section_labels()}"
-        )
 
     def _reset_components(self) -> None:
         """
@@ -603,9 +658,6 @@ class MainController:
         horizontal_line_time_points = self.model.get_section_boundaries()
         self.components["interactive_plot"].reset_for_new_trace(
             self.model.current_trace, horizontal_line_time_points
-        )
-        print(
-            f"[DEBUG] PlotController: adding vertical line at {horizontal_line_time_points} for trace {self.model.current_trace_id}"
         )
 
         # reset the assigned labels

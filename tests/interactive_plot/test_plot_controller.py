@@ -18,6 +18,7 @@ import pytest
 from numpy.typing import NDArray
 
 from app.interactive_plot.plot_controller import (
+    InterActivePlotConfig,
     InteractivePlotController,
     Model,
     View,
@@ -36,7 +37,8 @@ def test_handle_left_mouse_click(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     cast(Mock, model.has_data).return_value = True
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
@@ -58,7 +60,8 @@ def test_handle_right_mouse_click() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.connect_line_removed_from_plot(mock_handler)
     cast(Mock, model.has_data).return_value = True
     controller.handle_right_mouse_click()
@@ -79,7 +82,8 @@ def test_handle_left_mouse_click_without_data(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     cast(Mock, model.has_data).return_value = False
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
@@ -98,7 +102,8 @@ def test_handle_right_mouse_click_without_data() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.connect_line_removed_from_plot(mock_handler)
     cast(Mock, model.has_data).return_value = False
     controller.handle_right_mouse_click()
@@ -117,7 +122,8 @@ def test_handle_left_mouse_click_when_locked(location: float) -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller._lock_clicks = True
 
     cast(Mock, model.has_data).return_value = True
@@ -138,7 +144,8 @@ def test_handle_right_mouse_click_when_locked() -> None:
 
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller._lock_clicks = True
 
     controller.connect_line_removed_from_plot(mock_handler)
@@ -157,26 +164,13 @@ def test_adjusting_zmin_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
     )
     cast(Mock, view.update_figure).assert_called_once()
-
-
-@pytest.mark.parametrize(
-    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
-)
-def test_adjusting_zmin_invalid_entry(entry: str) -> None:
-    """Check that entering anything other than something that can be converted into a floating point number results in doing nothing"""
-    model: Model = cast(Model, Mock(spec=Model))
-    view: View = cast(View, Mock(spec=View))
-    model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
-    controller.handle_adjusted_z_min(entry)
-    cast(Mock, view.adjust_z_range).assert_not_called()
-    cast(Mock, view.update_figure).assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -187,26 +181,13 @@ def test_adjusting_zmax_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_min = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
     )
     cast(Mock, view.update_figure).assert_called_once()
-
-
-@pytest.mark.parametrize(
-    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
-)
-def test_adjusting_zmax_invalid_entry(entry: str) -> None:
-    """Check that entering anything other than something that can be converted into a floating point number results in doing nothing"""
-    model: Model = cast(Model, Mock(spec=Model))
-    view: View = cast(View, Mock(spec=View))
-    model.z_min = 23.0
-    controller = InteractivePlotController(model, view)
-    controller.handle_adjusted_z_max(entry)
-    cast(Mock, view.adjust_z_range).assert_not_called()
-    cast(Mock, view.update_figure).assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -217,26 +198,13 @@ def test_adjusting_tmin_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.t_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
     )
     cast(Mock, view.update_figure).assert_called_once()
-
-
-@pytest.mark.parametrize(
-    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
-)
-def test_adjusting_tmin_invalid_entry(entry: str) -> None:
-    """Check that entering anything other than something that can be converted into a floating point number results in doing nothing"""
-    model: Model = cast(Model, Mock(spec=Model))
-    view: View = cast(View, Mock(spec=View))
-    model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
-    controller.handle_adjusted_t_min(entry)
-    cast(Mock, view.adjust_t_range).assert_not_called()
-    cast(Mock, view.update_figure).assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -247,7 +215,8 @@ def test_adjusting_tmax_valid_entry(entry: str) -> None:
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.t_min = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
@@ -258,22 +227,145 @@ def test_adjusting_tmax_valid_entry(entry: str) -> None:
 @pytest.mark.parametrize(
     "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
 )
-def test_adjusting_tmax_invalid_entry(entry: str) -> None:
-    """Check that entering anything other than something that can be converted into a floating point number results in doing nothing"""
+def test_adjusting_zmin_invalid_entry(entry: str) -> None:
+    """Check that when no (default) value is configured, entering anything other than a valid number results in doing nothing"""
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
     model.z_max = 23.0
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig(
+        min_height=None, max_height=None, min_time=None, max_time=None
+    )
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_z_min(entry)
+    cast(Mock, view.adjust_z_range).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_adjusting_zmax_invalid_entry(entry: str) -> None:
+    """Check that when no (default) value is configured, entering anything other than a valid number results in doing nothing"""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.z_min = 23.0
+    config = InterActivePlotConfig(
+        min_height=None, max_height=None, min_time=None, max_time=None
+    )
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_z_max(entry)
+    cast(Mock, view.adjust_z_range).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_adjusting_tmin_invalid_entry(entry: str) -> None:
+    """Check that when no (default) value is configured, entering anything other than a valid number results in doing nothing"""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.z_max = 23.0
+    config = InterActivePlotConfig(
+        min_height=None, max_height=None, min_time=None, max_time=None
+    )
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_t_min(entry)
+    cast(Mock, view.adjust_t_range).assert_not_called()
+    cast(Mock, view.update_figure).assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_adjusting_tmax_invalid_entry(entry: str) -> None:
+    """Check that when no (default) value is configured, entering anything other than a valid number results in doing nothing"""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.z_max = 23.0
+    config = InterActivePlotConfig(
+        min_height=None, max_height=None, min_time=None, max_time=None
+    )
+    controller = InteractivePlotController(model, view, config)
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_fallback_to_default_invalid_entry_zmin(entry: str) -> None:
+    """Check that it defaults to using the configured value when anything else than a valid number is entered."""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.z_max = 23.0
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_z_min(entry)
+    cast(Mock, view.adjust_z_range).assert_called_once_with(
+        min_value=config.min_height, max_value=23.0
+    )
+    cast(Mock, view.update_figure).assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_fallback_to_default_invalid_entry_zmax(entry: str) -> None:
+    """Check that it defaults to using the configured value when anything else than a valid number is entered."""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.z_min = 23.0
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_z_max(entry)
+    cast(Mock, view.adjust_z_range).assert_called_once_with(
+        min_value=23.0, max_value=config.max_height
+    )
+    cast(Mock, view.update_figure).assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_fallback_to_default_invalid_entry_tmin(entry: str) -> None:
+    """Check that it defaults to using the configured value when anything else than a valid number is entered."""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.t_max = 23.0
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_t_min(entry)
+    cast(Mock, view.adjust_t_range).assert_called_once_with(
+        min_value=config.min_time, max_value=23.0
+    )
+    cast(Mock, view.update_figure).assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "entry", ["", " ", "1,2", "1.3,4", "1-2", "bla", "2.8.24", "__/ == !##$__"]
+)
+def test_fallback_to_default_invalid_entry_tmax(entry: str) -> None:
+    """Check that it defaults to using the configured value when anything else than a valid number is entered."""
+    model: Model = cast(Model, Mock(spec=Model))
+    view: View = cast(View, Mock(spec=View))
+    model.t_min = 23.0
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
+    controller.handle_adjusted_t_max(entry)
+    cast(Mock, view.adjust_t_range).assert_called_once_with(
+        min_value=23.0, max_value=config.max_time
+    )
+    cast(Mock, view.update_figure).assert_called_once()
 
 
 def test_reset_for_new_trace() -> None:
     """Test resetting the plot with a new dataset with potentially section labels assigned"""
     model: Model = cast(Model, Mock(spec=Model))
     view: View = cast(View, Mock(spec=View))
-    controller = InteractivePlotController(model, view)
+    config = InterActivePlotConfig()
+    controller = InteractivePlotController(model, view, config)
 
     class MockTrace:
         def __init__(self, t: NDArray[np.floating], z: NDArray[np.floating]) -> None:
