@@ -251,7 +251,7 @@ def test_adjust_t_max(qtbot: QtBot, entered_value: int | float) -> None:
 def test_update_t_vs_z_plot(qapp: QApplication) -> None:
     """Confirm the matplotlib figure gets updated as expected. Trivial, but an additional safety net when refactoring code"""
     view = InterActivePlotView()
-    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]), color="black")
+    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]))
     view.update_figure()
 
     assert len(view._all_lines) == 1
@@ -265,7 +265,7 @@ def test_update_t_vs_z_plot(qapp: QApplication) -> None:
 def test_adding_line_to_plot(qapp: QApplication, location: float) -> None:
     """Confirm the matplotlib figure gets updated as expected. Trivial, but an additional safety net when refactoring code"""
     view = InterActivePlotView()
-    view.show_line_in_plot(time_point=location, color="black")
+    view.show_line_in_plot(time_point=location)
     view.update_figure()
 
     assert len(view._all_lines) == 1
@@ -278,8 +278,8 @@ def test_adding_line_to_plot(qapp: QApplication, location: float) -> None:
 def test_removing_last_added_line_from_plot(qapp: QApplication) -> None:
     """First add, then remove. If the previous test passes, this is correctly checking the removing operation"""
     view = InterActivePlotView()
-    view.show_line_in_plot(time_point=1.0, color="black")
-    view.show_line_in_plot(time_point=2.0, color="black")
+    view.show_line_in_plot(time_point=1.0)
+    view.show_line_in_plot(time_point=2.0)
     view.update_figure()
 
     assert len(view._all_lines) == 2
@@ -295,9 +295,9 @@ def test_removing_last_added_line_from_plot(qapp: QApplication) -> None:
 
 def test_removing_all_lines_from_plot(qapp: QApplication) -> None:
     view = InterActivePlotView()
-    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]), color="black")
-    view.show_line_in_plot(1.0, color="black")
-    view.show_line_in_plot(2.0, color="black")
+    view.show_t_vs_z_plot(np.array([1.0]), np.array([1.0]))
+    view.show_line_in_plot(1.0)
+    view.show_line_in_plot(2.0)
     view.update_figure()
 
     assert len(view._all_lines) == 3
@@ -312,13 +312,13 @@ def test_removing_all_lines_from_plot(qapp: QApplication) -> None:
 def test_clear_plot(qapp: QApplication) -> None:
     """should completely clear everything from the figure"""
     view = InterActivePlotView()
-    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]), color="black")
-    view.show_line_in_plot(23.0, color="black")
-    view.show_line_in_plot(45.0, color="black")
-    view.show_line_in_plot(8.0, color="black")
-    view.show_line_in_plot(24.0, color="black")
-    view.show_line_in_plot(6.0, color="black")
-    view.show_line_in_plot(3.0, color="black")
+    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]))
+    view.show_line_in_plot(23.0)
+    view.show_line_in_plot(45.0)
+    view.show_line_in_plot(8.0)
+    view.show_line_in_plot(24.0)
+    view.show_line_in_plot(6.0)
+    view.show_line_in_plot(3.0)
     view.update_figure()
 
     assert len(view._all_lines) == 7
@@ -336,9 +336,9 @@ def test_do_not_remove_if_no_vertical_line(qapp: QApplication) -> None:
     The plotted time trace should remain no matter.
     """
     view = InterActivePlotView()
-    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]), color="black")
-    view.show_line_in_plot(8.0, color="black")
-    view.show_line_in_plot(24.0, color="black")
+    view.show_t_vs_z_plot(np.array([23.0]), np.array([45.0]))
+    view.show_line_in_plot(8.0)
+    view.show_line_in_plot(24.0)
     view.update_figure()
     assert len(view._vertical_lines) == 2
     assert len(view._all_lines) == 3

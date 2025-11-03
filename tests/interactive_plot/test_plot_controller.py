@@ -43,9 +43,7 @@ def test_handle_left_mouse_click(location: float) -> None:
     cast(Mock, model.find_nearest_data_point).return_value = (location, 23.0)
     controller.connect_line_added_to_plot(mock_handler)
     controller.handle_left_mouse_click(location, 42.0)
-    cast(Mock, view.show_line_in_plot).assert_called_once_with(
-        location, config.vertical_line_color
-    )
+    cast(Mock, view.show_line_in_plot).assert_called_once_with(location)
     cast(Mock, view.update_figure).assert_called_once()
 
     assert received_signals[0] == location
@@ -307,13 +305,10 @@ def test_reset_for_new_trace() -> None:
         controller.reset_for_new_trace(mock_trace, mock_clicked_locations)
         assert model.trace_data == mock_trace
         cast(Mock, view.show_t_vs_z_plot).assert_called_once_with(
-            mock_trace.t, mock_trace.z, config.data_line_color
+            mock_trace.t, mock_trace.z
         )
 
         cast(Mock, view.show_line_in_plot).assert_has_calls(
-            [
-                call(23, config.vertical_line_color)
-                for _ in range(len(mock_clicked_locations))
-            ]
+            [call(23) for _ in range(len(mock_clicked_locations))]
         )
         cast(Mock, view.update_figure).assert_called_once()
