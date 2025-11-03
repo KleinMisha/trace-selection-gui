@@ -12,7 +12,7 @@ from app.theme_types import SupportsThemeChanges, Theme
 
 
 @runtime_checkable
-class ItemListController(SupportsThemeChanges, Protocol):
+class ItemListController(Protocol):
     def connect_window_closed_signal(
         self, callback: Callable[[list[str]], None]
     ) -> None: ...
@@ -49,7 +49,7 @@ class LabelPanelController(Protocol):
 
 
 @runtime_checkable
-class SectionsPanelController(SupportsThemeChanges, Protocol):
+class SectionsPanelController(Protocol):
     def reset_for_new_trace(
         self, sections_new_trace: dict[tuple[int, int], list[str]]
     ) -> None: ...

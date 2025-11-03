@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import QWidget
 
-from app.component_factory_helpers import fill_component_to_placeholder
+from app.core.component_factory_helpers import fill_component_to_placeholder
 from app.theme_manager.theme_config import ThemeConfig
 from app.theme_manager.theme_controller import ThemeController
 from app.theme_manager.theme_model import ThemeModel

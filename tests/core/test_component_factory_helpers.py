@@ -11,7 +11,7 @@ import pytest
 from PyQt6.QtCore import QObject
 from PyQt6.QtWidgets import QApplication, QLayoutItem, QVBoxLayout, QWidget
 
-from app.component_factory_helpers import (
+from app.core.component_factory_helpers import (
     _force_component_layout,
     fill_component_to_placeholder,
 )
