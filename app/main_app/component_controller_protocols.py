@@ -12,7 +12,7 @@ from app.theme_types import SupportsThemeChanges, Theme
 
 
 @runtime_checkable
-class ItemListController(Protocol):
+class ItemListController(SupportsThemeChanges, Protocol):
     def connect_window_closed_signal(
         self, callback: Callable[[list[str]], None]
     ) -> None: ...
@@ -21,7 +21,7 @@ class ItemListController(Protocol):
 
 
 @runtime_checkable
-class InteractivePlotController(Protocol):
+class InteractivePlotController(SupportsThemeChanges, Protocol):
     def connect_line_added_to_plot(self, callback: Callable[[float], None]) -> None: ...
 
     def connect_line_removed_from_plot(self, callback: Callable[[], None]) -> None: ...
@@ -49,7 +49,7 @@ class LabelPanelController(Protocol):
 
 
 @runtime_checkable
-class SectionsPanelController(Protocol):
+class SectionsPanelController(SupportsThemeChanges, Protocol):
     def reset_for_new_trace(
         self, sections_new_trace: dict[tuple[int, int], list[str]]
     ) -> None: ...
