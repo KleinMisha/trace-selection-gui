@@ -11,7 +11,7 @@ from typing import cast
 
 from PyQt6.QtWidgets import QApplication
 
-from app.config_manager import ConfigManager
+from app.core.config_manager import ConfigManager
 from app.interactive_plot.plot_config import InterActivePlotConfig
 from app.interactive_plot.plot_factory import create_plot_controller
 from app.item_list.item_list_factory import create_item_list
