@@ -10,7 +10,7 @@ from typing import Any, Self, Type, cast
 
 import pytest
 
-from app.config_manager import ConfigManager
+from app.core.config_manager import ConfigManager
 
 
 @dataclass

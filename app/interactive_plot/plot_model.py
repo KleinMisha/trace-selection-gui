@@ -8,7 +8,7 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-from app.exceptions import MissingExperimentError
+from app.core.exceptions import MissingExperimentError
 
 
 class TraceData(Protocol):

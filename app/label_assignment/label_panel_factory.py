@@ -7,7 +7,7 @@ NOTE: It also takes care of placing the component in its respective placeholder 
 
 from PyQt6.QtWidgets import QWidget
 
-from app.component_factory_helpers import fill_component_to_placeholder
+from app.core.component_factory_helpers import fill_component_to_placeholder
 from app.label_assignment.label_panel_config import LabelPanelConfig
 from app.label_assignment.label_panel_controller import LabelPanelController
 from app.label_assignment.label_panel_model import LabelPanelModel

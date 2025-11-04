@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self, Type
 
-from app.keyboard_shortcuts import clean_shortcut
+from app.core.keyboard_shortcuts import clean_shortcut
+from app.core.theme_types import Color
 from app.main_app.main_shortcut_items import MainShortcutID as ShortcutID
-from app.theme_types import Color
 
 
 @dataclass

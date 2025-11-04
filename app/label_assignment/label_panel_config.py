@@ -7,11 +7,11 @@ The main entry point will register this at the ConfigManager
 from dataclasses import dataclass
 from typing import Any, Self, Type
 
-from app.keyboard_shortcuts import clean_shortcut
+from app.core.keyboard_shortcuts import clean_shortcut
+from app.core.theme_types import Color
 from app.label_assignment.label_panel_shortcut_items import (
     LabelPanelShortcutID as ShortcutID,
 )
-from app.theme_types import Color
 
 
 @dataclass

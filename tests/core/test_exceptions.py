@@ -7,7 +7,7 @@ from unittest.mock import Mock, create_autospec
 
 import pytest
 
-from app.exceptions import (
+from app.core.exceptions import (
     ApplicationError,
     ErrorController,
     FileHandlingError,
@@ -15,7 +15,7 @@ from app.exceptions import (
     UnsupportedFileTypeError,
     with_error_handling,
 )
-from app.state_variables import EventSeverity
+from app.core.state_variables import EventSeverity
 
 exception_types = [
     ApplicationError,

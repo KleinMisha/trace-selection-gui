@@ -5,7 +5,7 @@ Custom exceptions we want to catch (covers 'expected errors due to user interact
 import functools
 from typing import Callable, Concatenate, ParamSpec, Protocol, TypeVar
 
-from app.state_variables import EventSeverity
+from app.core.state_variables import EventSeverity
 
 
 class ApplicationError(Exception):

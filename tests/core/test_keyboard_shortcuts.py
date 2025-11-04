@@ -10,7 +10,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QApplication, QMenu, QMenuBar, QPushButton, QWidget
 from pytestqt.qtbot import QtBot
 
-from app.keyboard_shortcuts import assign_shortcut, clean_shortcut, is_valid
+from app.core.keyboard_shortcuts import assign_shortcut, clean_shortcut, is_valid
 
 
 @pytest.fixture(scope="session", autouse=True)

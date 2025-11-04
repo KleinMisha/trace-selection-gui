@@ -24,7 +24,7 @@ from time_trace_tools.data_types.magnetic_tweezers_trace import (
     MagneticTweezersTrace as Trace,
 )
 
-from app.exceptions import (
+from app.core.exceptions import (
     InvalidInputError,
     MissingExperimentError,
     UnsupportedFileTypeError,

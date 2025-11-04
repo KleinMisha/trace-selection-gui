@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
-from app.theme_types import Color, Theme, ThemeMode
+from app.core.theme_types import Color, Theme, ThemeMode
 
 
 @dataclass

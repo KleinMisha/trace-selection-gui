@@ -6,14 +6,14 @@ from typing import Any, Callable, Optional, Protocol
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from app.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
+from app.core.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
+from app.core.state_variables import LightState
+from app.core.theme_types import Color
 from app.section_label_assignment.sections_panel_config import SectionsPanelConfig
 from app.section_label_assignment.sections_panel_model import Section
 from app.section_label_assignment.sections_panel_shortcut_items import (
     SectionsPanelShortcutID as ShortcutID,
 )
-from app.state_variables import LightState
-from app.theme_types import Color
 
 
 class Model(Protocol):

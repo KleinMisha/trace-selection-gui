@@ -7,8 +7,8 @@ NOTE: Here you define stripped-down versions of the controllers with only those 
 
 from typing import Any, Callable, Optional, Protocol, runtime_checkable
 
+from app.core.theme_types import SupportsThemeChanges, Theme
 from app.main_app.main_model import Trace
-from app.theme_types import SupportsThemeChanges, Theme
 
 
 @runtime_checkable
@@ -21,7 +21,7 @@ class ItemListController(Protocol):
 
 
 @runtime_checkable
-class InteractivePlotController(Protocol):
+class InteractivePlotController(SupportsThemeChanges, Protocol):
     def connect_line_added_to_plot(self, callback: Callable[[float], None]) -> None: ...
 
     def connect_line_removed_from_plot(self, callback: Callable[[], None]) -> None: ...

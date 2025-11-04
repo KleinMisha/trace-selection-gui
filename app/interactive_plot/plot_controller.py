@@ -8,9 +8,9 @@ import numpy as np
 from numpy.typing import NDArray
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from app.core.theme_types import Color, Theme
 from app.interactive_plot.plot_config import InterActivePlotConfig
 from app.interactive_plot.plot_model import TraceData
-from app.theme_types import Color, Theme
 
 
 class Model(Protocol):
