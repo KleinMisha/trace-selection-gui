@@ -130,6 +130,7 @@ class MainView(QMainWindow, Ui_MainWindow):
             self,
             caption=window_title,
             directory="",
+            options=QFileDialog.Option.DontUseNativeDialog,
             filter=filter_by,
         )
         if selected_file_path:
@@ -145,6 +146,7 @@ class MainView(QMainWindow, Ui_MainWindow):
             self,
             caption=window_title,
             directory="",
+            options=QFileDialog.Option.DontUseNativeDialog,
             filter=filter_by,
         )
         if selected_file_path:
