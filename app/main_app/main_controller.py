@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
 from app.core.exceptions import with_error_handling
+from app.core.file_types import FileAction, FileType, create_file_filter
 from app.core.keyboard_shortcuts import AcceptsShortCut, assign_shortcut
 from app.core.state_variables import EventSeverity, LightState
 from app.core.theme_types import Color, SupportsThemeChanges, Theme
@@ -44,23 +45,6 @@ class ComponentControllers(TypedDict):
     label_panel: LabelPanelController
     sections_panel: SectionsPanelController
     theme_manager: ThemeController
-
-
-class FileType(Enum):
-    """
-    The kinds of files to be opened/saved
-    """
-
-    RAW_DATA = auto()
-    LABELS = auto()
-    SECTION_LABELS = auto()
-
-
-class FileAction(Enum):
-    """The kinds of actions performed on a file"""
-
-    OPEN = auto()
-    SAVE = auto()
 
 
 class Model(Protocol):
@@ -110,8 +94,8 @@ class View(Protocol):
     def update_progressbar(self, value: float) -> None: ...
     def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
     def display_ref_beads_ids(self, names: list[str]) -> None: ...
-    def ask_open_file(self, window_title: str) -> None: ...
-    def ask_save_file(self, window_title: str) -> None: ...
+    def ask_open_file(self, window_title: str, filter_by: str) -> None: ...
+    def ask_save_file(self, window_title: str, filter_by: str) -> None: ...
     def open_message_box(self, msg_type: EventSeverity, message: str) -> None: ...
 
     def connect_next_trace(self, callback: Callable[[], None]) -> None: ...
@@ -581,13 +565,17 @@ class MainController:
 
         # Otherwise, process the next in line. FIFO: So check for the earliest posted job
         file_type, file_action = self._pending_file_dialog_requests[0]
+        filter_str = create_file_filter(file_type, file_action)
+
         if file_action == FileAction.OPEN:
             self.view.ask_open_file(
-                window_title=f"File to read {file_type.name.lower().replace('_', ' ')} from"
+                window_title=f"File to read {file_type.name.lower().replace('_', ' ')} from",
+                filter_by=filter_str,
             )
         elif file_action == FileAction.SAVE:
             self.view.ask_save_file(
-                window_title=f"File to save {file_type.name.lower().replace('_', ' ')} into"
+                window_title=f"File to save {file_type.name.lower().replace('_', ' ')} into",
+                filter_by=filter_str,
             )
 
     def _post_open_request(self, file_type: FileType) -> None:
