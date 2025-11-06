@@ -22,6 +22,7 @@ from app.main_app.main_controller import (
     FileType,
     MainConfig,
     MainController,
+    create_file_filter,
 )
 from app.main_app.main_model import MainModel
 from app.main_app.main_view import MainView
@@ -92,10 +93,11 @@ def test_process_open_file_request(
 ) -> None:
     """post a request to open a file, then check the correct file dialog is opened"""
 
+    expected_filter = create_file_filter(file_type, FileAction.OPEN)
     main_controller._post_open_request(file_type)
     main_controller._process_next_request()
     cast(Mock, main_controller.view.ask_open_file).assert_called_once_with(
-        window_title=expected_window_title
+        window_title=expected_window_title, filter_by=expected_filter
     )
 
 
@@ -110,11 +112,12 @@ def test_process_save_file_request(
     main_controller: MainController, file_type: FileType, expected_window_title: str
 ) -> None:
     """post a request to save a file, then check the correct file dialog is opened"""
+    expected_filter = create_file_filter(file_type, FileAction.SAVE)
 
     main_controller._post_save_request(file_type)
     main_controller._process_next_request()
     cast(Mock, main_controller.view.ask_save_file).assert_called_once_with(
-        window_title=expected_window_title
+        window_title=expected_window_title, filter_by=expected_filter
     )
 
 
