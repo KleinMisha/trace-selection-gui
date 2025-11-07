@@ -91,7 +91,7 @@ class View(Protocol):
     """API for the MainView"""
 
     def display_trace_id(self, name: str) -> None: ...
-    def update_progressbar(self, current_value: int|str, total: int) -> None: ...
+    def update_progressbar(self, current_value: int, total: int) -> None: ...
     def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
     def display_ref_beads_ids(self, names: list[str]) -> None: ...
     def ask_open_file(self, window_title: str, filter_by: str) -> None: ...
@@ -357,8 +357,11 @@ class MainController:
     def handle_progress_bar_update(self):
         """Updates the progress bar to reflect the current trace and total number of traces"""
         if self._data_is_loaded:
+            if (self.view.progressBar.minimum(), self.view.progressBar.maximum()) != (1, self.model._number_of_traces):
+                self.view.progressBar.setRange(1, self.model._number_of_traces)
+            self.view.plotted_trace_id.setText(f'{self.model.current_trace_id.split("_")[-1]}')
             self.view.over_total_number_of_traces.setText(f'/ {self.model._number_of_traces}')
-            self.view.update_progressbar(self.model.current_trace_id, self.model._number_of_traces)
+            self.view.update_progressbar(int(self.model.current_trace_id.split("_")[-1]), self.model._number_of_traces)
 
     def handle_menu_file_open(self) -> None:
         """

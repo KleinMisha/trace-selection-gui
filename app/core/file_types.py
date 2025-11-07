@@ -25,7 +25,7 @@ class FileType(Enum):
 
     RAW_DATA = (
         "Time traces",
-        {FileAction.OPEN: (".txt", ".npz"), FileAction.SAVE: (".npz",)},
+        {FileAction.OPEN: (".txt", ".npy", ".npz"), FileAction.SAVE: (".npz",)},
     )
     LABELS = (
         "Whole-trace labels",
