@@ -119,7 +119,7 @@ class MainView(QMainWindow, Ui_MainWindow):
         # TODO: Implement later
         raise NotImplementedError
 
-    def ask_open_file(self, window_title: str) -> None:
+    def ask_open_file(self, window_title: str, filter_by: str) -> None:
         """
         Ask the user to select a file to open
         ---
@@ -132,12 +132,13 @@ class MainView(QMainWindow, Ui_MainWindow):
             self,
             caption=window_title,
             directory="",
-            filter="All Files (*)",
+            options=QFileDialog.Option.DontUseNativeDialog,
+            filter=filter_by,
         )
         if selected_file_path:
             self._send_file_path_selected_signal(Path(selected_file_path))
 
-    def ask_save_file(self, window_title: str) -> None:
+    def ask_save_file(self, window_title: str, filter_by: str) -> None:
         """
         Ask the user to select a file to save into
         ----
@@ -147,7 +148,8 @@ class MainView(QMainWindow, Ui_MainWindow):
             self,
             caption=window_title,
             directory="",
-            filter="All Files (*)",
+            options=QFileDialog.Option.DontUseNativeDialog,
+            filter=filter_by,
         )
         if selected_file_path:
             self._send_file_path_selected_signal(Path(selected_file_path))

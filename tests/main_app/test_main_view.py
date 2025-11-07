@@ -219,7 +219,7 @@ def test_opening_the_correct_file() -> None:
             target=view, attribute="_send_file_path_selected_signal"
         ) as mock_signal_caller,
     ):
-        view.ask_open_file("")
+        view.ask_open_file("", "")
         mock_signal_caller.assert_called_once_with(
             Path("/mock/mocker/mockeronyNcheese/most_mockest.txt")
         )
@@ -238,7 +238,7 @@ def test_saving_to_the_correct_file() -> None:
             target=view, attribute="_send_file_path_selected_signal"
         ) as mock_signal_caller,
     ):
-        view.ask_save_file("")
+        view.ask_save_file("", "")
         mock_signal_caller.assert_called_once_with(
             Path("/mock/mocker/mockeronyNcheese/most_mockest.txt")
         )
