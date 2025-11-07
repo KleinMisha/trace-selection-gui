@@ -36,6 +36,7 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.NextTraceButton.clicked.connect(self._send_next_trace_signal)
         self.previousTraceButton.clicked.connect(self._send_prev_trace_signal)
         self.TraceIDEntry.textChanged.connect(self._send_jump_to_trace_signal)
+        self.plotted_trace_id.textChanged.connect(self._send_jump_to_trace_signal)
         self.actionOpen.triggered.connect(self._send_menu_file_open_signal)
         self.actionSave.triggered.connect(self._send_menu_file_save_signal)
         self.actionSaveAs.triggered.connect(self._send_menu_file_save_as_signal)
@@ -82,9 +83,10 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.TraceIDEntry.setText(name)
         self.TraceIDEntry.blockSignals(False)
 
-    def update_progressbar(self, value: float) -> None:
+    def update_progressbar(self, current_id: int|str, total: int)-> None:
         """the Qt progressbar expects integer values. Round the input percentage."""
-        self.progressBar.setValue(round(value))
+        current_id = str(current_id)
+        self.progressBar.setFormat(f'{current_id.split("_")[-1]} / {total}')
 
     def set_indicator_saved_changes_colors(
         self, color_on: Color, color_off: Color

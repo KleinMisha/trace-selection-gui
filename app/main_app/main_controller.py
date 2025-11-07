@@ -107,7 +107,7 @@ class View(Protocol):
     """API for the MainView"""
 
     def display_trace_id(self, name: str) -> None: ...
-    def update_progressbar(self, value: float) -> None: ...
+    def update_progressbar(self, current_value: int|str, total: int) -> None: ...
     def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
     def display_ref_beads_ids(self, names: list[str]) -> None: ...
     def ask_open_file(self, window_title: str) -> None: ...
@@ -265,7 +265,7 @@ class MainController:
         self._reset_components()
 
         # update the progress bar
-        self.view.update_progressbar(self.model.progress_percentage)
+        self.handle_progress_bar_update()
 
     def handle_move_to_prev_trace(self) -> None:
         """
@@ -289,7 +289,7 @@ class MainController:
         self._reset_components()
 
         # update the progress bar
-        self.view.update_progressbar(self.model.progress_percentage)
+        self.handle_progress_bar_update()
 
     @with_error_handling(severity=EventSeverity.INFO)
     def handle_jump_to_trace(self, trace_id: str) -> None:
@@ -315,7 +315,7 @@ class MainController:
         self._reset_components()
 
         # update the progress bar
-        self.view.update_progressbar(self.model.progress_percentage)
+        self.handle_progress_bar_update()
 
     @with_error_handling(severity=EventSeverity.ERROR)
     def handle_file_name_selected(self, file_name: Path):
@@ -358,7 +358,7 @@ class MainController:
             self._open_file(file_type)
             self._reset_components()
             self.view.display_trace_id(self.model.current_trace_id)
-            self.view.update_progressbar(self.model.progress_percentage)
+            self.handle_progress_bar_update()
             success_message = f"\N{CHECK MARK} Successfully loaded {file_type.name.lower()} from: {file_name}"
             self.view.open_message_box(EventSeverity.INFO, success_message)
 
@@ -369,6 +369,12 @@ class MainController:
 
         # move on to the next file dialog that must be opened
         self._process_next_request()
+
+    def handle_progress_bar_update(self):
+        """Updates the progress bar to reflect the current trace and total number of traces"""
+        if self._data_is_loaded:
+            self.view.over_total_number_of_traces.setText(f'/ {self.model._number_of_traces}')
+            self.view.update_progressbar(self.model.current_trace_id, self.model._number_of_traces)
 
     def handle_menu_file_open(self) -> None:
         """
