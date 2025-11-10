@@ -4,6 +4,10 @@
 
 Uses `TimeTraceTools` to handle `TimeTrace` and `Experiment` data. 
 
+🌐 For full details, visit the site:
+[Open the Docs](https://your-mkdocs-site.com)
+
+
 Basic workflow: 
 
 * Load raw experiment data (magnetic-tweezers, TIRF (?))
@@ -60,12 +64,33 @@ tests --> build --> docs
 * builds the MkDocs webpage and deploys it on GitLab pages 
 
 
+## Repository layout 
+```shell
+    .
+    ├── app                 # (Python) source code 
+    │   ├── __init__.py     
+    │   ├── core                    # cross-cutting concerns (may be shared across the application)
+    │   ├── main_app                # Main application MVC
+    │   ├── section_label_assignment # component MVC 
+    │   └── ...
+    ├── tests                   # (Unit) tests (using pytest). Follows the same directory layout as the source code. 
+    │   ├── core                    
+    │   ├── main_app
+    │   ├── section_label_assignment
+    │   └── ... 
+    ├── main.py                 # Main entry-point of code 
+    ├── config.json             # (Default) user settings 
+    ├── scripts                 # Additional (Python) scripts not part of the main application 
+    ├── docs                    # MkDocs website contents (markdown files)
+    ├── mkdocs.yml              # MkDocs website: configuration 
+    ├── htmlcov                 # Pytest coverage report
+    ├── .vscode                 # IDE workspace settings (VSCode)    
+    ├── .gitignore                              
+    ├── README.md         
+    ├── ci                      # GitLab-CI scripts          
+    ├── gitlab-ci.yml           # GitLab-CI main job configuration         
+    ├── .venv                   # Python environment (UV)                  
+    ├── pyproject.toml          # Python project dependencies and settings (UV)                    
+    └── uv.lock                  
 
-
-## design notes 
-To make this code clean and easy to extend: 
-* It does not do too much: Only viewing traces and tagging (sections / a set of time frames) with custom labels. 
-* Separate the user facing parts from the operations done: Allows one to swap the GUI building package if one so desires. 
-* Integrated unit tests. 
-* A widget / smaller app that handles adding/removing string items (labels) to a list: Can be used as standalone app --> Can be used in some other setting easily. 
-
+```

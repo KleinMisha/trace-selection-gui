@@ -1,0 +1,45 @@
+site_name: Trace-selection  
+
+nav: 
+  - Home: index.md
+
+
+
+  # - Versions: CHANGELOG.md 
+
+plugins:
+    - search
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline 
+        name: Switch to dark mode
+      primary: teal
+      accent: purple 
+    - scheme: slate 
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode    
+      primary: teal
+      accent: purple
+
+  features:
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
