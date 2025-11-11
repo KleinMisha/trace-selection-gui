@@ -44,49 +44,36 @@ def experiment() -> Experiment:
 
 def test_move_to_next_trace(experiment: Experiment) -> None:
     """easy case: navigate to the next trace"""
-    model = MainModel(_current_trace_index=0)
+    model = MainModel(current_trace_index=0)
     model._set_experiment(experiment)
     for times_moved in range(1, NUMBER_OF_TRACES - 1):
         model.move_to_next_trace()
-        assert model._current_trace_index == times_moved
+        assert model.current_trace_index == times_moved
 
 
 def test_do_not_move_past_last_trace(experiment: Experiment) -> None:
     """make sure you just do not move past the final trace. This will prevent the UI from otherwise crashing when eventually accessing the current label"""
-    model = MainModel(_current_trace_index=NUMBER_OF_TRACES - 1)
+    model = MainModel(current_trace_index=NUMBER_OF_TRACES - 1)
     model._set_experiment(experiment)
     model.move_to_next_trace()
-    assert model._current_trace_index == NUMBER_OF_TRACES - 1
+    assert model.current_trace_index == NUMBER_OF_TRACES - 1
 
 
 def test_move_to_previous_trace(experiment: Experiment) -> None:
     """easy case: navigate to the previous trace"""
-    model = MainModel(_current_trace_index=NUMBER_OF_TRACES - 1)
+    model = MainModel(current_trace_index=NUMBER_OF_TRACES - 1)
     model._set_experiment(experiment)
     for times_moved in range(1, NUMBER_OF_TRACES):
         model.move_to_previous_trace()
-        assert model._current_trace_index == (NUMBER_OF_TRACES - 1) - times_moved
+        assert model.current_trace_index == (NUMBER_OF_TRACES - 1) - times_moved
 
 
 def test_do_not_move_beyond_first_label(experiment: Experiment) -> None:
     """make sure you just do not move back when already at the first trace. This will prevent the UI from otherwise crashing when eventually accessing the current label"""
-    model = MainModel(_current_trace_index=0)
+    model = MainModel(current_trace_index=0)
     model._set_experiment(experiment)
     model.move_to_previous_trace()
-    assert model._current_trace_index == 0
-
-
-@pytest.mark.parametrize(
-    "index,expected_percentage",
-    [(n, n / (NUMBER_OF_TRACES - 1) * 100.0) for n in range(NUMBER_OF_TRACES)],
-)
-def test_calculating_percentage_progressed(
-    experiment: Experiment, index: int, expected_percentage: float
-) -> None:
-    """Even though this is a very simple calculation, writing this test ensures this will not be somehow broken when refactoring code"""
-    model = MainModel(_current_trace_index=index)
-    model._set_experiment(experiment)
-    assert model.progress_percentage == expected_percentage
+    assert model.current_trace_index == 0
 
 
 @pytest.mark.parametrize(
@@ -98,7 +85,7 @@ def test_jump_to_index(experiment: Experiment, target: int) -> None:
     model = MainModel()
     model._set_experiment(experiment)
     model.jump_to_index(target)
-    assert model._current_trace_index == target
+    assert model.current_trace_index == target
 
 
 def test_jump_to_index_before_first(experiment: Experiment) -> None:
@@ -106,7 +93,7 @@ def test_jump_to_index_before_first(experiment: Experiment) -> None:
     model = MainModel()
     model._set_experiment(experiment)
     model.jump_to_index(target=-1)
-    assert model._current_trace_index == 0
+    assert model.current_trace_index == 0
 
 
 def test_jump_to_index_beyond_last(experiment: Experiment) -> None:
@@ -114,15 +101,14 @@ def test_jump_to_index_beyond_last(experiment: Experiment) -> None:
     model = MainModel()
     model._set_experiment(experiment)
     model.jump_to_index(target=NUMBER_OF_TRACES)
-    assert model._current_trace_index == NUMBER_OF_TRACES - 1
+    assert model.current_trace_index == NUMBER_OF_TRACES - 1
 
 
 def test_initial_values() -> None:
-    """Check defaults for the percentage progressed, current trace index, etc. , i.e. before having loaded (raw) data"""
+    """Check defaults for the current trace index, etc. , i.e. before having loaded (raw) data"""
     model = MainModel()
-    assert model.progress_percentage == 0.0
     assert model.current_trace_id == ""
-    assert model._number_of_traces == 0
+    assert model.number_of_traces == 0
     assert not model.has_experiment
     assert not model.has_traces
     with pytest.raises(MissingExperimentError):
@@ -143,7 +129,7 @@ def test_number_of_traces_in_experiment(experiment: Experiment) -> None:
     """Check that if you did load an experiment, the number of traces are determined correctly"""
     model = MainModel()
     model._set_experiment(experiment)
-    assert model._number_of_traces == NUMBER_OF_TRACES
+    assert model.number_of_traces == NUMBER_OF_TRACES
 
 
 @pytest.mark.parametrize(
@@ -154,7 +140,7 @@ def test_retrieving_trace_labels(
     experiment: Experiment, index: int, expected_id: str
 ) -> None:
     """Check that if you did load an experiment, the current trace ID is correctly interpreted"""
-    model = MainModel(_current_trace_index=index)
+    model = MainModel(current_trace_index=index)
     model._set_experiment(experiment)
     assert model.current_trace_id == expected_id
 

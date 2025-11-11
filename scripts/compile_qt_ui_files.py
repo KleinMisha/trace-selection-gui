@@ -20,6 +20,7 @@ def compile_ui_to_py(ui_file: Path, py_file: Path) -> bool:
     Compiles an individual file and returns a boolean to indicate if it succeeded
     NOTE: Catch this boolean in the main() function to determine if compiling all files was a success
     """
+    print(f" -{ui_file} \N{RIGHTWARDS ARROW} {py_file}")
     try:
         subprocess.run(
             ["uv", "run", "python", "-m", "PyQt6.uic.pyuic", str(ui_file), "-o", str(py_file)],

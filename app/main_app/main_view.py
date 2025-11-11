@@ -82,9 +82,15 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.TraceIDEntry.setText(name)
         self.TraceIDEntry.blockSignals(False)
 
-    def update_progressbar(self, value: float) -> None:
+    def update_progressbar(self, current: int, total: int) -> None:
         """the Qt progressbar expects integer values. Round the input percentage."""
-        self.progressBar.setValue(round(value))
+
+        # update the percentage shown in the progressbar
+        percentage = round(current / (total - 1) * 100.0)
+        self.progressBar.setValue(percentage)
+
+        # update the display of the "fraction of traces"
+        self.ProgressCounter.setText(f"{current} / {total}")
 
     def set_indicator_saved_changes_colors(
         self, color_on: Color, color_off: Color

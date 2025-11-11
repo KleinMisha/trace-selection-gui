@@ -10,8 +10,8 @@ from app.core.file_types import FileAction, FileType, create_file_filter
 @pytest.mark.parametrize(
     "file_type,file_action,expected_str",
     [
-        (FileType.RAW_DATA, FileAction.OPEN, "Time traces (*.txt *.npz)"),
-        (FileType.RAW_DATA, FileAction.SAVE, "Time traces (*.npz)"),
+        (FileType.RAW_DATA, FileAction.OPEN, "Time traces (*.txt *.npy)"),
+        (FileType.RAW_DATA, FileAction.SAVE, "Time traces (*.npy)"),
         (FileType.LABELS, FileAction.OPEN, "Whole-trace labels (*.json)"),
         (FileType.LABELS, FileAction.SAVE, "Whole-trace labels (*.json)"),
         (FileType.SECTION_LABELS, FileAction.OPEN, "Section labels (*.json)"),
