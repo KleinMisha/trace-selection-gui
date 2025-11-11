@@ -36,7 +36,6 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.NextTraceButton.clicked.connect(self._send_next_trace_signal)
         self.previousTraceButton.clicked.connect(self._send_prev_trace_signal)
         self.TraceIDEntry.textChanged.connect(self._send_jump_to_trace_signal)
-        self.plotted_trace_id.textChanged.connect(self._send_jump_to_trace_signal)
         self.actionOpen.triggered.connect(self._send_menu_file_open_signal)
         self.actionSave.triggered.connect(self._send_menu_file_save_signal)
         self.actionSaveAs.triggered.connect(self._send_menu_file_save_as_signal)
@@ -62,7 +61,7 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # global title of the window
         self.setWindowTitle("Trace Selection")
-        
+
         # Design according to theme:
         self.NextTraceButton.setProperty("role", "apply")
         self.previousTraceButton.setProperty("role", "undo")
@@ -83,10 +82,15 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.TraceIDEntry.setText(name)
         self.TraceIDEntry.blockSignals(False)
 
-    def update_progressbar(self, current_value: int, total: int)-> None:
+    def update_progressbar(self, current: int, total: int) -> None:
         """the Qt progressbar expects integer values. Round the input percentage."""
-        self.progressBar.setValue(current_value)
-        self.progressBar.setFormat(f'{current_value} / {total}')
+
+        # update the percentage shown in the progressbar
+        percentage = round(current / (total - 1) * 100.0)
+        self.progressBar.setValue(percentage)
+
+        # update the display of the "fraction of traces"
+        self.ProgressCounter.setText(f"{current} / {total}")
 
     def set_indicator_saved_changes_colors(
         self, color_on: Color, color_off: Color

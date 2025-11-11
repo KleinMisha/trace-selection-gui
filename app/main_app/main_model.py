@@ -42,8 +42,8 @@ class MainModel:
     path_to_experiment_data: Path = Path("")
     path_to_labels: Path = Path("")
     path_to_section_labels: Path = Path("")
+    current_trace_index: int = 0
     _experiment: Optional[Experiment] = None
-    _current_trace_index: int = 0
 
     @property
     def has_traces(self) -> bool:
@@ -57,7 +57,7 @@ class MainModel:
     def current_trace(self) -> Trace:
         if not self._experiment:
             raise MissingExperimentError("current_trace")
-        return self._experiment.traces[self._current_trace_index]
+        return self._experiment.traces[self.current_trace_index]
 
     @property
     def current_trace_id(self) -> str:
@@ -66,7 +66,7 @@ class MainModel:
         return self.current_trace.ID
 
     @property
-    def _number_of_traces(self) -> int:
+    def number_of_traces(self) -> int:
         """
         Default to 0, such that things will also work before having loaded any data.
         """
@@ -74,25 +74,15 @@ class MainModel:
             return 0
         return len(self._experiment)
 
-    @property
-    def progress_percentage(self) -> float:
-        """
-        Determine how far the current index is w.r.t the length to the data set.
-        default to 0%, such that things will also work before having loaded any data.
-        """
-        if not self._experiment:
-            return 0.0
-        return self._current_trace_index / (self._number_of_traces - 1) * 100.0
-
     def move_to_next_trace(self) -> None:
         """Do nothing if you are pointing at the final trace"""
-        if self._current_trace_index < (self._number_of_traces - 1):
-            self._current_trace_index += 1
+        if self.current_trace_index < (self.number_of_traces - 1):
+            self.current_trace_index += 1
 
     def move_to_previous_trace(self) -> None:
         """Do nothing if you are pointing at the first trace"""
-        if self._current_trace_index > 0:
-            self._current_trace_index -= 1
+        if self.current_trace_index > 0:
+            self.current_trace_index -= 1
 
     def jump_to_index(self, target: int) -> None:
         """
@@ -102,10 +92,10 @@ class MainModel:
         next_index = target
         if target < 0:
             next_index = 0
-        elif target >= self._number_of_traces:
-            next_index = self._number_of_traces - 1
+        elif target >= self.number_of_traces:
+            next_index = self.number_of_traces - 1
 
-        self._current_trace_index = next_index
+        self.current_trace_index = next_index
 
     def find_index_from_id(self, trace_id: str) -> int:
         """determine the index you want to jump to"""

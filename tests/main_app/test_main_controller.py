@@ -312,13 +312,17 @@ def test_handle_filename_selected(
     assert len(main_controller._pending_file_dialog_requests) == 1
     mock_path = Path("mock/mock/mock")
 
-    expected_percentage = 42.0
+    expected_index = 42
+    expected_total = 42
     expected_trace_name = "mock trace"
     cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
         return_value=expected_trace_name
     )
-    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
-        return_value=expected_percentage
+    cast(Any, type(main_controller.model)).current_trace_index = PropertyMock(
+        return_value=expected_index
+    )
+    cast(Any, type(main_controller.model)).number_of_traces = PropertyMock(
+        return_value=expected_total
     )
     with (
         patch.object(
@@ -343,7 +347,7 @@ def test_handle_filename_selected(
         mock_open.assert_called_once_with(file_type)
         mock_component_reset.assert_called_once()
         mock_processor.assert_called_once()
-        mock_progressbar.assert_called_once_with(expected_percentage)
+        mock_progressbar.assert_called_once_with(expected_index, expected_total)
         mock_id_display.assert_called_once_with(expected_trace_name)
 
     # now check that the request has been popped
@@ -469,14 +473,19 @@ def test_updating_model_data_current_trace(
 
 def test_move_to_next_trace(main_controller: MainController) -> None:
     """test changing focus to next trace leads to correct calls"""
-    expected_percentage = 50.0
+    expected_index = 42
+    expected_total = 42
     expected_trace_id = "mock"
     cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
         return_value=expected_trace_id
     )
-    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
-        return_value=expected_percentage
+    cast(Any, type(main_controller.model)).current_trace_index = PropertyMock(
+        return_value=expected_index
     )
+    cast(Any, type(main_controller.model)).number_of_traces = PropertyMock(
+        return_value=expected_total
+    )
+
     with (
         patch.object(main_controller, attribute="_update_current_trace") as mock_one,
         patch.object(main_controller.model, attribute="move_to_next_trace") as mock_two,
@@ -489,18 +498,22 @@ def test_move_to_next_trace(main_controller: MainController) -> None:
         mock_two.assert_called_once()
         mock_three.assert_called_once_with(expected_trace_id)
         mock_four.assert_called_once()
-        mock_five.assert_called_once_with(expected_percentage)
+        mock_five.assert_called_once_with(expected_index, expected_total)
 
 
 def test_move_to_previous_trace(main_controller: MainController) -> None:
     """test changing focus to next trace leads to correct calls"""
-    expected_percentage = 50.0
+    expected_index = 42
+    expected_total = 42
     expected_trace_id = "mock"
     cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
         return_value=expected_trace_id
     )
-    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
-        return_value=expected_percentage
+    cast(Any, type(main_controller.model)).current_trace_index = PropertyMock(
+        return_value=expected_index
+    )
+    cast(Any, type(main_controller.model)).number_of_traces = PropertyMock(
+        return_value=expected_total
     )
     with (
         patch.object(main_controller, attribute="_update_current_trace") as mock_one,
@@ -516,26 +529,29 @@ def test_move_to_previous_trace(main_controller: MainController) -> None:
         mock_two.assert_called_once()
         mock_three.assert_called_once_with(expected_trace_id)
         mock_four.assert_called_once()
-        mock_five.assert_called_once_with(expected_percentage)
+        mock_five.assert_called_once_with(expected_index, expected_total)
 
 
 def test_jump_to_trace(main_controller: MainController) -> None:
     """test changing focus to next trace leads to correct calls"""
-    expected_percentage = 50.0
+    expected_index = 42
+    expected_total = 42
     expected_trace_id = "mock"
-    expected_trace_index = 23
     cast(Any, type(main_controller.model)).current_trace_id = PropertyMock(
         return_value=expected_trace_id
     )
-    cast(Any, type(main_controller.model)).progress_percentage = PropertyMock(
-        return_value=expected_percentage
+    cast(Any, type(main_controller.model)).current_trace_index = PropertyMock(
+        return_value=expected_index
+    )
+    cast(Any, type(main_controller.model)).number_of_traces = PropertyMock(
+        return_value=expected_total
     )
     with (
         patch.object(main_controller, attribute="_update_current_trace") as mock_one,
         patch.object(
             main_controller.model,
             attribute="find_index_from_id",
-            return_value=expected_trace_index,
+            return_value=expected_index,
         ) as mock_two,
         patch.object(main_controller.model, attribute="jump_to_index") as mock_three,
         patch.object(main_controller.view, attribute="display_trace_id") as mock_four,
@@ -545,10 +561,10 @@ def test_jump_to_trace(main_controller: MainController) -> None:
         main_controller.handle_jump_to_trace(expected_trace_id)
         mock_one.assert_called_once()
         mock_two.assert_called_once_with(expected_trace_id)
-        mock_three.assert_called_once_with(expected_trace_index)
+        mock_three.assert_called_once_with(expected_index)
         mock_four.assert_called_once_with(expected_trace_id)
         mock_five.assert_called_once()
-        mock_six.assert_called_once_with(expected_percentage)
+        mock_six.assert_called_once_with(expected_index, expected_total)
 
 
 @pytest.mark.parametrize(

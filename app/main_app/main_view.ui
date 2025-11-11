@@ -513,50 +513,17 @@ height: 40px;</string>
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_12">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <widget class="QLabel" name="ProgressCounter">
+         <property name="styleSheet">
+          <string notr="true">font:20pt;</string>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="plotted_trace_id">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="over_total_number_of_traces">
          <property name="text">
           <string>/ 0</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_13">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item>
         <widget class="QPushButton" name="NextTraceButton">
@@ -610,7 +577,7 @@ height: 40px;</string>
      <x>0</x>
      <y>0</y>
      <width>2560</width>
-     <height>21</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

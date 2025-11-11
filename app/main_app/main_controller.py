@@ -8,7 +8,6 @@ Hence, the MainController knows of:
 - the Controllers of the components.
 """
 
-from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Callable, Concatenate, Protocol, TypedDict
 
@@ -53,6 +52,7 @@ class Model(Protocol):
     path_to_experiment_data: Path = Path("")
     path_to_labels: Path = Path("")
     path_to_section_labels: Path = Path("")
+    current_trace_index: int = 0
 
     @property
     def current_trace(self) -> Trace: ...
@@ -61,10 +61,10 @@ class Model(Protocol):
     def current_trace_id(self) -> str: ...
 
     @property
-    def progress_percentage(self) -> float: ...
+    def has_traces(self) -> bool: ...
 
     @property
-    def has_traces(self) -> bool: ...
+    def number_of_traces(self) -> int: ...
 
     def move_to_next_trace(self) -> None: ...
     def move_to_previous_trace(self) -> None: ...
@@ -91,7 +91,7 @@ class View(Protocol):
     """API for the MainView"""
 
     def display_trace_id(self, name: str) -> None: ...
-    def update_progressbar(self, current_value: int, total: int) -> None: ...
+    def update_progressbar(self, current: int, total: int) -> None: ...
     def toggle_indicator_saved_changes(self, state: LightState) -> None: ...
     def display_ref_beads_ids(self, names: list[str]) -> None: ...
     def ask_open_file(self, window_title: str, filter_by: str) -> None: ...
@@ -248,8 +248,10 @@ class MainController:
         # reset the components that work with one trace at the time
         self._reset_components()
 
-        # update the progress bar
-        self.handle_progress_bar_update()
+        # update progress indicators
+        current_trace_nr = self.model.current_trace_index
+        number_of_traces = self.model.number_of_traces
+        self.view.update_progressbar(current_trace_nr, number_of_traces)
 
     def handle_move_to_prev_trace(self) -> None:
         """
@@ -272,8 +274,10 @@ class MainController:
         # reset the components that work with one trace at the time
         self._reset_components()
 
-        # update the progress bar
-        self.handle_progress_bar_update()
+        # update progress indicators
+        current_trace_nr = self.model.current_trace_index
+        number_of_traces = self.model.number_of_traces
+        self.view.update_progressbar(current_trace_nr, number_of_traces)
 
     @with_error_handling(severity=EventSeverity.INFO)
     def handle_jump_to_trace(self, trace_id: str) -> None:
@@ -298,8 +302,10 @@ class MainController:
         # reset the components that work with one trace at the time
         self._reset_components()
 
-        # update the progress bar
-        self.handle_progress_bar_update()
+        # update progress indicators
+        current_trace_nr = self.model.current_trace_index
+        number_of_traces = self.model.number_of_traces
+        self.view.update_progressbar(current_trace_nr, number_of_traces)
 
     @with_error_handling(severity=EventSeverity.ERROR)
     def handle_file_name_selected(self, file_name: Path):
@@ -342,7 +348,9 @@ class MainController:
             self._open_file(file_type)
             self._reset_components()
             self.view.display_trace_id(self.model.current_trace_id)
-            self.handle_progress_bar_update()
+            self.view.update_progressbar(
+                self.model.current_trace_index, self.model.number_of_traces
+            )
             success_message = f"\N{CHECK MARK} Successfully loaded {file_type.name.lower()} from: {file_name}"
             self.view.open_message_box(EventSeverity.INFO, success_message)
 
@@ -353,15 +361,6 @@ class MainController:
 
         # move on to the next file dialog that must be opened
         self._process_next_request()
-
-    def handle_progress_bar_update(self):
-        """Updates the progress bar to reflect the current trace and total number of traces"""
-        if self._data_is_loaded:
-            if (self.view.progressBar.minimum(), self.view.progressBar.maximum()) != (1, self.model._number_of_traces):
-                self.view.progressBar.setRange(1, self.model._number_of_traces)
-            self.view.plotted_trace_id.setText(f'{self.model.current_trace_id.split("_")[-1]}')
-            self.view.over_total_number_of_traces.setText(f'/ {self.model._number_of_traces}')
-            self.view.update_progressbar(int(self.model.current_trace_id.split("_")[-1]), self.model._number_of_traces)
 
     def handle_menu_file_open(self) -> None:
         """
