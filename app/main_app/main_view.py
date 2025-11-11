@@ -67,7 +67,6 @@ class MainView(QMainWindow, Ui_MainWindow):
         self.NextTraceButton.setProperty("role", "apply")
         self.previousTraceButton.setProperty("role", "undo")
         self.helpDocsButton.setProperty("role", "accent")
-        self.horizontalLayoutWidget_5.hide()
 
     # UI-logic / exposed to controller
     def display_trace_id(self, name: str) -> None:
@@ -88,8 +87,6 @@ class MainView(QMainWindow, Ui_MainWindow):
         """the Qt progressbar expects integer values. Round the input percentage."""
         self.progressBar.setValue(current_value)
         self.progressBar.setFormat(f'{current_value} / {total}')
-        if not self.horizontalLayoutWidget_5.isVisible():
-            self.horizontalLayoutWidget_5.show()
 
     def set_indicator_saved_changes_colors(
         self, color_on: Color, color_off: Color
