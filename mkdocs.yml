@@ -4,12 +4,13 @@ nav:
   - Home: index.md
   - Installation: installation.md 
   - Tutorials - User guides: 
-    - Load your TimeTrace data: how_to_load_data.md 
-    - Label your traces: how_to_label_traces.md 
-    - Label sections of your traces: how_to_label_sections.md 
-    - Save your labelled data: how_to_save_results.md 
+    - Label your TimeTrace data: tutorials/how_to_label_your_data.md 
   - Software design notes: software_design.md 
   - Release Notes: release_notes.md 
+
+extra_css:
+  - stylesheets/admonition-work-in-progress.css
+
 
 plugins:
     - search
@@ -28,6 +29,7 @@ theme:
         name: Switch to light mode    
       primary: teal
       accent: purple
+
 
   features:
     - search.suggest
@@ -55,3 +57,5 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
+
+
