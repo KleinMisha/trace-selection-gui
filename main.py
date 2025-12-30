@@ -49,6 +49,7 @@ def main():
     )
     plot_config = cast(InterActivePlotConfig, config_manger.get_config("plot"))
     theme_config = cast(ThemeConfig, config_manger.get_config("theme"))
+
     # Start setting up the main controller
     model = MainModel()
     view = MainView()

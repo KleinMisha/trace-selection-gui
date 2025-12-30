@@ -2,10 +2,14 @@ site_name: Trace-selection
 
 nav: 
   - Home: index.md
-
-
-
-  # - Versions: CHANGELOG.md 
+  - Installation: installation.md 
+  - Tutorials - User guides: 
+    - Load your TimeTrace data: how_to_load_data.md 
+    - Label your traces: how_to_label_traces.md 
+    - Label sections of your traces: how_to_label_sections.md 
+    - Save your labelled data: how_to_save_results.md 
+  - Software design notes: software_design.md 
+  - Release Notes: release_notes.md 
 
 plugins:
     - search
@@ -35,6 +39,9 @@ theme:
     - toc.integrate
 
 markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 2-3
   - admonition
   - pymdownx.details
   - pymdownx.tabbed:
@@ -43,3 +50,8 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
