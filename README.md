@@ -1,46 +1,72 @@
-# Trace selection GUI 
 
-*Simplified trace selection and labelling GUI*
+# 🔬 Time-trace (pre-)processing GUI 
 
-Uses `TimeTraceTools` to handle `TimeTrace` and `Experiment` data. 
+> **A re-imagined code for a GUI that is easy (easier) to maintain and expand.**
+
+🌐 Uses  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/)
 
 🌐 For full details, visit the site:
 [Open the Docs](https://your-mkdocs-site.com)
 
+<img src="docs/screenshots/dark_mode.png" width="1000">
 
-Basic workflow: 
 
-* Load raw experiment data (magnetic-tweezers, TIRF (?))
-* View the traces
-* tag traces with specified label
-* select a portion of the trace and tag that portion with a specified label 
-* Write the labels 
+&#x1F389; Hooray! You successfully performed your experiment!
 
-Once done, you can now use `TimeTraceTools` to write your entire data processing pipeline: 
-* Load the labels 
-* Perform a `SelectTracesByLabel` and/or `SelectSections` operations. 
-* Perform additional operations... 
+---
+&#x1F615;  Now you need to process your data. Where to start?
+
+---
+&#x1F4A1; This GUI helps you doing the most common pre-processing steps for *any* kind of time-trace data (especially those typical in single-molecule biophysics experiments).
+
+---
+&#x0031;&#xFE0F;&#x20E3; **Display all the traces.**
+
+*Perform basic background / reference subtraction and plot the raw data.*
+
+
+&#x0032;&#xFE0F;&#x20E3; **Categorize the traces.** 
+
+*Label (a subset) of the time-traces using your custom set of categories/labels. (i.e. 'shows event', 'shows multiple events', 'discard', 'use for nice figure', etc.)*
+
+&#x0033;&#xFE0F;&#x20E3; **Zoom in on particular time-windows.**
+
+*Select a particular section in (some of) the time-traces and give those sections their own labels. (i.e 'protein activity', 'quality check', etc.)* 
+
+---
+&#x1F44D; Now you have done the tedious manual inspection & selection required.
+
+&#x1F680; This GUI works with the data structures defined in  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/). This means writing your custom post-processing/analysis pipelines will become a breeze!
+
+
 
 
 
 
 ## Installation 
 
-### MacOS / Linux 
-Download the executable from [enter link later]()
+1. Clone this repository:
+```zsh
+git clone git@gitlab.com:DulinlabVU/trace_selection_gui.git
+cd trace_selection_gui
+```
 
-### Windows 
-Download the executable from [enter link later]()
+2. Run `main.py` and let  `uv` take care of creating a virtual environment with all the dependencies: 
+```zsh
+uv run python main.py
+```
+
 
 ### For Development
-Clone this repository and use `uv` to manage dependencies. 
+Developers need to install additional dependencies (such as `pytest` for unit tests and `mkdocs` for adjusting the documentation website).
 
 ```zsh
-# todo: adjust later 
-git clone ....
-cd ... 
-uv pip sync -d 
-...
+# clone this repository
+git clone git@gitlab.com:DulinlabVU/trace_selection_gui.git
+cd trace_selection_gui
+
+# create virtual environment including developer dependencies.
+uv sync --dev  
 ```
 
 
@@ -50,47 +76,15 @@ When you push to the `main` branch the following will happen automatically:
 ```mermaid 
 flowchart LR 
 
-tests --> build --> docs 
+tests  --> docs 
 ```
 
 **tests:**
-* unit tests: Assert basic functionality is not hampered with. 
+* unit tests: Assert crucial functionality is not hampered with. 
 * Only continue when you pass 
 
-**build:** 
-* create an executable. Users do not need to worry about having Python configured. 
+<!-- **build:** 
+* build and deploy the websi -->
 
 **docs:** 
 * builds the MkDocs webpage and deploys it on GitLab pages 
-
-
-## Repository layout 
-```shell
-    .
-    ├── app                 # (Python) source code 
-    │   ├── __init__.py     
-    │   ├── core                    # cross-cutting concerns (may be shared across the application)
-    │   ├── main_app                # Main application MVC
-    │   ├── section_label_assignment # component MVC 
-    │   └── ...
-    ├── tests                   # (Unit) tests (using pytest). Follows the same directory layout as the source code. 
-    │   ├── core                    
-    │   ├── main_app
-    │   ├── section_label_assignment
-    │   └── ... 
-    ├── main.py                 # Main entry-point of code 
-    ├── config.json             # (Default) user settings 
-    ├── scripts                 # Additional (Python) scripts not part of the main application 
-    ├── docs                    # MkDocs website contents (markdown files)
-    ├── mkdocs.yml              # MkDocs website: configuration 
-    ├── htmlcov                 # Pytest coverage report
-    ├── .vscode                 # IDE workspace settings (VSCode)    
-    ├── .gitignore                              
-    ├── README.md         
-    ├── ci                      # GitLab-CI scripts          
-    ├── gitlab-ci.yml           # GitLab-CI main job configuration         
-    ├── .venv                   # Python environment (UV)                  
-    ├── pyproject.toml          # Python project dependencies and settings (UV)                    
-    └── uv.lock                  
-
-```
