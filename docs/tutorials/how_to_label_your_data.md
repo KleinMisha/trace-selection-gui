@@ -36,9 +36,14 @@ or use the keyboard shortcut
 ## :material-cog: Adjust list of available labels
 Labels and section labels are independent from each other. This means you should construct your custom list of labels for both. 
 
-<img src="/screenshots/list_of_labels.png" width="600">
+<img src="/screenshots/list_of_labels.png" width="1000">
 
-<img src="/screenshots/list_of_section_labels.png" width="600">
+<img src="/screenshots/list_of_section_labels.png" width="1000">
+
+
+After closing the popup window, the label-panel and sections-panel will get updated: 
+
+<img src="/screenshots/labels_available.png" width="1000">
 
 ## :material-mouse: Create a new section 
 * Click in the plot twice to indicate the start / end of the section to be labelled 
