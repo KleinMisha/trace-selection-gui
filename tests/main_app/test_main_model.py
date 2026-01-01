@@ -369,3 +369,15 @@ def test_write_valid_sections_file(experiment: Experiment) -> None:
     ):
         model.write_section_labels()
         mock_writer.assert_called_once()
+
+
+def test_setting_empty_path(experiment: Experiment) -> None:
+    """Config file will have empty strings as defaults, make sure setting file paths stills works."""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    model.set_file_path_to_labels("")
+    assert str(model.path_to_labels) == "."
+
+    model.set_file_path_to_section_labels(".")
+    assert str(model.path_to_section_labels) == "."

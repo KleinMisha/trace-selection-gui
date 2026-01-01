@@ -116,7 +116,7 @@ class MainModel:
         self.path_to_labels = Path(path)
 
         # By default: add the first acceptable file extension
-        if not self.path_to_labels.suffix:
+        if self.path_to_labels.name and not self.path_to_labels.suffix:
             default_extension = FileType.LABELS.extensions_for(FileAction.SAVE)[0]
             self.path_to_labels = self.path_to_labels.with_suffix(default_extension)
 
@@ -124,7 +124,7 @@ class MainModel:
         self.path_to_section_labels = Path(path)
 
         # By default: add the first acceptable file extension
-        if not self.path_to_section_labels.suffix:
+        if self.path_to_section_labels.name and not self.path_to_section_labels.suffix:
             default_extension = FileType.SECTION_LABELS.extensions_for(FileAction.SAVE)[
                 0
             ]
