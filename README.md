@@ -1,24 +1,32 @@
 
-# 🔬 Time-trace (pre-)processing GUI 
 
-> **A re-imagined code for a GUI that is easy (easier) to maintain and expand.**
+# 🔬 Time-trace (pre-)processing GUI 
+> *A re-imagined code for a GUI that is easy (easier) to maintain and expand.*
+
+<span style="font-size: 16pt;">
+
+&#x1F389; **Hooray! You successfully performed your experiment!**
+
+
+&#x1F615;  Now you need to process your data. Where to start?
+</span>
+
+--- 
 
 🌐 Uses  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/)
 
 🌐 For full details, visit the site:
 [Open the Docs](https://your-mkdocs-site.com)
 
+
+
 <img src="docs/screenshots/dark_mode.png" width="1000">
 
+--- 
 
-&#x1F389; Hooray! You successfully performed your experiment!
+<div style="border:2px dotted #0eceaeff; padding:10px; border-radius:6px">
 
----
-&#x1F615;  Now you need to process your data. Where to start?
-
----
-&#x1F4A1; This GUI helps you doing the most common pre-processing steps for *any* kind of time-trace data (especially those typical in single-molecule biophysics experiments).
-
+&#x1F4A1; **Use this GUI for the first processing steps**
 ---
 &#x0031;&#xFE0F;&#x20E3; **Display all the traces.**
 
@@ -32,18 +40,17 @@
 &#x0033;&#xFE0F;&#x20E3; **Zoom in on particular time-windows.**
 
 *Select a particular section in (some of) the time-traces and give those sections their own labels. (i.e 'protein activity', 'quality check', etc.)* 
+</div>  
+<br>
+<span style="font-size: 16pt;">
 
----
-&#x1F44D; Now you have done the tedious manual inspection & selection required.
-
-&#x1F680; This GUI works with the data structures defined in  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/). This means writing your custom post-processing/analysis pipelines will become a breeze!
-
-
+&#x1F44D; Now you have done the tedious manual inspection & selection required.  
 
 
+&#x1F680; Further process your data using [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/). 
+</span>
 
-
-## Installation 
+## &#x1F4BE; Installation 
 
 1. Clone this repository:
 ```zsh
@@ -70,7 +77,7 @@ uv sync --dev
 ```
 
 
-# GitLab actions 
+# &#x1F501; GitLab actions 
 When you push to the `main` branch the following will happen automatically: 
 
 ```mermaid 
@@ -79,20 +86,19 @@ flowchart LR
 tests  --> docs --> Version[version bump]
 ```
 
-**tests:**
+**🧪 tests (&#x2705; success required)**
 * unit tests: Assert crucial functionality is not hampered with. 
 * Only continue when you pass 
 
 <!-- **build:** 
 * build and deploy the websi -->
 
-**docs:** 
+**&#x1F310; docs (&#x2705; success required)** 
 * builds the MkDocs webpage 
 * deploys it on GitLab pages 
 * only continue upon success 
 
-**version bump**
+**&#x1F3F7; version bump (&#x1F464; manual trigger)**
 * On GitLab/GitHub manually enter the bump (major, minor, or patch)
 * Bumps the package version in `pyproject.toml` (mainly for documentation purposes)
 * Creates a git tag with the new version and pushes this to the remote. 
-
