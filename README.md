@@ -76,7 +76,7 @@ When you push to the `main` branch the following will happen automatically:
 ```mermaid 
 flowchart LR 
 
-tests  --> docs 
+tests  --> docs --> Version[version bump]
 ```
 
 **tests:**
@@ -87,4 +87,12 @@ tests  --> docs
 * build and deploy the websi -->
 
 **docs:** 
-* builds the MkDocs webpage and deploys it on GitLab pages 
+* builds the MkDocs webpage 
+* deploys it on GitLab pages 
+* only continue upon success 
+
+**version bump**
+* On GitLab/GitHub manually enter the bump (major, minor, or patch)
+* Bumps the package version in `pyproject.toml` (mainly for documentation purposes)
+* Creates a git tag with the new version and pushes this to the remote. 
+

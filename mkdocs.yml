@@ -2,7 +2,6 @@ site_name: Trace-selection
 
 nav: 
   - Home: index.md
-  - Installation: installation.md 
   - Tutorials - User guides: 
     - Label your TimeTrace data: tutorials/how_to_label_your_data.md 
   - Software design notes: software_design.md 
