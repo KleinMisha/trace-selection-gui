@@ -29,6 +29,7 @@ from app.core.exceptions import (
     MissingExperimentError,
     UnsupportedFileTypeError,
 )
+from app.core.file_types import FileAction, FileType, is_valid_file_extension
 
 
 @dataclass
@@ -114,15 +115,31 @@ class MainModel:
     def set_file_path_to_labels(self, path: Path | str) -> None:
         self.path_to_labels = Path(path)
 
+        # By default: add the first acceptable file extension
+        if not self.path_to_labels.suffix:
+            default_extension = FileType.LABELS.extensions_for(FileAction.SAVE)[0]
+            self.path_to_labels = self.path_to_labels.with_suffix(default_extension)
+
     def set_file_path_to_section_labels(self, path: Path | str) -> None:
         self.path_to_section_labels = Path(path)
+
+        # By default: add the first acceptable file extension
+        if not self.path_to_section_labels.suffix:
+            default_extension = FileType.SECTION_LABELS.extensions_for(FileAction.SAVE)[
+                0
+            ]
+            self.path_to_labels = self.path_to_section_labels.with_suffix(
+                default_extension
+            )
 
     def load_experiment_data(self) -> None:
         """
         Read the data from file. Wrapper around functionality from TimeTraceTools
         """
         # Instantiate your magnetic tweezers Experiment
-        self._validate_file_extension(self.path_to_experiment_data, [".txt", ".npy"])
+        self._validate_file_extension(
+            self.path_to_experiment_data, FileType.RAW_DATA, FileAction.OPEN
+        )
         experiment = Experiment(ID="")
         experiment.load_raw_data(
             self.path_to_experiment_data, data_loader_fn=read_mt_data
@@ -150,7 +167,9 @@ class MainModel:
     def load_labels(self) -> None:
         if not self._experiment:
             raise MissingExperimentError("load_labels")
-        self._validate_file_extension(self.path_to_labels, ["json"])
+        self._validate_file_extension(
+            self.path_to_labels, FileType.LABELS, FileAction.OPEN
+        )
         labels_from_file = read_json(self.path_to_labels)
         self._experiment.set_labels(labels_from_file)
 
@@ -158,7 +177,9 @@ class MainModel:
         if not self._experiment:
             raise MissingExperimentError("load_section_labels")
 
-        self._validate_file_extension(self.path_to_section_labels, ["json"])
+        self._validate_file_extension(
+            self.path_to_section_labels, FileType.SECTION_LABELS, FileAction.OPEN
+        )
         section_labels_from_file = read_json(self.path_to_section_labels)
         self._experiment.set_section_labels(section_labels_from_file)
 
@@ -166,22 +187,27 @@ class MainModel:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
         if not self._experiment:
             raise MissingExperimentError("write_labels")
-        self._validate_file_extension(self.path_to_labels, ["json"])
+
+        self._validate_file_extension(
+            self.path_to_labels, FileType.LABELS, FileAction.SAVE
+        )
         write_experiment_labels(self._experiment, self.path_to_labels)
 
     def write_section_labels(self) -> None:
         """Write the data to file. Wrapper around functionality from TimeTraceTools"""
         if not self._experiment:
             raise MissingExperimentError("write_section_labels")
-        self._validate_file_extension(self.path_to_labels, ["json"])
+        self._validate_file_extension(
+            self.path_to_labels, FileType.SECTION_LABELS, FileAction.SAVE
+        )
         write_experiment_section_labels(self._experiment, self.path_to_labels)
 
     def _validate_file_extension(
-        self, file: Path, allowed_extensions: list[str]
+        self, file: Path, file_type: FileType, file_action: FileAction
     ) -> None:
-        """checks the file extension of the selected file path"""
-        file_extension = file.suffix
-        if file_extension not in allowed_extensions:
+        """Raises exception if file type is not allowed for the selected action on the type of file."""
+        if not is_valid_file_extension(file, file_type, file_action):
+            allowed_extensions = file_type.extensions_for(file_action)
             raise UnsupportedFileTypeError(
                 f"File {file.name} (extension: {file.suffix}) is not one of the valid file extensions: \n{','.join(allowed_extensions)}"
             )
