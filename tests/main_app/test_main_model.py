@@ -286,19 +286,37 @@ def test_fetching_index_by_trace_id(
     assert model.find_index_from_id(trace_id) == expected_index
 
 
-def test_loading_invalid_file() -> None:
+def test_loading_invalid_file(experiment: Experiment) -> None:
     """Make sure to raise an exception when user tries to open a file of the wrong type."""
     model = MainModel()
+    model._set_experiment(experiment)
     with (
         patch.object(MainModel, attribute="_set_experiment") as mock_setter,
+        patch("app.main_app.main_model.write_experiment_labels") as mock_label_writer,
+        patch(
+            "app.main_app.main_model.write_experiment_section_labels"
+        ) as mock_section_writer,
         patch.object(
             MainModel, "_validate_file_extension", side_effect=UnsupportedFileTypeError
         ),
     ):
+        # raw data:
         with pytest.raises(UnsupportedFileTypeError):
             model.load_experiment_data()
 
         mock_setter.assert_not_called()
+
+        # previous labels
+        with pytest.raises(UnsupportedFileTypeError):
+            model.load_labels()
+
+        mock_label_writer.assert_not_called()
+
+        # previous sections
+        with pytest.raises(UnsupportedFileTypeError):
+            model.load_section_labels()
+
+        mock_section_writer.assert_not_called()
 
 
 def test_adding_default_extension_labels(experiment: Experiment) -> None:
