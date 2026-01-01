@@ -3,6 +3,7 @@ File types used as input/output data.
 """
 
 from enum import Enum, auto
+from pathlib import Path
 
 
 class FileAction(Enum):
@@ -51,6 +52,14 @@ class FileType(Enum):
             [f"*{ext}" for ext in self.extensions_for(action)]
         )
         return f"{self.description} ({allowed_extensions})"
+
+
+def is_valid_file_extension(
+    file: Path, file_type: FileType, file_action: FileAction
+) -> bool:
+    """Checks if the selected file has the correct file extension"""
+    allowed_extensions = file_type.extensions_for(file_action)
+    return file.suffix in allowed_extensions
 
 
 def create_file_filter(file_type: FileType, file_action: FileAction) -> str:
