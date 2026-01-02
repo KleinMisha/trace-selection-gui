@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'app/theme_manager/theme_view.ui'
+# Form implementation generated from reading ui file '/Users/misha/code/trace_selection_gui/app/theme_manager/theme_view.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #

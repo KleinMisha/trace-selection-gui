@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'app/interactive_plot/plot_view.ui'
+# Form implementation generated from reading ui file '/Users/misha/code/trace_selection_gui/app/interactive_plot/plot_view.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #

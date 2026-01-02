@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'app/item_list/item_list_app_layout.ui'
+# Form implementation generated from reading ui file '/Users/misha/code/trace_selection_gui/app/item_list/item_list_app_layout.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #

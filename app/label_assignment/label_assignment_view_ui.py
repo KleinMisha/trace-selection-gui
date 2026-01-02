@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'app/label_assignment/label_assignment_view.ui'
+# Form implementation generated from reading ui file '/Users/misha/code/trace_selection_gui/app/label_assignment/label_assignment_view.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
