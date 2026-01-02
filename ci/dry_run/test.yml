@@ -16,7 +16,7 @@ pytest:
     expire_in: 1 week
   coverage: '/TOTAL.*?(\d+\.\d+%|\d+%)/'
   only:
-    - ci
+    - feature/ci-gitlab
 
 
 
