@@ -2,8 +2,8 @@ pytest:
   image: python:3.12-slim
   stage: test
   before_script:
-    - apt-get update && apt-get install -y git curl --no-install-recommends
-    - apt-get update && apt-get install -y --no-install-recommends \
+    - apt-get update
+    - apt-get install -y --no-install-recommends \
       libharfbuzz0b \
       libsm6 \
       libpng16-16 \
