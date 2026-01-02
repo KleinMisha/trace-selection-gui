@@ -1,8 +1,11 @@
 pytest:
-  image: python:3.12
+  image: python:3.12-slim
   stage: test
   before_script:
+    - apt-get update && apt-get install -y git curl libgl1 libx11-6 libxkbcommon0
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/".insteadOf "https://gitlab.com/"
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
   script:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
