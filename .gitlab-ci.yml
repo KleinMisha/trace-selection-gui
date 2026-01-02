@@ -1,0 +1,9 @@
+stages:
+  - test
+  - build_docs_site
+  - version
+
+include:
+  - local: ci/dry_run/test.yml
+  - local: ci/dry_run/build_docs_site.yml
+  - local: ci/dry_run/version.yml

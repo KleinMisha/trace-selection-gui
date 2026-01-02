@@ -5,8 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "matplotlib>=3.10.5",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.6.21",
+    "numpy>=2.3.2",
     "pyqt6>=6.9.1",
+    "time_trace_tools",
 ]
+
+[tool.uv.sources]
+time_trace_tools = { git = 'https://gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.2"}
 
 [dependency-groups]
 dev = [
@@ -16,13 +24,17 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "trace_selection"}
+package-dir = {"" = "app"}
 
 [tool.setuptools.packages.find]
-where = ["trace_selection"]
+where = ["app"]
 
 
 [tool.pytest.ini_options]
-pythonpath = ["trace_selection"]
+pythonpath = ["app"]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["tests/*"]
+
 

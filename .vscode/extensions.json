@@ -8,10 +8,7 @@
         "yzhang.markdown-all-in-one",
         "tamasfe.even-better-toml",
         "aaron-bond.better-comments",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "seanwu.vscode-qt-for-python",
     ]
-
-
-
-
 }

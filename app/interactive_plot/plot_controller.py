@@ -1,0 +1,260 @@
+"""
+Controller: handle user interaction events (signals received from the View) and pass the View the appropriate data from the Model to then be shown in the View
+"""
+
+from typing import Callable, Optional, Protocol
+
+import numpy as np
+from numpy.typing import NDArray
+from PyQt6.QtCore import QObject, pyqtSignal
+
+from app.core.theme_types import Color, Theme
+from app.interactive_plot.plot_config import InterActivePlotConfig
+from app.interactive_plot.plot_model import TraceData
+
+
+class Model(Protocol):
+    """Protocol for the InteractivePlot Model"""
+
+    @property
+    def t_min(self) -> float: ...
+
+    @t_min.setter
+    def t_min(self, value: float) -> None: ...
+
+    @property
+    def t_max(self) -> float: ...
+
+    @t_max.setter
+    def t_max(self, value: float) -> None: ...
+
+    @property
+    def z_min(self) -> float: ...
+
+    @z_min.setter
+    def z_min(self, value: float) -> None: ...
+
+    @property
+    def z_max(self) -> float: ...
+
+    @z_max.setter
+    def z_max(self, value: float) -> None: ...
+
+    @property
+    def trace_data(self) -> TraceData | None: ...
+
+    @trace_data.setter
+    def trace_data(self, data: TraceData) -> None: ...
+
+    def find_nearest_data_point(self, x_coordinate: float) -> tuple[float, float]: ...
+
+    def has_data(self) -> bool: ...
+
+    def get_time_point_by_index(self, index: int) -> float: ...
+
+
+class View(Protocol):
+    """Protocol for the InteractivePlot View"""
+
+    # logic to change the view
+    def set_plot_colors(self, color_data: Color, color_vert_line: Color) -> None: ...
+    def update_figure(self, title: Optional[str] = None) -> None: ...
+    def adjust_t_range(self, min_value: float, max_value: float): ...
+    def adjust_z_range(self, min_value: float, max_value: float): ...
+    def show_t_vs_z_plot(
+        self, t: NDArray[np.floating], z: NDArray[np.floating]
+    ) -> None: ...
+    def show_line_in_plot(self, time_point: float) -> None: ...
+    def clear_last_line_from_plot(self) -> None: ...
+    def clear_all_lines_from_plot(self) -> None: ...
+    def clear_figure(self) -> None: ...
+
+    # connect methods on the Controller side to the pyqtSignals
+    def connect_left_mouse_click(
+        self, callback: Callable[[float, float], None]
+    ) -> None: ...
+    def connect_right_mouse_click(self, callback: Callable[[], None]) -> None: ...
+    def connect_adjusted_z_min(self, callback: Callable[[str], None]) -> None: ...
+    def connect_adjusted_z_max(self, callback: Callable[[str], None]) -> None: ...
+    def connect_adjusted_t_min(self, callback: Callable[[str], None]) -> None: ...
+    def connect_adjusted_t_max(self, callback: Callable[[str], None]) -> None: ...
+    def connect_lock_clicks_toggled_signal(
+        self, callback: Callable[[bool], None]
+    ) -> None: ...
+
+
+class InteractivePlotController(QObject):
+    # signals send back upwards to the main controller
+    _line_added_to_plot_signal = pyqtSignal(float)
+    _line_removed_from_plot_signal = pyqtSignal()
+
+    def __init__(self, model: Model, view: View, config: InterActivePlotConfig) -> None:
+        super().__init__()
+        self.model = model
+        self.view = view
+        self.config = config
+
+        # connect callbacks :: Listening to the View's signals
+        self.view.connect_left_mouse_click(self.handle_left_mouse_click)
+        self.view.connect_right_mouse_click(self.handle_right_mouse_click)
+        self.view.connect_adjusted_z_min(self.handle_adjusted_z_min)
+        self.view.connect_adjusted_z_max(self.handle_adjusted_z_max)
+        self.view.connect_adjusted_t_min(self.handle_adjusted_t_min)
+        self.view.connect_adjusted_t_max(self.handle_adjusted_t_max)
+        self.view.connect_lock_clicks_toggled_signal(self.handle_lock_clicks_toggled)
+
+        # click action lock toggle. NOTE: Ensure the View has it turned off at startup (is now also enforced with a unittest)
+        self._lock_clicks: bool = False
+
+    # To be called from outside:
+    def reset_for_new_trace(
+        self, trace: TraceData, section_boundaries: list[int]
+    ) -> None:
+        """(Re)set the data known to the model and plot the new trace + previously selected sections"""
+
+        self.model.trace_data = trace
+        self.view.clear_figure()
+
+        self.view.show_t_vs_z_plot(trace.t, trace.z)
+        for frame_nr in section_boundaries:
+            time_point = self.model.get_time_point_by_index(frame_nr)
+            self.view.show_line_in_plot(time_point)
+
+        self.view.update_figure()
+
+    def data_is_loaded(self) -> bool:
+        """Convenience method used both in this controller + the main controller to guard against actions at startup"""
+        return self.model.has_data()
+
+    def apply_theme(self, theme: Theme) -> None:
+        """
+        Sets appropriate colors: Defaults will come from the theme.
+        """
+        # NOTE: for the time trace itself, having this color depend on the theme makes less sense I think: just default to black
+        vert_line_color = self.config.vertical_line_color or theme.accent
+        data_color = self.config.data_line_color or "black"
+        self.view.set_plot_colors(
+            color_data=data_color, color_vert_line=vert_line_color
+        )
+
+    # Callbacks for signals emitted by the View
+    def handle_left_mouse_click(self, x_click: float, _: float) -> None:
+        """
+        triggers when user clicks in the plot (left mouse button)
+        NOTE: The signal emitted by the View has the x and y coordinates of where the user clicked.
+        However, we technically do not need both for now. Hence, the "_" as an argument.
+        ? Should this be removed?
+        """
+        # If locked, simply ignore the click
+        if self._lock_clicks:
+            return
+
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.data_is_loaded():
+            return
+
+        t_data_point, _ = self.model.find_nearest_data_point(x_click)
+        self.view.show_line_in_plot(t_data_point)
+        self.view.update_figure()
+
+        # inform the main Controller
+        self._send_line_added_to_plot_signal(t_data_point)
+
+    def handle_right_mouse_click(self) -> None:
+        """
+        triggers when the user clicks in the plot (right mouse button)
+        """
+
+        # If locked, simply ignore the click
+        if self._lock_clicks:
+            return
+
+        # If the user clicks before any data is loaded, simply ignore the action
+        if not self.data_is_loaded():
+            return
+
+        self.view.clear_last_line_from_plot()
+        self.view.update_figure()
+
+        # inform the main Controller
+        self._send_line_removed_from_plot_signal()
+
+    def handle_adjusted_z_min(self, entry: str) -> None:
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+
+        new_value = self._get_value_or_default(entry, default=self.config.min_height)
+        if new_value is not None:
+            self.model.z_min = new_value
+            z_min = self.model.z_min
+            z_max = self.model.z_max
+            self.view.adjust_z_range(min_value=z_min, max_value=z_max)
+            self.view.update_figure()
+
+    def handle_adjusted_z_max(self, entry: str) -> None:
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+
+        new_value = self._get_value_or_default(entry, default=self.config.max_height)
+        if new_value is not None:
+            self.model.z_max = new_value
+            z_min = self.model.z_min
+            z_max = self.model.z_max
+            self.view.adjust_z_range(min_value=z_min, max_value=z_max)
+            self.view.update_figure()
+
+    def handle_adjusted_t_min(self, entry: str) -> None:
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+        new_value = self._get_value_or_default(entry, default=self.config.min_time)
+        if new_value is not None:
+            self.model.t_min = new_value
+            t_min = self.model.t_min
+            t_max = self.model.t_max
+            self.view.adjust_t_range(min_value=t_min, max_value=t_max)
+            self.view.update_figure()
+
+    def handle_adjusted_t_max(self, entry: str) -> None:
+        """triggers when done adjusting. For a smooth working UI: if not a valid entry, default to values from configuration file (if available)"""
+
+        new_value = self._get_value_or_default(entry, default=self.config.max_time)
+        if new_value is not None:
+            self.model.t_max = new_value
+            t_min = self.model.t_min
+            t_max = self.model.t_max
+            self.view.adjust_t_range(min_value=t_min, max_value=t_max)
+            self.view.update_figure()
+
+    def handle_lock_clicks_toggled(self, checked: bool) -> None:
+        """simply store the state, for it to be used in other functions"""
+        self._lock_clicks = checked
+
+    # Actions that should effect cross-components. Send a signal to allow the main controller to handle things.
+    # NOTE: Strictly not needed to have these methods explicitly, but makes for better readability in my opinion.
+    def _send_line_added_to_plot_signal(self, location: float) -> None:
+        self._line_added_to_plot_signal.emit(location)
+
+    def _send_line_removed_from_plot_signal(self) -> None:
+        self._line_removed_from_plot_signal.emit()
+
+    def connect_line_added_to_plot(self, callback: Callable[[float], None]) -> None:
+        self._line_added_to_plot_signal.connect(callback)
+
+    def connect_line_removed_from_plot(self, callback: Callable[[], None]) -> None:
+        self._line_removed_from_plot_signal.connect(callback)
+
+    # used internally
+    def _get_value_or_default(self, entry: str, default: float | None) -> float | None:
+        """Get float from entry if valid, otherwise return default."""
+        return float(entry) if self._is_valid_number(entry) else default
+
+    @staticmethod
+    def _is_valid_number(entry: str) -> bool:
+        has_at_most_one_decimal_point = entry.count(".") <= 1
+        is_positive_number = entry.count("-") == 0
+        is_negative_number = entry.count("-") == 1 and entry[0] == "-"
+        what_remains_are_digits = (
+            entry.replace(".", "", 1).replace("-", "", 1).isdigit()
+        )
+        return (
+            has_at_most_one_decimal_point
+            and (is_positive_number or is_negative_number)
+            and what_remains_are_digits
+        )

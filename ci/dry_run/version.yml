@@ -1,0 +1,37 @@
+bump_version_and_tag_dry_run:
+  stage: version
+  image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.name "GitLab CI/CD"
+    - git config --global user.email "gitlab-ci@email.com"
+    - git remote set-url origin https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
+  script:
+    - |
+      echo "DRY RUN: Version bump & tag test"
+      echo "Repository: $CI_PROJECT_PATH"
+      echo "Branch: $CI_COMMIT_BRANCH"
+      echo "Commit SHA: $CI_COMMIT_SHA"
+
+      echo "Testing remote access..."
+      git remote -v
+
+      echo "Fetching refs..."
+      git fetch origin
+
+      echo "Listing available tags:"
+      git tag --list
+
+      echo "Simulating version bump..."
+      echo "Would run: uv version --bump ${VERSION_TYPE:-patch}"
+      echo "Would commit with: ci skip"
+      echo "Would push to branch: ci"
+      echo "Would create tag: ci-vX.Y.Z"
+
+      echo "DRY RUN COMPLETE — no changes made"
+  needs:
+    - pytest
+    - pages
+  only:
+    - feature/ci-gitlab
+  when: manual

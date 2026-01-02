@@ -1,0 +1,60 @@
+site_name: Trace-selection  
+
+nav: 
+  - Home: index.md
+  - Tutorials - User guides: 
+    - Label your TimeTrace data: tutorials/how_to_label_your_data.md 
+  - Software design notes: software_design.md 
+  - Release Notes: release_notes.md 
+
+extra_css:
+  - stylesheets/admonition-work-in-progress.css
+
+
+plugins:
+    - search
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline 
+        name: Switch to dark mode
+      primary: teal
+      accent: purple 
+    - scheme: slate 
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode    
+      primary: teal
+      accent: purple
+
+
+  features:
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 2-3
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+
+
