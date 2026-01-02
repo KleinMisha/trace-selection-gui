@@ -3,13 +3,7 @@ pytest:
   stage: test
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends \
-        qt6-base-dev \
-        qt6-base-dev-tools \
-        libgl1 \
-        libxkbcommon-x11-0 \
-        libxcb-cursor0 \
-        xvfb
+    - apt-get install -y --no-install-recommends qt6-base-dev qt6-base-dev-tools libgl1 libxkbcommon-x11-0 libxcb-cursor0 xvfb
     - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/".insteadOf "https://gitlab.com/"
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
