@@ -16,7 +16,7 @@
 🌐 Uses  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/)
 
 🌐 For full details, visit the site:
-[Open the Docs](https://your-mkdocs-site.com)
+[Open the Docs](https://trace-selection-gui-8a8ed0.gitlab.io )
 
 
 
