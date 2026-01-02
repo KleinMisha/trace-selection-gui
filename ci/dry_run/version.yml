@@ -7,7 +7,7 @@ bump_version_and_tag_dry_run:
     - git config --global user.email "gitlab-ci@email.com"
     - git remote set-url origin https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
-    - echo "🔍 DRY RUN: Version bump & tag test"
+    - echo "DRY RUN: Version bump & tag test"
     - echo "Repository: $CI_PROJECT_PATH"
     - echo "Branch: $CI_COMMIT_BRANCH"
     - echo "Commit SHA: $CI_COMMIT_SHA"
@@ -27,7 +27,7 @@ bump_version_and_tag_dry_run:
     - echo "Would push to branch: ci"
     - echo "Would create tag: ci-vX.Y.Z"
     - echo
-    - echo "✅ DRY RUN COMPLETE — no changes made"
+    - echo "DRY RUN COMPLETE — no changes made"
   needs:
     - pytest
     - pages
