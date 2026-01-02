@@ -1165,6 +1165,8 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "matplotlib" },
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
     { name = "numpy" },
     { name = "pyqt6" },
     { name = "time-trace-tools" },
@@ -1180,6 +1182,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.5" },
+    { name = "mkdocs", specifier = ">=1.6.1" },
+    { name = "mkdocs-material", specifier = ">=9.6.21" },
     { name = "numpy", specifier = ">=2.3.2" },
     { name = "pyqt6", specifier = ">=6.9.1" },
     { name = "time-trace-tools", git = "ssh://git@gitlab.com/DulinlabVU/time-trace-tools.git?tag=v1.1.2" },

@@ -1,71 +1,104 @@
-# Trace selection GUI 
-
-*Simplified trace selection and labelling GUI*
-
-Uses `TimeTraceTools` to handle `TimeTrace` and `Experiment` data. 
-
-Basic workflow: 
-
-* Load raw experiment data (magnetic-tweezers, TIRF (?))
-* View the traces
-* tag traces with specified label
-* select a portion of the trace and tag that portion with a specified label 
-* Write the labels 
-
-Once done, you can now use `TimeTraceTools` to write your entire data processing pipeline: 
-* Load the labels 
-* Perform a `SelectTracesByLabel` and/or `SelectSections` operations. 
-* Perform additional operations... 
 
 
+# 🔬 Time-trace (pre-)processing GUI 
+> *A re-imagined code for a GUI that is easy (easier) to maintain and expand.*
+
+<span style="font-size: 16pt;">
+
+&#x1F389; **Hooray! You successfully performed your experiment!**
 
 
-## Installation 
+&#x1F615;  Now you need to process your data. Where to start?
+</span>
 
-### MacOS / Linux 
-Download the executable from [enter link later]()
+--- 
 
-### Windows 
-Download the executable from [enter link later]()
+🌐 Uses  [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/)
 
-### For Development
-Clone this repository and use `uv` to manage dependencies. 
+🌐 For full details, visit the site:
+[Open the Docs](https://your-mkdocs-site.com)
 
+
+
+<img src="docs/screenshots/dark_mode.png" width="1000">
+
+--- 
+
+<div style="border:2px dotted #0eceaeff; padding:10px; border-radius:6px">
+
+&#x1F4A1; **Use this GUI for the first processing steps**
+---
+&#x0031;&#xFE0F;&#x20E3; **Display all the traces.**
+
+*Perform basic background / reference subtraction and plot the raw data.*
+
+
+&#x0032;&#xFE0F;&#x20E3; **Categorize the traces.** 
+
+*Label (a subset) of the time-traces using your custom set of categories/labels. (i.e. 'shows event', 'shows multiple events', 'discard', 'use for nice figure', etc.)*
+
+&#x0033;&#xFE0F;&#x20E3; **Zoom in on particular time-windows.**
+
+*Select a particular section in (some of) the time-traces and give those sections their own labels. (i.e 'protein activity', 'quality check', etc.)* 
+</div>  
+<br>
+<span style="font-size: 16pt;">
+
+&#x1F44D; Now you have done the tedious manual inspection & selection required.  
+
+
+&#x1F680; Further process your data using [`TimeTraceTools`](https://time-trace-tools-3ff349.gitlab.io/). 
+</span>
+
+## &#x1F4BE; Installation 
+
+1. Clone this repository:
 ```zsh
-# todo: adjust later 
-git clone ....
-cd ... 
-uv pip sync -d 
-...
+git clone git@gitlab.com:DulinlabVU/trace_selection_gui.git
+cd trace_selection_gui
+```
+
+2. Run `main.py` and let  `uv` take care of creating a virtual environment with all the dependencies: 
+```zsh
+uv run python main.py
 ```
 
 
-# GitLab actions 
+### For Development
+Developers need to install additional dependencies (such as `pytest` for unit tests and `mkdocs` for adjusting the documentation website).
+
+```zsh
+# clone this repository
+git clone git@gitlab.com:DulinlabVU/trace_selection_gui.git
+cd trace_selection_gui
+
+# create virtual environment including developer dependencies.
+uv sync --dev  
+```
+
+
+# &#x1F501; GitLab actions 
 When you push to the `main` branch the following will happen automatically: 
 
 ```mermaid 
 flowchart LR 
 
-tests --> build --> docs 
+tests  --> docs --> Version[version bump]
 ```
 
-**tests:**
-* unit tests: Assert basic functionality is not hampered with. 
+**🧪 tests (&#x2705; success required)**
+* unit tests: Assert crucial functionality is not hampered with. 
 * Only continue when you pass 
 
-**build:** 
-* create an executable. Users do not need to worry about having Python configured. 
+<!-- **build:** 
+* build and deploy the websi -->
 
-**docs:** 
-* builds the MkDocs webpage and deploys it on GitLab pages 
+**&#x1F310; docs (&#x2705; success required)** 
+* builds the MkDocs webpage 
+* deploys it on GitLab pages 
+* only continue upon success 
 
-
-
-
-## design notes 
-To make this code clean and easy to extend: 
-* It does not do too much: Only viewing traces and tagging (sections / a set of time frames) with custom labels. 
-* Separate the user facing parts from the operations done: Allows one to swap the GUI building package if one so desires. 
-* Integrated unit tests. 
-* A widget / smaller app that handles adding/removing string items (labels) to a list: Can be used as standalone app --> Can be used in some other setting easily. 
-
+**&#x1F3F7; version bump (&#x1F464; manual trigger)**
+* On GitLab/GitHub manually enter the bump (major, minor, or patch)
+* Bumps the package version in `pyproject.toml` (mainly for documentation purposes)
+* Creates a git tag with the new version and pushes this to the remote. 
