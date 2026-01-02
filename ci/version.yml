@@ -10,7 +10,7 @@ bump_version_and_tag:
     - wget -qO- https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH" 
   script:
-    - uv version --bump ${VERSION_TYPE:-patch} 
+    - uv version --bump ${VERSION_TYPE:-patch}  --no-sync
     - VERSION=$(uv version --short)
     - git commit -am "Bump version to $VERSION [ci skip]"
     - git push origin HEAD:main
