@@ -105,4 +105,8 @@ tests  --> docs --> Version[version bump]
 
 **NOTE: To initiate the version bump, click on the job in the pipeline. You will see the following screen. Enter `VERSION_TYPE` as the key and any of 'major', 'minor', or 'patch' as the value. This specifies how you want to bump the version.**
 
+<img src="docs/screenshots/gitlab_ci_version_bump.png" width="500">
+
+
+
 **NOTE 2: After doing this, you probably want to `git pull origin main` in order to have the updated `pyproject.toml` with the bumped version on your local repository.** 
