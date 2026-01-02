@@ -19,7 +19,7 @@ bump_version_and_tag_dry_run:
     - git fetch origin
     - echo
     - echo "Listing last 5 tags:"
-    - git tag --list | tail -n 5
+    - git tag --list
     - echo
     - echo "Simulating version bump..."
     - echo "Would run: uv version --bump ${VERSION_TYPE:-patch}"
