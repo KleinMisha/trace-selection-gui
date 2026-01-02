@@ -11,22 +11,22 @@ bump_version_and_tag_dry_run:
     - echo "Repository: $CI_PROJECT_PATH"
     - echo "Branch: $CI_COMMIT_BRANCH"
     - echo "Commit SHA: $CI_COMMIT_SHA"
-    - echo
+    - echo ""
     - echo "Testing remote access..."
     - git remote -v
-    - echo
+    - echo ""
     - echo "Fetching refs..."
     - git fetch origin
-    - echo
+    - echo ""
     - echo "Listing last 5 tags:"
     - git tag --list
-    - echo
+    - echo ""
     - echo "Simulating version bump..."
     - echo "Would run: uv version --bump ${VERSION_TYPE:-patch}"
     - echo "Would commit with: ci skip"
     - echo "Would push to branch: ci"
     - echo "Would create tag: ci-vX.Y.Z"
-    - echo
+    - echo ""
     - echo "DRY RUN COMPLETE — no changes made"
   needs:
     - pytest
