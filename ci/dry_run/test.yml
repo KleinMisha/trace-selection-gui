@@ -1,0 +1,22 @@
+pytest:
+  image: python:3.12
+  stage: test
+  script:
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    - uv sync
+    - uv run pytest --cov --cov-report=term --cov-report=html --cov-report=xml -v --junitxml=test-results.xml
+  artifacts:
+    when: always
+    reports:
+      junit: test-results.xml
+    paths:
+      - test-results.xml
+      - htmlcov/           # HTML coverage report for human-readable view
+    expire_in: 1 week
+  coverage: '/TOTAL.*?(\d+\.\d+%|\d+%)/'
+  only:
+    - ci
+
+
+
