@@ -1,5 +1,5 @@
 pytest:
-  image: python:3.12-slim
+  image: python:3.12-slim-bookworm
   stage: test
   before_script:
     - apt-get update
