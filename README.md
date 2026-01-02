@@ -92,8 +92,6 @@ tests  --> docs --> Version[version bump]
 * unit tests: Assert crucial functionality is not hampered with. 
 * Only continue when you pass 
 
-<!-- **build:** 
-* build and deploy the websi -->
 
 **&#x1F310; docs (&#x2705; success required)** 
 * builds the MkDocs webpage 
@@ -104,3 +102,7 @@ tests  --> docs --> Version[version bump]
 * On GitLab/GitHub manually enter the bump (major, minor, or patch)
 * Bumps the package version in `pyproject.toml` (mainly for documentation purposes)
 * Creates a git tag with the new version and pushes this to the remote. 
+
+**NOTE: To initiate the version bump, click on the job in the pipeline. You will see the following screen. Enter `VERSION_TYPE` as the key and any of 'major', 'minor', or 'patch' as the value. This specifies how you want to bump the version.**
+
+**NOTE 2: After doing this, you probably want to `git pull origin main` in order to have the updated `pyproject.toml` with the bumped version on your local repository.** 
