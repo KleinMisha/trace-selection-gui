@@ -7,27 +7,28 @@ bump_version_and_tag_dry_run:
     - git config --global user.email "gitlab-ci@email.com"
     - git remote set-url origin https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
-    - echo "DRY RUN: Version bump & tag test"
-    - echo "Repository: $CI_PROJECT_PATH"
-    - echo "Branch: $CI_COMMIT_BRANCH"
-    - echo "Commit SHA: $CI_COMMIT_SHA"
-    - echo ""
-    - echo "Testing remote access..."
-    - git remote -v
-    - echo ""
-    - echo "Fetching refs..."
-    - git fetch origin
-    - echo ""
-    - echo "Listing last 5 tags:"
-    - git tag --list
-    - echo ""
-    - echo "Simulating version bump..."
-    - echo "Would run: uv version --bump ${VERSION_TYPE:-patch}"
-    - echo "Would commit with: ci skip"
-    - echo "Would push to branch: ci"
-    - echo "Would create tag: ci-vX.Y.Z"
-    - echo ""
-    - echo "DRY RUN COMPLETE — no changes made"
+    - |
+      echo "DRY RUN: Version bump & tag test"
+      echo "Repository: $CI_PROJECT_PATH"
+      echo "Branch: $CI_COMMIT_BRANCH"
+      echo "Commit SHA: $CI_COMMIT_SHA"
+
+      echo "Testing remote access..."
+      git remote -v
+
+      echo "Fetching refs..."
+      git fetch origin
+
+      echo "Listing available tags:"
+      git tag --list
+
+      echo "Simulating version bump..."
+      echo "Would run: uv version --bump ${VERSION_TYPE:-patch}"
+      echo "Would commit with: ci skip"
+      echo "Would push to branch: ci"
+      echo "Would create tag: ci-vX.Y.Z"
+
+      echo "DRY RUN COMPLETE — no changes made"
   needs:
     - pytest
     - pages
