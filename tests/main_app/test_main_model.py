@@ -6,7 +6,7 @@ NOTE: TimeTraceTools already tests that functions used from there work. hence, w
 NOTE: Hence, we just use unittest.mock.Mock to assert the correct functions are called. Their internal logic is already assured to be correct by the time_trace_tools library itself.
 """
 
-from typing import Any, cast
+from typing import cast
 from unittest.mock import Mock, PropertyMock, patch
 
 import numpy as np
@@ -18,6 +18,8 @@ from time_trace_tools.data_types.magnetic_tweezers_trace import (
     MagneticTweezersTrace as Trace,
 )
 
+from app.core.exceptions import UnsupportedFileTypeError
+from app.core.file_types import FileAction, FileType
 from app.main_app.main_model import MainModel, MissingExperimentError
 
 NUMBER_OF_TRACES = 100
@@ -282,3 +284,100 @@ def test_fetching_index_by_trace_id(
     model = MainModel()
     model._set_experiment(experiment)
     assert model.find_index_from_id(trace_id) == expected_index
+
+
+def test_loading_invalid_file(experiment: Experiment) -> None:
+    """Make sure to raise an exception when user tries to open a file of the wrong type."""
+    model = MainModel()
+    model._set_experiment(experiment)
+    with (
+        patch.object(MainModel, attribute="_set_experiment") as mock_setter,
+        patch("app.main_app.main_model.write_experiment_labels") as mock_label_writer,
+        patch(
+            "app.main_app.main_model.write_experiment_section_labels"
+        ) as mock_section_writer,
+        patch.object(
+            MainModel, "_validate_file_extension", side_effect=UnsupportedFileTypeError
+        ),
+    ):
+        # raw data:
+        with pytest.raises(UnsupportedFileTypeError):
+            model.load_experiment_data()
+
+        mock_setter.assert_not_called()
+
+        # previous labels
+        with pytest.raises(UnsupportedFileTypeError):
+            model.load_labels()
+
+        mock_label_writer.assert_not_called()
+
+        # previous sections
+        with pytest.raises(UnsupportedFileTypeError):
+            model.load_section_labels()
+
+        mock_section_writer.assert_not_called()
+
+
+def test_adding_default_extension_labels(experiment: Experiment) -> None:
+    """Allow user to 'forget' to add a file extension when selecting the output path"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    model.set_file_path_to_labels("mock")
+
+    expected_extension = FileType.LABELS.extensions_for(FileAction.SAVE)[0]
+    assert str(model.path_to_labels) == f"mock{expected_extension}"
+
+
+def test_adding_default_extension_sections(experiment: Experiment) -> None:
+    """Allow user to 'forget' to add a file extension when selecting the output path"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    model.set_file_path_to_labels("mock")
+
+    expected_extension = FileType.SECTION_LABELS.extensions_for(FileAction.SAVE)[0]
+    assert str(model.path_to_labels) == f"mock{expected_extension}"
+
+
+def test_write_valid_labels_file(experiment: Experiment) -> None:
+    """Check that selecting a file without extension still safely makes it through the writing process (because of the above)"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    model.set_file_path_to_labels("mock")
+
+    with (
+        patch.object(
+            MainModel, attribute="_validate_file_extension", return_value=True
+        ),
+        patch("app.main_app.main_model.write_experiment_labels") as mock_writer,
+    ):
+        model.write_labels()
+        mock_writer.assert_called_once()
+
+
+def test_write_valid_sections_file(experiment: Experiment) -> None:
+    """Check that selecting a file without extension still safely makes it through the writing process (because of the above)"""
+    model = MainModel()
+    model._set_experiment(experiment)
+    model.set_file_path_to_section_labels("mock")
+
+    with (
+        patch.object(
+            MainModel, attribute="_validate_file_extension", return_value=True
+        ),
+        patch("app.main_app.main_model.write_experiment_section_labels") as mock_writer,
+    ):
+        model.write_section_labels()
+        mock_writer.assert_called_once()
+
+
+def test_setting_empty_path(experiment: Experiment) -> None:
+    """Config file will have empty strings as defaults, make sure setting file paths stills works."""
+    model = MainModel()
+    model._set_experiment(experiment)
+
+    model.set_file_path_to_labels("")
+    assert str(model.path_to_labels) == "."
+
+    model.set_file_path_to_section_labels(".")
+    assert str(model.path_to_section_labels) == "."
