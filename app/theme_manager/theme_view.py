@@ -25,6 +25,10 @@ class ThemeView(QWidget, Ui_ThemeView):
     def build_ui(self) -> None:
         self.setupUi(self)
 
+    def toggle(self, turn_on: bool) -> None:
+        """Convenience method to change state of the toggle once. Hides implementation details from the Controller."""
+        self.themeToggle.setChecked(turn_on)
+
     # Connect callbacks of controller to emitted signals
     def connect_dark_mode(self, callback: Callable[[bool], None]) -> None:
         self._dark_mode_signal.connect(callback)

@@ -31,6 +31,7 @@ class View(Protocol):
     """API for the ThemeView"""
 
     def connect_dark_mode(self, callback: Callable[[bool], None]) -> None: ...
+    def toggle(self, turn_on: bool) -> None: ...
 
 
 class ThemeController(QObject):
@@ -64,7 +65,10 @@ class ThemeController(QObject):
 
     def get_and_apply_default_theme(self) -> Theme:
         """use theme specified in configuration file"""
-        self.model.current_theme = self.config.default_mode
+        theme = self.config.default_mode
+        turn_on = True if theme == ThemeMode.DARK else False
+        self.model.current_theme = theme
+        self.view.toggle(turn_on)
         self._apply_theme()
         return self.model.create_theme()
 
