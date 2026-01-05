@@ -56,6 +56,12 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
         self.NextSectionButton.setProperty("role", "neutral")
         self.previousSectionButton.setProperty("role", "neutral")
         self.itemlistButton.setProperty("role", "neutral")
+        self.CurrentLabel.setProperty("role", "display_item")
+        self.CurrentLabel.setText("Set using 'manage' button...")
+        self.StartOfSection.setProperty("role", "display_item")
+        self.StartOfSection.setText("")
+        self.EndOfSection.setProperty("role", "display_item")
+        self.EndOfSection.setText("")
 
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
@@ -77,7 +83,7 @@ class SectionsPanelView(QWidget, Ui_SectionsPanel):
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.IndicatorAdded.styleSheet()
-        background_color = "background-color\s*:\s*[^;]+;"
+        background_color = r"background-color\s*:\s*[^;]+;"
         new_styling = re.sub(
             pattern=background_color,
             repl=f"background-color: {color};",

@@ -59,8 +59,12 @@ class View(Protocol):
     # logic to change the view
     def set_plot_colors(self, color_data: Color, color_vert_line: Color) -> None: ...
     def update_figure(self, title: Optional[str] = None) -> None: ...
-    def adjust_t_range(self, min_value: float, max_value: float): ...
-    def adjust_z_range(self, min_value: float, max_value: float): ...
+    def adjust_t_range(self, min_value: float | None, max_value: float | None): ...
+    def adjust_z_range(self, min_value: float | None, max_value: float | None): ...
+    def display_t_min(self, value: float | None): ...
+    def display_t_max(self, value: float | None): ...
+    def display_z_min(self, value: float | None): ...
+    def display_z_max(self, value: float | None): ...
     def show_t_vs_z_plot(
         self, t: NDArray[np.floating], z: NDArray[np.floating]
     ) -> None: ...
@@ -93,6 +97,9 @@ class InteractivePlotController(QObject):
         self.model = model
         self.view = view
         self.config = config
+
+        # apply initial settings
+        self.apply_config()
 
         # connect callbacks :: Listening to the View's signals
         self.view.connect_left_mouse_click(self.handle_left_mouse_click)
@@ -136,6 +143,23 @@ class InteractivePlotController(QObject):
         self.view.set_plot_colors(
             color_data=data_color, color_vert_line=vert_line_color
         )
+
+    def apply_config(self) -> None:
+        """Apply with values from configuration file (can be called later if listening to changes)"""
+        min_height = self.config.min_height
+        max_height = self.config.max_height
+        min_time = self.config.min_time
+        max_time = self.config.max_time
+
+        # display values in entry fields:
+        self.view.display_t_min(min_time)
+        self.view.display_t_max(max_time)
+        self.view.display_z_min(min_height)
+        self.view.display_z_max(max_height)
+
+        # actually adjust the plot
+        self.view.adjust_t_range(min_time, max_time)
+        self.view.adjust_z_range(min_height, max_height)
 
     # Callbacks for signals emitted by the View
     def handle_left_mouse_click(self, x_click: float, _: float) -> None:

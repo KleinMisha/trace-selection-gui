@@ -86,11 +86,31 @@ class InterActivePlotView(QWidget, Ui_InteractivePlot):
 
         self.canvas.draw()
 
-    def adjust_t_range(self, min_value: float, max_value: float):
-        self.ax.set_xlim((min_value, max_value))
+    def adjust_t_range(self, min_value: float | None, max_value: float | None):
+        self.ax.set_xlim(min_value, max_value)
 
-    def adjust_z_range(self, min_value: float, max_value: float):
-        self.ax.set_ylim((min_value, max_value))
+    def adjust_z_range(self, min_value: float | None, max_value: float | None):
+        self.ax.set_ylim(min_value, max_value)
+
+    def display_t_min(self, value: float | None) -> None:
+        """To allow the controller to set things at startup. needed to properly listen to configuration file"""
+        if value is not None:
+            self.timeMinEdit.setText(str(value))
+
+    def display_t_max(self, value: float | None) -> None:
+        """To allow the controller to set things at startup. needed to properly listen to configuration file"""
+        if value is not None:
+            self.timeMaxEdit.setText(str(value))
+
+    def display_z_min(self, value: float | None) -> None:
+        """To allow the controller to set things at startup. needed to properly listen to configuration file"""
+        if value is not None:
+            self.zPosMinEdit.setText(str(value))
+
+    def display_z_max(self, value: float | None) -> None:
+        """To allow the controller to set things at startup. needed to properly listen to configuration file"""
+        if value is not None:
+            self.zPosMaxEdit.setText(str(value))
 
     def show_t_vs_z_plot(
         self, t: NDArray[np.floating], z: NDArray[np.floating]

@@ -5,6 +5,7 @@
     "background": "#ECECEC",
     "accent": "#FFCF17",
     "accent_dark": "#EECD5A",  
-    "text": "#000000"
+    "text": "#000000",
+    "text_box": "#000000"
   }
 
