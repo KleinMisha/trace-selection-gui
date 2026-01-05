@@ -166,6 +166,9 @@ def test_adjusting_zmin_valid_entry(entry: str) -> None:
     model.z_max = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
@@ -183,6 +186,9 @@ def test_adjusting_zmax_valid_entry(entry: str) -> None:
     model.z_min = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
@@ -200,6 +206,9 @@ def test_adjusting_tmin_valid_entry(entry: str) -> None:
     model.t_max = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=float(entry), max_value=23.0
@@ -217,6 +226,9 @@ def test_adjusting_tmax_valid_entry(entry: str) -> None:
     model.t_min = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=23.0, max_value=float(entry)
@@ -236,6 +248,9 @@ def test_adjusting_zmin_invalid_entry(entry: str) -> None:
         min_height=None, max_height=None, min_time=None, max_time=None
     )
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -253,6 +268,9 @@ def test_adjusting_zmax_invalid_entry(entry: str) -> None:
         min_height=None, max_height=None, min_time=None, max_time=None
     )
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -270,6 +288,9 @@ def test_adjusting_tmin_invalid_entry(entry: str) -> None:
         min_height=None, max_height=None, min_time=None, max_time=None
     )
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -287,6 +308,9 @@ def test_adjusting_tmax_invalid_entry(entry: str) -> None:
         min_height=None, max_height=None, min_time=None, max_time=None
     )
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_not_called()
     cast(Mock, view.update_figure).assert_not_called()
@@ -302,6 +326,11 @@ def test_fallback_to_default_invalid_entry_zmin(entry: str) -> None:
     model.z_max = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
+
+    # now perform the action we care about
     controller.handle_adjusted_z_min(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=config.min_height, max_value=23.0
@@ -319,6 +348,11 @@ def test_fallback_to_default_invalid_entry_zmax(entry: str) -> None:
     model.z_min = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_z_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
+
+    # now perform the action we care about
     controller.handle_adjusted_z_max(entry)
     cast(Mock, view.adjust_z_range).assert_called_once_with(
         min_value=23.0, max_value=config.max_height
@@ -336,6 +370,11 @@ def test_fallback_to_default_invalid_entry_tmin(entry: str) -> None:
     model.t_max = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
+
+    # now perform the action we care about
     controller.handle_adjusted_t_min(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=config.min_time, max_value=23.0
@@ -353,6 +392,11 @@ def test_fallback_to_default_invalid_entry_tmax(entry: str) -> None:
     model.t_min = 23.0
     config = InterActivePlotConfig()
     controller = InteractivePlotController(model, view, config)
+    # I only care about checking what happens AFTER initialization:
+    cast(Mock, view.adjust_t_range).reset_mock()
+    cast(Mock, view.update_figure).reset_mock()
+
+    # now perform the action we care about
     controller.handle_adjusted_t_max(entry)
     cast(Mock, view.adjust_t_range).assert_called_once_with(
         min_value=23.0, max_value=config.max_time

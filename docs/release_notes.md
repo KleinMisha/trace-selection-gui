@@ -1,5 +1,11 @@
 # Release Notes 
 
+## :fontawesome-solid-tag: v1.0.1 ![Version](https://img.shields.io/badge/release-latest-purple)!
+- Fixed issue #10: Text in all display boxes are now also visible in dark-mode. 
+- Fixed issue #11: Plot component is now properly initialized using the configuration file
+  - fixed what seemingly was an issue in the unit tests of the plot controller along the way. 
+
+
 ## :fontawesome-solid-tag: v1.0.0 ![Version](https://img.shields.io/badge/release-latest-purple)![Version](https://img.shields.io/badge/release-first-green)
 
 - First working version of the GUI (:partying_face:)
@@ -12,3 +18,4 @@
     - Runs unit tests (SUCCESS REQUIRED TO TRIGGER NEXT ACTION)
     - Builds and deploys this website ([MkDocs](https://squidfunk.github.io/mkdocs-material/)) (SUCCESS REQUIRED TO TRIGGER NEXT ACTION)
     - Optional version bump (both in `pyproject.toml` and as a :material-git: tag) (MANUAL TRIGGER)
+
