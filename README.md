@@ -1,6 +1,6 @@
 
-![pipeline status](https://gitlab.com/DulinlabVU/time-trace-tools/badges/main/pipeline.svg)
-![coverage report](https://gitlab.com/DulinlabVU/time-trace-tools/badges/main/coverage.svg)
+![pipeline status](https://gitlab.com/DulinlabVU/trace_selection_gui/badges/main/pipeline.svg)
+![coverage report](https://gitlab.com/DulinlabVU/trace_selection_gui/badges/main/coverage.svg)
 
 # 🔬 Time-trace (pre-)processing GUI 
 > *A re-imagined code for a GUI that is easy (easier) to maintain and expand.*
