@@ -12,7 +12,7 @@ QWidget {
 
 /*==== Text entry ===== */ 
 QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
-    color: $text;
+    color: $text_box;
     background-color:  #FFFFFF; 
 }
 
@@ -38,6 +38,10 @@ QWidget[role="accent"] {
 /* ===== Labels ===== */
 QLabel {
     color: $text;              
+}
+
+QLabel[role="display_item"] {
+    color: $text_box;              
 }
 
 /* ===== Buttons ==== 
