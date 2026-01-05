@@ -38,6 +38,7 @@ class Theme:
     background: Color
     neutral_accent: Color
     text: Color
+    text_box: Color
 
 
 @runtime_checkable

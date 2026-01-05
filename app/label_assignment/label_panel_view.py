@@ -51,6 +51,8 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
         self.NextButton.setProperty("role", "neutral")
         self.previousButton.setProperty("role", "neutral")
         self.itemlistButton.setProperty("role", "neutral")
+        self.CurrentLabel.setProperty("role", "display_item")
+        self.CurrentLabel.setText("Set using 'manage' button...")
 
     def display_label(self, label: str) -> None:
         self.CurrentLabel.setText(label)
@@ -73,7 +75,7 @@ class LabelPanelView(QWidget, Ui_LabelAssignment):
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.IndicatorAdded.styleSheet()
-        background_color = "background-color\s*:\s*[^;]+;"
+        background_color = r"background-color\s*:\s*[^;]+;"
         new_styling = re.sub(
             pattern=background_color,
             repl=f"background-color: {color};",
