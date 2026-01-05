@@ -111,7 +111,7 @@ class MainView(QMainWindow, Ui_MainWindow):
 
         # find the background-color option in the string and replace it with desired color
         current_styling = self.UnsavedChangesIndicator.styleSheet()
-        background_color = "background-color\s*:\s*[^;]+;"
+        background_color = r"background-color\s*:\s*[^;]+;"
         new_styling = re.sub(
             pattern=background_color,
             repl=f"background-color: {color};",
