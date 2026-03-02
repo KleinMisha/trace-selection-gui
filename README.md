@@ -1,8 +1,7 @@
-
-![pipeline status](https://gitlab.com/DulinlabVU/trace_selection_gui/badges/main/pipeline.svg)
-![coverage report](https://gitlab.com/DulinlabVU/trace_selection_gui/badges/main/coverage.svg)
-
 # 🔬 Time-trace (pre-)processing GUI 
+***Note: This project is maintained by the lab of David Dulin at VU Amsterdam, and the corresponding code is on their private GitLab account. This repository merely serves as a snapshot to show publicly.***
+
+
 > *A re-imagined code for a GUI that is easy (easier) to maintain and expand.*
 
 <span style="font-size: 16pt;">
