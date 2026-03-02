@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-time_trace_tools = { git = 'https://gitlab.com/DulinlabVU/time-trace-tools.git', tag = "v1.1.2"}
+time_trace_tools = { git = "https://github.com/KleinMisha/time-trace-tools.git", branch = "public-repo-misha" }
 
 [dependency-groups]
 dev = [
